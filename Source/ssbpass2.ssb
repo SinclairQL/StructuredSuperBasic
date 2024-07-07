@@ -1,8 +1,12 @@
 ## ssbpass2_ssb
-## Author: Timothy Swenson
+## Author:       Timothy Swenson
 ## Date Created: 16 Aug 2004
 ## Date Revised: 20 Nov 2015
-## Version 2.7.2b
+## Version:      2.7.2b
+##
+## Author:       Norman Dunbar
+## Date Revised: 7 Jan 2024
+## Version:      2.7.2c
 ##
 ## Pass_two does the main work of the filter.
 ##  It adds the line numbers and the goto references.
@@ -30,28 +34,35 @@ DEFine PROCedure pass_two (in_file$, file_num)
       IF d_ignore$ == "Y" THEN
         NEXT pass_2
       ELSE
-        ## Convert blank lines to "line_no :" ND 2.7.2b.
+        ## Convert blank lines to "line_no :" ND-272B.
         in$ = ":"
       END IF
     END IF
 
-    ## Ignore Labels
+    ## Ignore Labels (@)
     IF in$(1)=CHR$(64) THEN NEXT pass_2
 
-    ## Ignore ## comments
-    IF in$(temp TO temp+1)=CHR$(35)&CHR$(35) THEN NEXT pass_2
+    ## Ignore ## comments 
+    IF in$(temp TO temp+1)=CHR$(35) & CHR$(35) THEN NEXT pass_2
 
     ## Ignore dot commands
     IF in$(temp)="." THEN NEXT pass_2
 
     ## Ignore ## comments at the end of a line
-    temp2 = CHR$(35)&CHR$(35) INSTR in$
+    temp2 = CHR$(35) & CHR$(35) INSTR in$
     IF temp2 <> 0 THEN in$ = in$( 1 to temp2-1)
 
-    ## But not ** comments at the end of a line. ND 2.7.2b.
+    ## But not ** comments at the end of a line. ND-272B.
     temp2 = CHR$(42) & CHR$(42) INSTR in$
-    IF temp2 <> 0 then in$ = in$(1 to temp2 - 1) & \
-             "REMark" & in$(temp2 + 2 to)
+
+    ## WARNING: SMSQ/E Bug?
+    ## in$(a to b) is "" if b = a-1. Any other values
+    ## cause result in weird stuff under Turbo. here
+    ## it seems to return the entire string, not a null slice.
+    ## ND-272C.
+    IF temp2 > temp then 
+      in$ = in$(1 to temp2 - 1) & "REMark" & in$(temp2 + 2 to)
+    END IF
 
     ## Ignore #DEFINE commands since DEFINE table is already established
     IF upper$(in$(1 TO 7))="#DEFINE" THEN NEXT pass_2
@@ -81,12 +92,12 @@ DEFine PROCedure pass_two (in_file$, file_num)
       ELSE
         in3$=in$(1 to temp-1)
       END IF
-      ## Fixed indentation on REMark lines. ND 2.7.2b.
+      ## Fixed indentation on REMark lines. ND-272B.
       PRINT #4,line_num;in3$;"REMark";in$(temp+2 TO )
       line_num = line_num + line_delta
     ELSE
 
-      ## Look for labels chr$(64)
+      ## Look for labels chr$(64) [@]
       temp = CHR$(64) INSTR in$
       IF temp<>0 THEN
         a$ = in$(temp TO )
