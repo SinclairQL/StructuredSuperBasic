@@ -1,0 +1,145 @@
+## SSBGO_SSB
+## Author:   Timothy Swenson
+## Date Created: 20 Aug 1998
+## Date Revised: 20 Mar 2016
+## Version 1.2 for SSB 2.7
+##
+## This program will take an arguement of a SSB program
+## run it through SSB, load it in to SuperBasic,
+## then execute Qlib compiler.
+##
+## The idea is to edit an SSB program, save the file,
+## and from within the editor (like MicroEmacs) execute
+## SSBGO, wait a while, and then you will have a final
+## executable.
+##
+## This program uses 'grep' to check for MIStakes found in
+## SuperBASIC programs after they have been loaded, the
+## programmer should not use the word 'MIStake' in
+## their program.
+##
+## Requires:  TURBO Toolkit (TTK) 3f32
+##            Toolkit II (TKII)
+##            Environment Variables (env_bin)
+##
+## This program assumes that a RAM1_ does exist.
+##
+## The following are user changable options.
+##
+##   Compiler           1 Char ( "T" or "Q")
+##   Qlib Arguments     20 Char
+##   Input File Ext.    4 Char
+##   Output File Ext.   4 Char
+##   ssb exec directory 20 char
+
+## TURBO Defines
+TURBO_taskn "ssbgo"
+TURBO_objfil "ram1_ssbgo_exe"
+TURBO_windo 0
+TURBO_repfil "ram1_err"
+TURBO_objdat 400
+TURBO_buffersz 400
+TURBO_optim 0
+TURBO_diags 2
+TURBO_locstr 1
+TURBO_struct 0
+
+DIM compiler$(1), qlib_arg$(20), inputext$(4)
+DIM output$(4), execdir$(20)
+
+
+## Get command line
+filename$ = OPTION_CMD$
+
+## Make sure only one argument
+IF ( " " INSTR filename$ ) THEN
+   BEEP 1000,10
+   STOP
+END IF
+
+## Set default options
+
+compiler$ = "T"
+qlib_arg$ = ""
+inputext$ = "_ssb"
+outputext$ = "_bas"
+execdir$ = ""
+
+
+## Get options from ENV statement(s)
+
+temp$ = GETENV$("SSBCOMPILER")
+IF temp$ <> "" THEN compiler$ = temp$
+temp$ = GETENV$("SSBQLIBARG")
+IF temp$ <> "" THEN qlib_arg$ = temp$
+temp$ = GETENV$("SSBINPUTEXT")
+IF temp$ <> "" THEN inputext$ = temp$
+temp$ = GETENV$("SSBOUTPUTEXT")
+IF temp$ <> "" THEN outputext$ = temp$
+temp$ = GETENV$("SSBEXEC")
+IF temp$ <> "" THEN execdir$ = temp$
+
+
+## Delete filename_bas to so that SSB will
+## run.
+
+DELETE filename$&outputext$
+
+EXEC_W execdir$&"ssb";filename$
+
+## Check to make sure that SSB finished without any
+## errors.  We do this my making sure that the
+##  _bas file exists.
+##
+
+IF FTEST(filename$&outputext$) = -7 THEN
+   BEEP 1000,10
+   STOP
+ENDIF
+
+## Load the program into SuperBasic
+## Both Qliberator and TURBO compiler programs from memory
+## (meaning they are LOADed into the SuperBASIC interpreter.
+
+COMMAND_LINE
+
+cmd$ = "LOAD "&filename$&outputext$&CHR$(10)
+TYPE_IN cmd$
+
+## Save the program so we can check for MISTakes
+## Key is CTRL-SHIFT-A
+
+cmd$="SAVE_O "&filename$&outputext$&CHR$(10)
+TYPE_IN cmd$
+
+DELETE "ram1_ssbgo_out"
+
+## Use grep to look for any lines with MISTake
+EW execdir$&"grep";"MISTake "&filename$&outputext$&" > ram1_ssbgo_out"
+
+## Make sure grep did not find anything
+IF FLEN(\"ram1_ssbgo_out") <> 0 THEN
+   BEEP 1000,10
+   VIEW "ram1_ssbgo_out"
+   STOP
+END IF
+
+DELETE ram1_ssbgo_out
+
+## Execute Qliberator or TURBO in command line mode
+
+IF compiler$ = "Q" THEN
+   cmd$ = "liberate "&filename$&"_bas,'-OBJ" \
+    &filename$&" "&qlib_arg$&"'"&CHR$(10)
+   TYPE_IN cmd$
+END IF
+
+IF compiler$ = "T" THEN
+   cmd$="CHARGE \"&CHR$(10)
+   TYPE_IN cmd$
+END IF
+
+END_CMD
+## Since QLIB or TURBO is the last thing run, we don't care
+## if it has any errors because we are basically done.
+

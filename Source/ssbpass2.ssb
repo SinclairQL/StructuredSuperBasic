@@ -1,0 +1,129 @@
+## ssbpass2_ssb
+## Author: Timothy Swenson
+## Date Created: 16 Aug 2004
+## Date Revised: 20 Nov 2015
+## Version 2.7.1
+##
+## Pass_two does the main work of the filter.
+##  It adds the line numbers and the goto references.
+##
+## This code was originally in the main ssb file,
+## but was put in this file to make the code easier
+## to read and to maintain.
+
+DEFine PROCedure pass_two (in_file$, file_num)
+
+  LOCal in3$(100), a$(100)
+
+  ## No need for file checking since we've already
+  ## opened the file before.
+  OPEN_IN #file_num,in_file$
+  REPeat pass_2
+    num_count = num_count + 1
+    IF (num_count MOD 10) = 0 THEN PRINT #3,CHR$(1);
+    IF EOF(#file_num) THEN EXIT pass_2
+    INPUT #file_num,in$
+    temp=first_char(in$)
+
+    ## Ignore blank Lines
+    IF temp=0 THEN NEXT pass_2
+
+    ## Ignore Labels
+    IF in$(1)=CHR$(64) THEN NEXT pass_2
+
+    ## Ignore ## comments
+    IF in$(temp TO temp+1)=CHR$(35)&CHR$(35) THEN NEXT pass_2
+
+    ## Ignore dot commands
+    IF in$(temp)="." THEN NEXT pass_2
+
+    ## Ignore ## comments at the end of a line
+    temp2 = CHR$(35)&CHR$(35) INSTR in$
+    IF temp2 <> 0 THEN in$ = in$( 1 to temp2-1)
+
+    ## Ignore #DEFINE commands since DEFINE table is already established
+    IF upper$(in$(1 TO 7))="#DEFINE" THEN NEXT pass_2
+
+    ## Look for #ENDIF when an #IFDEF has been defined
+    IF LEN(in$) >= 6 THEN
+      IF in$(1 TO 6) = "#ENDIF" THEN NEXT pass_2
+    END IF
+
+    ## A \ is at the end of a line meaning to add the next line
+    REPeat loop
+      IF in$(LEN(in$))="\" THEN
+        ## No need for EOF check because we would have
+        ## caught it in pass_one.
+        INPUT #file_num,in2$
+        temp = first_char(in2$)
+        in$ = in$(1 TO (LEN(in$)-1))&in2$(temp TO)
+      ELSE
+        EXIT loop
+      END IF
+    END REPeat loop
+
+    ## Look for REMARK statements
+    IF in$(temp TO temp+1)="**" THEN
+      IF temp = 1 THEN
+        in3$=""
+      ELSE
+        in3$=in$(1 to temp-1)
+      END IF
+      PRINT #4,line_num;" REMark ";in3$;in$(temp+2 TO )
+      line_num = line_num + line_delta
+    ELSE
+
+      ## Look for labels chr$(64)
+      temp = CHR$(64) INSTR in$
+      IF temp<>0 THEN
+        a$ = in$(temp TO )
+        temp2 = 0
+        REPEAT loop2
+          temp2 = temp2 + 1
+          IF temp2 > d_labels THEN
+            BEEP 1000,10
+            INK #3,2
+            ## FATAL ERROR - Label   Not Found
+            PRINT #3,lngarray$(35);a$;lngarray$(32)
+            ## LINE NUMBER:   IN FILE:
+            PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
+            abort_out
+          END IF
+          IF label$(temp2) == a$ THEN EXIT loop2
+        END REPEAT loop2
+        PRINT #4,line_num;" ";in$(1 TO temp-1);label(temp2)
+        line_num = line_num + line_delta
+      ELSE
+
+        ## Look for #INCLUDE
+        IF upper$(in$(1 to 8))="#INCLUDE" THEN
+          pass_two d_working$&in$(10 to), file_num+1
+        ELSE
+
+          ## Look for #IFDEF
+          IF upper$(in$(1 TO 6))="#IFDEF" THEN
+            temp = 0
+            temp$ = upper$(in$(8 TO))
+            FOR x = 1 TO define_var
+              IF temp$ = defn$((x),1 TO LEN(temp$)) THEN temp = x
+            NEXT X
+            IF temp = 0 THEN
+              REPEAT loop
+                ## No need for EOF check since we would have
+                ## caught it in pass_one.
+                INPUT #file_num,in2$
+                IF LEN(in2$) < 6 THEN NEXT loop
+                IF upper$(in2$(1 TO 6))="#ENDIF" THEN EXIT loop
+              END REPeat loop
+            END IF
+          ELSE
+            PRINT #4,line_num;" ";in$
+            line_num = line_num + line_delta
+          END IF
+        END IF
+      END IF
+    END IF
+  END REPeat pass_2
+  CLOSE #file_num
+END DEFine pass_two
+

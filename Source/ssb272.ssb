@@ -1,0 +1,503 @@
+## Structured SuperBasic Filter
+## Author:       Timothy Swenson
+## Date Created: 16 Oct 1990
+## Date Revised: 4 Oct 2021
+## Version:      2.7.2
+##
+##   This program takes in SSB code and outputs a file
+##     that is runnable in SuperBasic
+##
+## Requires:  Environment Variables (env_bin)
+##            TURBO Toolkit (TTK) 3f32
+##            ToolKit II (TKII)
+##
+## Default values:
+##    Number of Labels    30
+##    Length of Labels    16
+##    Input File Ext.     _ssb
+##    Output File Ext.    _bas
+##    Working Dir.        (blank)
+##    2nd Working Dir.    (blank)
+##    Line Num. Start     100
+##    Line Num. Delta     10
+##    BAS Overwrite       (blank)
+##    Language            English ("E")
+##
+##   Channels :
+##               3 - Screen
+##               4 - Input File
+##               5 - Output File
+##
+
+## TURBO Defines
+
+TURBO_taskn "ssb 2.7.2"
+TURBO_objfil "ram1_ssb_exe"
+TURBO_windo 0
+TURBO_repfil "ram1_ssb_err"
+TURBO_objdat 400
+TURBO_buffersz 400
+TURBO_optim 0
+TURBO_diags 2
+TURBO_locstr 1
+TURBO_struct 0
+
+IMPLICIT% d_labels, d_length, d_start, d_delta, label_var, define_var
+IMPLICIT% num_count, file_num, count, x, y, temp, line_num_d, line_delta
+IMPLICIT% line_num
+
+
+## Default Values
+
+d_labels = 30
+d_length = 16
+d_in$    = "_ssb"
+d_out$   = "_bas"
+d_start  = 100
+d_delta  = 10
+d_working$ = ""
+d_work2$ = ""
+d_over$  = ""
+d_lang$  = "E"
+
+
+## Init Variables
+DIM out_file$(100), command$(100), file$(100), in_file$(100), temp$(100)
+DIM line_num$(10), line_delta$(10), argfile$(100), in$(1000), in2$(1000)
+DIM label$(d_labels,d_length)
+DIM label(d_labels)
+DIM defn$(d_labels,d_length)
+label_var = 1
+define_var = 1
+num_count = 0
+file_num = 5
+out_file$ = ""
+
+
+##  This section adds support for the environment
+##    variables (ENV_BIN).
+##
+
+t_in$ = GETENV$("SSBINPUT")
+IF t_in$ <> "" THEN d_in$ = t_in$
+t_out$ = GETENV$("SSBOUTPUT")
+IF t_out$ <> "" THEN d_out$ = t_out$
+t_start$ = GETENV$("SSBSTART")
+IF t_start$ <> "" THEN d_start = t_start$
+t_delta$ = GETENV$("SSBINC")
+IF t_delta$ <> "" THEN d_delta = t_delta$
+t_working$ = GETENV$("SSBWORK")
+IF t_working$ <> "" THEN d_working$ = t_working$
+t_work2$ = GETENV$("SSBWORK2")
+IF t_work2$ <> "" THEN d_work2$ = t_work2$
+t_over$ = GETENV$("SSBOVER")
+IF t_over$ <> "" THEN d_over$ = t_over$
+t_lang$ = GETENV$("SSBLANG")
+IF t_lang$ <> "" THEN d_lang$ = t_lang$
+
+## Probably need to add some error checking here
+
+
+## Add in code for language support
+#INCLUDE ram1_ssblang_ssb
+
+
+OPEN #3,"con_300x160a75x10_32"
+BORDER #3,2,4
+PAPER #3,0 : INK #3,7 :  CLS #3
+
+## Print opening Window
+##  STRUCTURED SUPERBASIC FILTER
+PRINT #3,"     ";lngarray$(1)
+INK #3,2
+##  Version 2.7.2
+PRINT #3,"            ";lngarray$(2)
+##  By Timothy Swenson
+PRINT #3,"         ";lngarray$(3)
+PRINT #3
+INK #3,4
+
+## If Working Dir 2 is blank, set to Working Dir
+IF d_work2$ = "" THEN d_work2$ = d_working$
+
+## Get Command Line Args from Turbo
+command$ = OPTION_CMD$
+
+## Check for arguement of only spaces
+count = 0
+y = LEN(command$)
+IF y > 0 THEN
+  FOR x = 1 TO y
+    IF command$(x) = " " THEN count=count+1
+  NEXT x
+  IF count = y THEN command$=""
+END IF
+
+IF command$ = "" THEN
+
+  REPEAT input_loop
+    ## Enter Input File
+    PRINT #3,lngarray$(4);d_in$;") "
+    INK #3,7
+    INPUT #3,file$
+
+    ## If enter a null string, exit program
+    IF file$ = "" THEN abort_out
+
+    ## Set Ink Color to Red for Errors
+    INK #3,2
+
+    in_file$ = d_working$&file$&d_in$
+    temp = FTEST(in_file$)
+    ## File Exits
+    IF temp = 0 THEN EXIT input_loop
+
+    IF temp = -9 THEN
+      BEEP 1000,10
+        ## ERROR - File In Use
+        PRINT #3,"      ";lngarray$(5)
+    END IF
+
+    IF temp = -7 THEN
+      BEEP 1000,10
+      ## ERROR - File Does Not Exist
+      PRINT #3,"      ";lngarray$(6)
+    END IF
+
+    IF temp = -11 THEN
+      BEEP 1000,10
+      ## ERROR - Bad File Name
+      PRINT #3,"      ";lngarray$(7)
+    END IF
+
+  END REPEAT input_loop
+
+  ## Check for extension.  If no ext. add _ssb
+
+
+  REPEAT output_loop
+    ## Enter Output File: Default
+    INK #3,4
+    PRINT #3,lngarray$(8);d_work2$&file$&d_out$;") "
+    INK #3,7
+    INPUT #3,out_file$
+
+    IF out_file$ = "" THEN
+      out_file$ = d_work2$&file$&d_out$
+    ELSE
+      out_file$ = d_work2$&out_file$&d_out$
+    END IF
+
+    ## Set Ink Color to Red for Errors
+      INK #3,2
+
+    temp = FTEST(out_file$)
+    ## If file does not exist
+    IF temp = -7 THEN EXIT output_loop
+    IF temp = -9 THEN
+      BEEP 1000,10
+      ## ERROR - File In Use
+      PRINT #3,"       ";lngarray$(5)
+    END IF
+
+    IF temp = -11 THEN
+      BEEP 1000,10
+      ## ERROR - Bad File Name
+      PRINT #3,"       ";lngarray$(7)
+    END IF
+
+    IF temp = 0 THEN
+      BEEP 1000,10
+      ## ERROR - File Exists
+      PRINT #3,"       ";lngarray$(9)
+      ## OK to Delete (Y/N)
+      PRINT #3,"        ";lngarray$(10)
+      temp$ = INKEY$(#3,-1)
+      ##
+      IF temp$ = "y" OR temp$="Y" or temp$="S" or temp$="s" THEN
+        DELETE out_file$
+        EXIT output_loop
+        ELSE
+          abort_out
+      END IF
+    END IF
+
+  END REPEAT output_loop
+
+  ## Check for extension. If no ext. add _bas
+
+  REPEAT start_loop
+    ## IF start has been set by ENV VAR don't get input
+    IF t_start$ <> "" THEN
+       line_num_d = t_start$
+       EXIT start_loop
+    END IF
+    ## Enter Starting Line Number: (Default
+    INK #3,4
+    PRINT #3,lngarray$(11);d_start;")"
+    INK #3,7
+    INPUT #3,line_num$
+
+    INK #3,2
+    IF line_num$ = "" THEN
+      line_num_d = d_start
+      EXIT start_loop
+    ELSE
+      ## Check to make sure a number is entered.
+      IF isnum(line_num$) THEN
+        line_num_d = line_num$
+        EXIT start_loop
+      END IF
+      BEEP 1000,10
+      ## ERROR - Must Enter A Number
+      PRINT #3,lngarray$(12)
+    END IF
+    INK #3,4
+  END REPEAT start_loop
+
+  REPEAT delta_loop
+    ## If delta has been set by ENV VAR then don't get input
+    IF t_delta$ <> "" THEN
+       line_delta = t_delta$
+       EXIT delta_loop
+    END IF
+    ## Enter Increment for Line Numbers: (Default
+    INK #3,4
+    PRINT #3,lngarray$(36);d_delta;")"
+    INK #3,7
+    INPUT #3,line_delta$
+    INK #3,2
+
+    ## Default for line number increment is 10.
+    ## Check to make sure a number is entered.
+    IF line_delta$ = "" THEN
+      line_delta = d_delta
+      EXIT delta_loop
+    ELSE
+      ## Check to make sure a number is entered.
+      IF isnum(line_delta$) THEN
+        line_delta = line_delta$
+        EXIT delta_loop
+      END IF
+      BEEP 1000,10
+      ## ERROR - Must Enter A Number
+      PRINT #3,lngarray$(12)
+    END IF
+    INK #3,4
+  END REPEAT delta_loop
+
+ELSE
+  ## Command Line Arguement processing
+  ## Trim any Leading Blanks
+
+  REPEAT loop_lb
+    IF command$(1) = " " THEN
+      command$=command$(2 TO )
+    ELSE
+      EXIT loop_lb
+    END IF
+  END REPEAT loop_lb
+
+  ## Trim any Trailing Blanks
+  REPEAT loop_tb
+    x = LEN(command$)
+    IF command$(x)=" " THEN
+      command$=command$(1 TO x-1)
+    ELSE
+      EXIT loop_tb
+    END IF
+  END REPEAT loop_tb
+
+  ## Break out arguments
+  ## Check to see if there are 1 or two arguments
+
+  x = " " INSTR command$
+  IF x THEN
+    argfile$ = command$(1 TO x-1)
+    command$ = command$( x+1 TO )
+    ## Check for any Leading Blanks
+    REPEAT loop_lb
+      IF command$(1) = " " THEN
+        command$ = command$(2 TO )
+      ELSE
+        EXIT loop_lb
+      END IF
+    END REPEAT loop_lb
+    ## Check to make sure line number argument is a number
+    IF isnum(command$) = 0 THEN
+      INK #3,2
+      BEEP 1000,10
+      ## ERROR - 2nd Arg is Not a Valid Number
+      PRINT #3,"      ";lngarray$(13)
+      abort_out
+    END IF
+    d_start = command$
+  ELSE
+    argfile$ = command$
+  END IF
+
+  in_file$ = d_working$&argfile$&d_in$
+  out_file$ = d_work2$&argfile$&d_out$
+
+  temp = FTEST(out_file$)
+  IF temp = 0 THEN
+    IF d_over$="Y" or d_over$="y" or d_over$="S" or d_over$="s" THEN
+      DELETE out_file$
+    ELSE
+      BEEP 1000,10
+      INK #3,2
+      ## ERROR - Output File Exists
+      PRINT #3,"       ";lngarray$(14)
+      abort_out
+    END IF
+  END IF
+  IF temp = -11 THEN
+    BEEP 1000,10
+    INK #3,2
+    ## ERROR - Bad File Name - Output File
+    PRINT #3,"       ";lngarray$(15)
+    abort_out
+  END IF
+  IF temp = -9 THEN
+    BEEP 1000,10
+    INK #3,2
+    ## ERROR - Output File In Use
+    PRINT #3,"       ";lngarray$(16)
+    abort_out
+  END IF
+
+  line_delta = d_delta
+  line_num_d = d_start
+
+END IF
+
+## Start of Main Routine
+
+line_num = line_num_d
+## PASS 1
+INK #3,4
+PRINT #3,"    ";lngarray$(17)
+
+pass_one in_file$, file_num
+
+line_num = line_num_d
+PRINT #3
+## PASS 2
+PRINT #3,"    ";lngarray$(18)
+
+num_count = 0
+file_num = 5
+
+## No error checking is necessary here as we have
+## done it earlier.
+OPEN_NEW #4,out_file$
+
+pass_two in_file$, file_num
+
+CLOSE #4
+PRINT #3
+## Program Done
+PRINT #3,"           ";lngarray$(19)
+PRINT #3,""
+IF OPTION_CMD$="" THEN
+  INK #3,7
+   ## Hit Any Key
+  PRINT #3,"           ";lngarray$(20)
+  temp$ = INKEY$(#3,-1)
+END IF
+CLOSE #3
+STOP
+
+
+## The code for both pass1 and pass1 procedures have been
+## broken out into two different files to make it easier
+## to read and to maintain the code.
+
+#INCLUDE ram1_ssbpass1_ssb
+
+#INCLUDE ram1_ssbpass2_ssb
+
+
+## Function first_char
+##   returns the location of the first non-white
+##   space character.
+DEFine FuNction first_char (a$)
+   LOCal count
+   count=0
+@label2
+   count=count+1
+   IF count > LEN(a$) THEN RETurn 0
+   IF a$(count)=" " THEN GO TO @label2
+   RETurn count
+END DEFine first_char
+
+## Function upper$
+##   Takes in input string and returns the
+##   same string in all upper case letters.
+DEF FuNction upper$(up$)
+    LOCal x, temp
+
+    FOR x = 1 TO LEN(up$)
+       temp = CODE(up$(x))
+       IF temp > 96 AND temp < 123 THEN up$(x)=CHR$(temp-32)
+    NEXT x
+    RETURN up$
+END DEFine
+
+## Function isnum
+## Takes a string as input and determines if
+## if it is a number.
+##   Return Values:
+##      0 = False (is not a number)
+##      1 = True (is a number)
+
+DEFine FuNCtion isnum (var$)
+   LOCal x,y
+
+   FOR x = 1 TO LEN(var$)
+      y = CODE(var$(x))
+      IF y < 48 OR y > 57 THEN RETURN 0
+   NEXT x
+   RETURN 1
+END DEFine isnum
+
+## Procedure abort_out
+##   A separate procedure to neatly close all
+##   of the files and exit the program.
+##   Usually reserved for fatal errors.
+DEF PROCedure abort_out
+
+## Close output file before any possibility of deleting it
+
+CLOSE #4
+
+## If called with a Command Line string, then need
+## to delete the output file.  This is necessary
+## for SSBGO so it knows when SSB has failed with
+## an error
+
+IF OPTION_CMD$<>"" AND out_file$<>"" THEN DELETE out_file$
+
+## Close out all open files
+
+IF file_num = 5 THEN
+    CLOSE #5
+ELSE
+    FOR x = 5 TO file_num
+       CLOSE #x
+    NEXT X
+END IF
+
+## If interactive, then pause for user input.
+IF OPTION_CMD$<>"" THEN
+    PRINT #3,""
+    INK #3,7
+    ## Hit Any Key
+    PRINT #3,"         ";lngarray$(20)
+    temp$ = INKEY$(#3,-1)
+END IF
+    CLOSE #3
+    STOP
+
+END DEFine abort_out
+

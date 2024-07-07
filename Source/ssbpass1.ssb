@@ -1,0 +1,177 @@
+## ssbpass1_ssb
+## Author: Timothy Swenson
+## Date Created:  16 Aug 2004
+## Date Revised:  20 Nov 2015
+## Version:       2.7.1
+##
+## Pass_one is strictly designed to count line numbers
+## and to find all labels.  This allows goto labels to
+## refer to code that the filter has not yet seen
+## (as compared to a single pass filter).
+##
+## This code was originally in the main ssb code file, but
+## was broken out to make it easier to read and maintain.
+
+DEFine PROCedure pass_one (in_file$, file_num)
+
+## Need Error Checking here as this procedure
+## can be called from doing an #INCLUDE.
+
+  errorx = FOP_IN(#file_num,in_file$)
+
+  INK #3,2
+  IF errorx = -12 THEN
+    BEEP 1000,10
+    ## FATAL ERROR - Bad Name
+    PRINT #3,lngarray$(21);in_file$
+    abort_out
+  END IF
+  IF errorx = -7 THEN
+    BEEP 1000,10
+    ## FATAL ERROR - File Not Found
+    PRINT #3,lngarray$(22);in_file$
+    abort_out
+  END IF
+  IF errorx = -9 THEN
+    BEEP 1000,10
+    ## FATAL ERROR - File In Use
+    PRINT #3,lngarray$(23);in_file$
+    abort_out
+  END IF
+  INK #3,4
+
+  REPeat pass_1
+    num_count = num_count + 1
+    IF (num_count MOD 10) = 0 THEN PRINT #3,CHR$(1);
+    IF EOF(#file_num) THEN EXIT pass_1
+    INPUT #file_num,in$
+
+    ## Get first non-space character
+    temp=first_char(in$)
+
+    ## Check for Blank Lines
+    IF temp=0 THEN NEXT pass_1
+
+    ## If the ## comment line then don't count as a line
+    IF in$(temp TO temp+1)=CHR$(35)&CHR$(35) THEN NEXT pass_1
+
+    ## Ignore dot commands for print filters
+    IF in$(temp)="." THEN NEXT pass_1
+
+    ## Look for #ENDIF when a #IFDEF is defined
+    IF LEN(in$) >= 6 THEN
+      IF in$(1 TO 6) = "#ENDIF" THEN NEXT pass_1
+    END IF
+
+    ## A \ is at the end of a line meaning to add the next line
+    REPeat loop
+      IF in$(LEN(in$))="\" THEN
+        IF EOF(#file_num) THEN
+          BEEP 1000,10
+          INK #3,2
+          ## FATAL ERROR - End of File Found While Looking for
+          PRINT #3,lngarray$(24)
+          ## FILE :
+          PRINT #3,lngarray$(25);in_file$
+          abort_out
+        END IF
+        INPUT #file_num,in2$
+        temp = first_char(in2$)
+        in$ = in$( TO LEN(in$))&" "&in2$(temp TO)
+      ELSE
+        EXIT loop
+      END IF
+    END REPeat loop
+
+    ## If the AT symbol is found, then it's a label
+    IF in$(1)=CHR$(64) THEN
+      IF LEN(in$) > d_length+1 THEN
+        BEEP 1000,10
+        INK #3,2
+        ## FATAL ERROR - Label   Too Long
+        PRINT #3,lngarray$(26);in$;lngarray$(27)
+        ## LINE NUMBER:    IN FILE:
+        PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
+        abort_out
+      END IF
+      IF label_var = d_labels THEN
+        BEEP 1000,10
+        INK #3,2
+        ## FATAL ERROR - Too Many Labels
+        PRINT #3,lngarray$(30)
+        ## LINE NUMBER:    IN FILE:
+        PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
+        abort_out
+      END IF
+      label$(label_var) = in$
+      label(label_var) = line_num
+      label_var = label_var + 1
+    ELSE
+
+      ## If it's the include statement then call pass_one again
+      IF upper$(in$(1 TO 8))="#INCLUDE" THEN
+        ## Need to add a way if file checking here or at
+        ## the beginning of pass_one.
+
+        pass_one d_working$&in$(10 to ), file_num+1
+      ELSE
+
+        ## Look for a #DEFINE
+        IF upper$(in$(1 TO 7))="#DEFINE" THEN
+          IF LEN(in$(9 TO)) > d_length THEN
+            BEEP 1000,10
+            INK #3,2
+            ## FATAL ERROR - DEFINE     Too Long
+            PRINT #3,lngarray$(31);in$(9 TO);lngarray$(27)
+            ## LINE NUMBER:   IN FILE:
+            PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
+            abort_out
+          END IF
+          IF define_var = d_labels THEN
+            BEEP 1000,10
+            INK #3,2
+            ## FATAL ERROR - Too Many DEFINE's
+            PRINT #3,lngarray$(33)
+            ## LINE NUMBER:   IN FILE:
+            PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
+            abort_out
+          END IF
+          defn$(define_var) = upper$(in$( 9 TO))
+          define_var = define_var+1
+        ELSE
+
+          ## Look for an #IFDEF
+          IF upper$(in$(1 TO 6))="#IFDEF" THEN
+            temp = 0
+            temp$ = upper$(in$(8 TO))
+            FOR x = 1 TO define_var
+              IF temp$ = defn$(x) THEN temp = 1
+            NEXT X
+            IF temp = 0 THEN
+              REPEAT loop
+                ## Read through file until END DEFINE
+                IF EOF(#file_num) THEN
+                  BEEP 1000,10
+                  INK #3,2
+                  ## FATAL ERROR - End of File Found Before #ENDIF
+                  PRINT #3,lngarray$(34)
+                  ## FILE:
+                  PRINT #3,lngarray$(25);in_file$
+                  abort_out
+                END IF
+                INPUT #file_num,in2$
+                IF LEN(in2$) < 6 THEN NEXT loop
+                IF upper$(in2$(1 TO 6))="#ENDIF" THEN EXIT loop
+              END REPeat loop
+            END IF
+          ELSE
+            line_num = line_num + line_delta
+          END IF
+        END IF
+      END IF
+    END IF
+
+  END REPeat pass_1
+
+  CLOSE #file_num
+END DEFine pass_one

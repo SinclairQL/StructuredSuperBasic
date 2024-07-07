@@ -1,0 +1,99 @@
+## MAKEGO_SSB
+## Author:   Timothy Swenson
+## Date Created:  4 Dec 2001
+## Date Revised: 27 Dec 2005
+## Version 1.0
+##
+## This program will take an arguement of a SuperBasic
+## file, load the program into SuperBasic, and call a
+## SuperBasic compiler, either Qlib or TURBO.
+##
+## This program is used as a link between the Make program
+## and the SuperBasic compilers, which require that the program
+## to be compiled is loaded into memory.
+## 
+## Requires:  DJ Toolkit (DJTK)
+##            TURBO Toolkit (TTK) 3f32
+##            ToolKit II (TKII)
+## Supports:  Environment Variables (env_bin)
+##
+## The following are user changable options.
+##
+##   Compiler           1 Char ( "T" or "Q")
+##   Qlib Arguments     20 Char
+##   Basic File Ext.    4 Char
+
+## TURBO Defines
+TURBO_taskn "makego"
+TURBO_objfil "ram1_makego_exe"
+TURBO_windo 0
+TURBO_repfil "ram1_err"
+TURBO_objdat 400
+TURBO_buffersz 400
+TURBO_optim 0
+TURBO_diags 2
+TURBO_locstr 1
+TURBO_struct 0
+
+DIM compiler$(1), qlib_arg$(20), fileext$(4)
+
+#DEFINE ENV
+
+## Get command line
+filename$ = OPTION_CMD$
+
+## Make sure only one argument
+IF ( " " INSTR filename$ ) THEN
+   BEEP 1000,10
+   STOP
+END IF
+
+## Set default options
+
+compiler$ = "T"
+qlib_arg$ = ""
+fileext$ = "_bas"
+
+## Get options from ENV statement(s)
+
+#IFDEF ENV
+## Since ENV support is optional, need to check to
+## see if ENV_BIN has been loaded.
+
+IF CHECK("GETENV$") THEN
+   temp$ = GETENV$("COMPILER")
+   IF temp$ <> "" THEN compiler$ = temp$
+   temp$ = GETENV$("QLIBARG")
+   IF temp$ <> "" THEN qlib_arg$ = temp$
+   temp$ = GETENV$("FILEEXT")
+   IF temp$ <> "" THEN fileext$ = temp$
+END IF
+#ENDIF
+
+## Set output to the SuperBasic command line (channel #0)
+
+COMMAND_LINE
+
+## Load the program into SuperBasic
+## Both Qliberator and TURBO compiler programs from memory
+## (meaning they are LOADed into the SuperBASIC interpreter.
+
+cmd$="LOAD "&filename$&fileext$&CHR$(10)
+TYPE_IN cmd$
+
+## Execute Qliberator or TURBO in command line mode
+
+IF compiler$ = "Q" THEN
+   cmd$ = "LIBERATE "&filename$&fileext$&";'-OBJ " \
+    &filename$&" "&qlib_arg$&"'"&CHR$(10)
+   TYPE_IN cmd$
+END IF
+
+IF compiler$ = "T" THEN
+   cmd$="CHARGE \"&CHR$(10)
+   TYPE_IN cmd$
+END IF
+
+## Since QLIB or TURBO is the last thing run, we don't care
+## if it has any errors because we are basically done.
+

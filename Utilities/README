@@ -1,0 +1,9 @@
+The files in here are all utilities that need to be included
+with any releases of SSB.
+
+It should be noted that if the executable name is changed, that
+*POSSIBLY* ssbgo and ssbmake might need amending to suit.
+
+
+Norman Dunbar
+9 January 2024.
