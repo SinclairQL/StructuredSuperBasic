@@ -17,7 +17,7 @@ DIM lngarray$(36,42)
 
 IF d_lang$ = "E"
    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-   lngarray$(2) = "      Version 2.7.2"
+   lngarray$(2) = "      Version 2.7.2b"
    lngarray$(3) = " By Timothy Swenson"
    lngarray$(4) = "Enter Input File: ("
    lngarray$(5) = "ERROR - File In Use"
@@ -56,7 +56,7 @@ END IF
 
 IF d_lang$="I"
    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-   lngarray$(2) = "       Versione 2.7.2"
+   lngarray$(2) = "       Versione 2.7.2b"
    lngarray$(3) = " di Timothy Swenson"
    lngarray$(4) = "File di input: ("
    lngarray$(5) = "ERRORE - Il file ê in uso"
@@ -95,7 +95,7 @@ END IF
 
 IF d_lang$="F"
    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-   lngarray$(2) = "       Version 2.7.2"
+   lngarray$(2) = "       Version 2.7.2b"
    lngarray$(3) = " par Timothy Swenson"
    lngarray$(4) = "Fichied d'entrÉe: ("
    lngarray$(5) = "ERREUR - Le fichier est en cours d'utilisation"
@@ -134,7 +134,7 @@ END IF
 
 IF d_lang$ = "D"
    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-   lngarray$(2) = "      Version 2.7.2"
+   lngarray$(2) = "      Version 2.7.2b"
    lngarray$(3) = " By Timothy Swenson"
    lngarray$(4) = "Eingansdatei Angeben: ("
    lngarray$(5) = "Fehler - Datei ist Offen"
@@ -173,7 +173,7 @@ END IF
 
 IF d_lang$ = "K"
    lngarray$ (1) = "tlham SUPERBASIC FILTER"
-   lngarray$ (2) = "2.7.2 Version"
+   lngarray$ (2) = "2.7.2b Version"
    lngarray$ (3) = "pong Timothy Swenson"
    lngarray$ (4) = "teywI' input:"
    lngarray$ (5) = "Qagh-teywI' neH lo'" 
@@ -212,7 +212,7 @@ END IF
 
 IF d_lang$ = "W"
    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-   lngarray$(2) = "      Fersiwn 2.7"
+   lngarray$(2) = "      Fersiwn 2.7.2b"
    lngarray$(3) = " Gan Timothy Swenson"
    lngarray$(4) = "Ffeil fewnbwn: ("
    lngarray$(5) = "GWALL - Ffeil Mewn Defnydd"

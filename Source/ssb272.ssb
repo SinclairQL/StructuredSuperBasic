@@ -2,7 +2,7 @@
 ## Author:       Timothy Swenson
 ## Date Created: 16 Oct 1990
 ## Date Revised: 4 Oct 2021
-## Version:      2.7.2
+## Version:      2.7.2b
 ##
 ##   This program takes in SSB code and outputs a file
 ##     that is runnable in SuperBasic
@@ -22,6 +22,7 @@
 ##    Line Num. Delta     10
 ##    BAS Overwrite       (blank)
 ##    Language            English ("E")
+##    Ignore Blank lines  Y
 ##
 ##   Channels :
 ##               3 - Screen
@@ -31,10 +32,10 @@
 
 ## TURBO Defines
 
-TURBO_taskn "ssb 2.7.2"
-TURBO_objfil "ram1_ssb_exe"
+TURBO_taskn "ssb 2.7.2b"
+TURBO_objfil "ram1_ssb272b_exe"
 TURBO_windo 0
-TURBO_repfil "ram1_ssb_err"
+TURBO_repfil "ram1_ssb272b_err"
 TURBO_objdat 400
 TURBO_buffersz 400
 TURBO_optim 0
@@ -59,6 +60,7 @@ d_working$ = ""
 d_work2$ = ""
 d_over$  = ""
 d_lang$  = "E"
+d_ignore$ = "Y"
 
 
 ## Init Variables
@@ -94,6 +96,8 @@ t_over$ = GETENV$("SSBOVER")
 IF t_over$ <> "" THEN d_over$ = t_over$
 t_lang$ = GETENV$("SSBLANG")
 IF t_lang$ <> "" THEN d_lang$ = t_lang$
+t_ignore$ = GETENV$("IGNORE_BLANKS")
+IF t_ignore$ <> "" THEN d_ignore$ = t_ignore$
 
 ## Probably need to add some error checking here
 
