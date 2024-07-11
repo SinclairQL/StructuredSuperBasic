@@ -1,0 +1,96 @@
+## A function to trim leading and trailing spaces from a string.
+DEFine FuNction Trim$(text$)
+    IF text$ <> "" THEN
+        RETurn RTrim$(LTrim$(text$))
+    ELSE
+        RETurn ""
+    END IF
+END DEFine LTrim$
+:
+:
+## A function to trim leading spaces from a string.
+DEFine FuNction LTrim$(text$)
+    LOCal x, ret$
+    :
+    ## Empty strings are easy!
+    IF text$ = "" THEN RETurn "": END IF
+    :
+    ## Check for leading spaces.
+    FOR x = 1 to LEN(text$)
+        if text$(x) <> " " THEN EXIT x: END IF
+    END FOR x
+    ret$ = text$(x TO)
+    ## If the result is a single space, we had a
+    ## string that is all spaces.
+    if ret$ = " " then ret$ = "": end if
+    return ret$
+END DEFine LTrim$
+:
+:
+## A function to trim trailing spaces from a string.
+DEFine FuNction RTrim$(text$)
+    LOCal x, ret$
+    :
+    ## Empty strings are easy!
+    IF text$ = "" THEN RETurn "": END IF
+    :
+    ## Check for trailing spaces.
+    FOR x = LEN(text$) TO 1 STEP -1
+        if text$(x) <> " " THEN EXIT x: END IF
+    END FOR x
+    ret$ = text$(TO x)
+    ## If the result is a single space, we had a
+    ## string that was all spaces.
+    if ret$ = " " then ret$ = "": end if
+    return ret$
+END DEFine RTrim$
+
+## ND-272e
+## A procedure to centre some text in a 300 pixel wide
+## window. Characters are assumed to be 6 pixels wide as
+## testing showed that this worked. The border is 2 pixels
+## wide also, this has to be doubled.
+DEFine PROCedure centre(ch, text$)
+    LOCal size, winSize
+    :
+    winSize = (300-2-2)/6
+    size = len(text$)
+    print #ch, to (winSize-size)/2; text$
+END DEF centre
+:
+:
+## ND-272c
+## A function to determine if we found
+## a REMark or invisible REMark characters
+## within a string. We don't want to be
+## messing up the user's data!
+DEFine FuNction inString% (in$, stopHere)
+  local x, Double%, Single%
+  Double% = 0: Single% = 0
+  FOR x = 1 to stopHere
+    ** Check for double quotes.
+    if in$(x) = '"' THEN
+      if Double% = 1 then
+        Double% = 0
+      else
+        Double% = 1
+      end if
+    else
+      ** Try single quotes.
+      if in$(x) = "'" then
+        if Single% = 1 then
+          Single% = 0
+        else
+          Single% = 1
+        end if
+      end if
+    end if
+  END FOR x
+:
+  ** If Double% or Single% = 1 then
+  ** we opened a string before the
+  ** marker characters for REMark or
+  ** invisible REMark, so we return
+  ** true, else false.
+  return Double% or single%
+END DEFine inString%

@@ -19,7 +19,7 @@
 ##    Output File Ext.    _bas
 ##    Working Dir.        (blank)
 ##    2nd Working Dir.    (blank)
-##    Line Num. Start     100
+##    Line Num. Start     1000
 ##    Line Num. Delta     10
 ##    BAS Overwrite       (blank)
 ##    Language            English ("E")
@@ -33,10 +33,14 @@
 
 ## TURBO Defines
 
-TURBO_taskn "ssb 2.7.2d"
-TURBO_objfil "ram1_ssb272d_exe"
+## ONLY CHANGE THIS LINE WHEN AMENDING THE SOURCE 
+## FOR A NEW VERSION. 
+TURBO_taskn "ssb 2.7.2e"
+
+## DO NOT CHANGE THE OBJFIL NAME.
+TURBO_objfil "dev7_ssb272_exe"
 TURBO_windo 0
-TURBO_repfil "ram1_ssb272d_err"
+TURBO_repfil "dev7_ssb272_err"
 TURBO_objdat 400
 TURBO_buffersz 400
 TURBO_optim 0
@@ -45,17 +49,16 @@ TURBO_locstr 1
 TURBO_struct 0
 
 IMPLICIT% d_labels, d_length, d_start, d_delta, label_var, define_var
-IMPLICIT% num_count, file_num, count, x, y, temp, line_num_d, line_delta
+IMPLICIT% num_count, file_num, x, y, temp, line_num_d, line_delta
 IMPLICIT% line_num
 
 
 ## Default Values
-
 d_labels = 30
 d_length = 16
 d_in$    = "_ssb"
 d_out$   = "_bas"
-d_start  = 100
+d_start  = 1000
 d_delta  = 10
 d_working$ = ""
 d_work2$ = ""
@@ -106,19 +109,21 @@ IF t_ignore$ <> "" THEN d_ignore$ = t_ignore$
 ## Add in code for language support
 #INCLUDE ram1_ssblang_ssb
 
-
+## If you change this, change the "centre" function to suit.
+## The "winSize" variable will need adjusting to:
+## width - border - border (Yes, border twice!) ND-272e.
 OPEN #3,"con_300x160a75x10_32"
 BORDER #3,2,4
 PAPER #3,0 : INK #3,7 :  CLS #3
 
 ## Print opening Window
 ##  STRUCTURED SUPERBASIC FILTER
-PRINT #3,"     ";lngarray$(1)
+centre 3, lngarray$(1)
 INK #3,2
-##  Version 2.7.2
-PRINT #3,"            ";lngarray$(2)
+##  Version number
+centre 3, lngarray$(2)
 ##  By Timothy Swenson
-PRINT #3,"         ";lngarray$(3)
+centre 3, lngarray$(3)
 PRINT #3
 INK #3,4
 
@@ -129,266 +134,24 @@ IF d_work2$ = "" THEN d_work2$ = d_working$
 command$ = OPTION_CMD$
 
 ## Check for argument of only spaces
-count = 0
-y = LEN(command$)
-IF y > 0 THEN
-  FOR x = 1 TO y
-    IF command$(x) = " " THEN count=count+1
-  NEXT x
-  IF count = y THEN command$=""
-END IF
+command$ = trim$(command$)
 
-IF command$ = "" THEN
-
-  REPEAT input_loop
-    ## Enter Input File
-    PRINT #3,lngarray$(4);d_in$;") "
-    INK #3,7
-    INPUT #3,file$
-
-    ## If enter a null string, exit program
-    IF file$ = "" THEN abort_out
-
-    ## Set Ink Color to Red for Errors
-    INK #3,2
-
-    in_file$ = d_working$&file$&d_in$
-    temp = FTEST(in_file$)
-    ## File Exists
-    IF temp = 0 THEN EXIT input_loop
-
-    IF temp = -9 THEN
-      BEEP 1000,10
-        ## ERROR - File In Use
-        PRINT #3,"      ";lngarray$(5)
-    END IF
-
-    IF temp = -7 THEN
-      BEEP 1000,10
-      ## ERROR - File Does Not Exist
-      PRINT #3,"      ";lngarray$(6)
-    END IF
-
-    IF temp = -11 THEN
-      BEEP 1000,10
-      ## ERROR - Bad File Name
-      PRINT #3,"      ";lngarray$(7)
-    END IF
-
-  END REPEAT input_loop
-
-  ## Check for extension.  If no ext. add _ssb
-
-
-  REPEAT output_loop
-    ## Enter Output File: Default
-    INK #3,4
-    PRINT #3,lngarray$(8);d_work2$&file$&d_out$;") "
-    INK #3,7
-    INPUT #3,out_file$
-
-    IF out_file$ = "" THEN
-      out_file$ = d_work2$&file$&d_out$
-    ELSE
-      out_file$ = d_work2$&out_file$&d_out$
-    END IF
-
-    ## Set Ink Color to Red for Errors
-      INK #3,2
-
-    temp = FTEST(out_file$)
-    ## If file does not exist
-    IF temp = -7 THEN EXIT output_loop
-    IF temp = -9 THEN
-      BEEP 1000,10
-      ## ERROR - File In Use
-      PRINT #3,"       ";lngarray$(5)
-    END IF
-
-    IF temp = -11 THEN
-      BEEP 1000,10
-      ## ERROR - Bad File Name
-      PRINT #3,"       ";lngarray$(7)
-    END IF
-
-    IF temp = 0 THEN
-      BEEP 1000,10
-      ## ERROR - File Exists
-      PRINT #3,"       ";lngarray$(9)
-      ## OK to Delete (Y/N)
-      PRINT #3,"        ";lngarray$(10)
-      temp$ = INKEY$(#3,-1)
-      ##
-      IF temp$ = "y" OR temp$="Y" or temp$="S" or temp$="s" THEN
-        DELETE out_file$
-        EXIT output_loop
-        ELSE
-          abort_out
-      END IF
-    END IF
-
-  END REPEAT output_loop
-
-  ## Check for extension. If no ext. add _bas
-
-  REPEAT start_loop
-    ## IF start has been set by ENV VAR don't get input
-    IF t_start$ <> "" THEN
-       line_num_d = t_start$
-       EXIT start_loop
-    END IF
-    ## Enter Starting Line Number: (Default
-    INK #3,4
-    PRINT #3,lngarray$(11);d_start;")"
-    INK #3,7
-    INPUT #3,line_num$
-
-    INK #3,2
-    IF line_num$ = "" THEN
-      line_num_d = d_start
-      EXIT start_loop
-    ELSE
-      ## Check to make sure a number is entered.
-      IF isnum(line_num$) THEN
-        line_num_d = line_num$
-        EXIT start_loop
-      END IF
-      BEEP 1000,10
-      ## ERROR - Must Enter A Number
-      PRINT #3,lngarray$(12)
-    END IF
-    INK #3,4
-  END REPEAT start_loop
-
-  REPEAT delta_loop
-    ## If delta has been set by ENV VAR then don't get input
-    IF t_delta$ <> "" THEN
-       line_delta = t_delta$
-       EXIT delta_loop
-    END IF
-    ## Enter Increment for Line Numbers: (Default
-    INK #3,4
-    PRINT #3,lngarray$(36);d_delta;")"
-    INK #3,7
-    INPUT #3,line_delta$
-    INK #3,2
-
-    ## Default for line number increment is 10.
-    ## Check to make sure a number is entered.
-    IF line_delta$ = "" THEN
-      line_delta = d_delta
-      EXIT delta_loop
-    ELSE
-      ## Check to make sure a number is entered.
-      IF isnum(line_delta$) THEN
-        line_delta = line_delta$
-        EXIT delta_loop
-      END IF
-      BEEP 1000,10
-      ## ERROR - Must Enter A Number
-      PRINT #3,lngarray$(12)
-    END IF
-    INK #3,4
-  END REPEAT delta_loop
-
-ELSE
-  ## Command Line Arguement processing
-  ## Trim any Leading Blanks
-
-  REPEAT loop_lb
-    IF command$(1) = " " THEN
-      command$=command$(2 TO )
-    ELSE
-      EXIT loop_lb
-    END IF
-  END REPEAT loop_lb
-
-  ## Trim any Trailing Blanks
-  REPEAT loop_tb
-    x = LEN(command$)
-    IF command$(x)=" " THEN
-      command$=command$(1 TO x-1)
-    ELSE
-      EXIT loop_tb
-    END IF
-  END REPEAT loop_tb
-
-  ## Break out arguments
-  ## Check to see if there are 1 or two arguments
-
-  x = " " INSTR command$
-  IF x THEN
-    argfile$ = command$(1 TO x-1)
-    command$ = command$( x+1 TO )
-    ## Check for any Leading Blanks
-    REPEAT loop_lb
-      IF command$(1) = " " THEN
-        command$ = command$(2 TO )
-      ELSE
-        EXIT loop_lb
-      END IF
-    END REPEAT loop_lb
-    ## Check to make sure line number argument is a number
-    IF isnum(command$) = 0 THEN
-      INK #3,2
-      BEEP 1000,10
-      ## ERROR - 2nd Arg is Not a Valid Number
-      PRINT #3,"      ";lngarray$(13)
-      abort_out
-    END IF
-    d_start = command$
-  ELSE
-    argfile$ = command$
-  END IF
-
-  in_file$ = d_working$&argfile$&d_in$
-  out_file$ = d_work2$&argfile$&d_out$
-
-  temp = FTEST(out_file$)
-  IF temp = 0 THEN
-    IF d_over$=="Y" or d_over$=="S" THEN
-      DELETE out_file$
-    ELSE
-      BEEP 1000,10
-      INK #3,2
-      ## ERROR - Output File Exists
-      PRINT #3,"       ";lngarray$(14)
-      abort_out
-    END IF
-  END IF
-  IF temp = -11 THEN
-    BEEP 1000,10
-    INK #3,2
-    ## ERROR - Bad File Name - Output File
-    PRINT #3,"       ";lngarray$(15)
-    abort_out
-  END IF
-  IF temp = -9 THEN
-    BEEP 1000,10
-    INK #3,2
-    ## ERROR - Output File In Use
-    PRINT #3,"       ";lngarray$(16)
-    abort_out
-  END IF
-
-  line_delta = d_delta
-  line_num_d = d_start
-
-END IF
+## Process commands or run interactively.
+#INCLUDE ram1_commands_ssb
 
 ## Start of Main Routine
 
 line_num = line_num_d
 ## PASS 1
 INK #3,4
-PRINT #3,"    ";lngarray$(17)
+centre 3, lngarray$(17)
 
 pass_one in_file$, file_num
 
 line_num = line_num_d
 PRINT #3
 ## PASS 2
-PRINT #3,"    ";lngarray$(18)
+centre 3, lngarray$(18)
 
 num_count = 0
 file_num = 5
@@ -402,12 +165,12 @@ pass_two in_file$, file_num
 CLOSE #4
 PRINT #3
 ## Program Done
-PRINT #3,"           ";lngarray$(19)
+centre 3, lngarray$(19)
 PRINT #3,""
 IF OPTION_CMD$="" THEN
   INK #3,7
    ## Hit Any Key
-  PRINT #3,"           ";lngarray$(20)
+  centre 3, lngarray$(20)
   temp$ = INKEY$(#3,-1)
 END IF
 CLOSE #3
@@ -422,41 +185,9 @@ STOP
 
 #INCLUDE ram1_ssbpass2_ssb
 
-## ND-272C
-## A function to determine if we found
-## a REMark or invisible REMark characters
-## within a string. We don;lt want to be
-## messing up the user's data!
-DEFine FuNction inString% (in$, stopHere)
-  local x, Double%, Single%
-  Double% = 0: Single% = 0
-  FOR x = 1 to stopHere
-    ** Check for double quotes.
-    if in$(x) = '"' THEN
-      if Double% = 1 then
-        Double% = 0
-      else
-        Double% = 1
-      end if
-    else
-      ** Try single quotes.
-      if in$(x) = "'" then
-        if Single% = 1 then
-          Single% = 0
-        else
-          Single% = 1
-        end if
-      end if
-    end if
-  END FOR x
-
-  ** If Double% or Single% = 1 then
-  ** we opened a string before the
-  ** marker characters for REMark or
-  ** invisible REMark, so we return
-  ** true, else false.
-  return Double% or single%
-END DEFine inString%
+## ND-272e Added a couple of useful trim functions to strip
+## leading and trailing spaces much easier than before.
+#INCLUDE ram1_functions_ssb
 
 
 ## Function first_char
@@ -481,7 +212,7 @@ DEF FuNction upper$(up$)
     FOR x = 1 TO LEN(up$)
        temp = CODE(up$(x))
        IF temp > 96 AND temp < 123 THEN up$(x)=CHR$(temp-32)
-    NEXT x
+    END FOR x
     RETURN up$
 END DEFine
 
@@ -498,7 +229,7 @@ DEFine FuNCtion isnum (var$)
    FOR x = 1 TO LEN(var$)
       y = CODE(var$(x))
       IF y < 48 OR y > 57 THEN RETURN 0
-   NEXT x
+   END FOR x
    RETURN 1
 END DEFine isnum
 
@@ -526,7 +257,7 @@ IF file_num = 5 THEN
 ELSE
     FOR x = 5 TO file_num
        CLOSE #x
-    NEXT X
+    END FOR X
 END IF
 
 ## If interactive, then pause for user input.
@@ -534,7 +265,7 @@ IF OPTION_CMD$<>"" THEN
     PRINT #3,""
     INK #3,7
     ## Hit Any Key
-    PRINT #3,"         ";lngarray$(20)
+    centre 3, lngarray$(20)
     temp$ = INKEY$(#3,-1)
 END IF
     CLOSE #3

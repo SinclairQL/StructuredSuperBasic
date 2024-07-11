@@ -131,7 +131,7 @@ DEFine PROCedure pass_two (in_file$, file_num)
             temp$ = upper$(in$(8 TO))
             FOR x = 1 TO define_var
               IF temp$ = defn$((x),1 TO LEN(temp$)) THEN temp = x
-            NEXT X
+            END FOR X
             IF temp = 0 THEN
               REPEAT loop
                 ## No need for EOF check since we would have

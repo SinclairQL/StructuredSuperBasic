@@ -146,7 +146,7 @@ DEFine PROCedure pass_one (in_file$, file_num)
             temp$ = upper$(in$(8 TO))
             FOR x = 1 TO define_var
               IF temp$ = defn$(x) THEN temp = 1
-            NEXT X
+            END FOR X
             IF temp = 0 THEN
               REPEAT loop
                 ## Read through file until END DEFINE

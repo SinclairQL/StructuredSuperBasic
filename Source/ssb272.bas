@@ -1,7 +1,7 @@
-1000 TURBO_taskn "ssb 2.7.2d"
-1010 TURBO_objfil "ram1_ssb272d_exe"
+1000 TURBO_taskn "ssb 2.7.2e"
+1010 TURBO_objfil "dev7_ssb272_exe"
 1020 TURBO_windo 0
-1030 TURBO_repfil "ram1_ssb272d_err"
+1030 TURBO_repfil "dev7_ssb272_err"
 1040 TURBO_objdat 400
 1050 TURBO_buffersz 400
 1060 TURBO_optim 0
@@ -9,13 +9,13 @@
 1080 TURBO_locstr 1
 1090 TURBO_struct 0
 1100 IMPLICIT% d_labels, d_length, d_start, d_delta, label_var, define_var
-1110 IMPLICIT% num_count, file_num, count, x, y, temp, line_num_d, line_delta
+1110 IMPLICIT% num_count, file_num, x, y, temp, line_num_d, line_delta
 1120 IMPLICIT% line_num
 1130 d_labels = 30
 1140 d_length = 16
 1150 d_in$    = "_ssb"
 1160 d_out$   = "_bas"
-1170 d_start  = 100
+1170 d_start  = 1000
 1180 d_delta  = 10
 1190 d_working$ = ""
 1200 d_work2$ = ""
@@ -53,8 +53,8 @@
 1520 DIM lngarray$(36,42)
 1530 IF d_lang$ = "E"
 1540    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-1550    lngarray$(2) = "      Version 2.7.2d"
-1560    lngarray$(3) = " By Timothy Swenson"
+1550    lngarray$(2) = "Version 2.7.2e"
+1560    lngarray$(3) = "By Timothy Swenson"
 1570    lngarray$(4) = "Enter Input File: ("
 1580    lngarray$(5) = "ERROR - File In Use"
 1590    lngarray$(6) = "ERROR - File Does Not Exist"
@@ -91,8 +91,8 @@
 1900 END IF
 1910 IF d_lang$ = "S"
 1920    lngarray$(1) = "FILTRO SUPERBASIC ESTRUCTURADO"
-1930    lngarray$(2) = "       Versi–n 2.7.2d"
-1940    lngarray$(3) = " Por: Timothy Swenson"
+1930    lngarray$(2) = "Versi–n 2.7.2e"
+1940    lngarray$(3) = "Por: Timothy Swenson"
 1950    lngarray$(4) = "Introduzca el archivo de entrada: ("
 1960    lngarray$(5) = "ERROR - Archivo en uso"
 1970    lngarray$(6) = "ERROR - El archivo no existe"
@@ -129,8 +129,8 @@
 2280 END IF
 2290 IF d_lang$="I"
 2300    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-2310    lngarray$(2) = "       Versione 2.7.2d"
-2320    lngarray$(3) = " di Timothy Swenson"
+2310    lngarray$(2) = "Versione 2.7.2e"
+2320    lngarray$(3) = "di Timothy Swenson"
 2330    lngarray$(4) = "File di input: ("
 2340    lngarray$(5) = "ERRORE - Il file  in uso"
 2350    lngarray$(6) = "ERRORE - Il file non esiste"
@@ -167,8 +167,8 @@
 2660 END IF
 2670 IF d_lang$="F"
 2680    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-2690    lngarray$(2) = "       Version 2.7.2d"
-2700    lngarray$(3) = " par Timothy Swenson"
+2690    lngarray$(2) = "Version 2.7.2e"
+2700    lngarray$(3) = "par Timothy Swenson"
 2710    lngarray$(4) = "Fichied d'entrƒe: ("
 2720    lngarray$(5) = "ERREUR - Le fichier est en cours d'utilisation"
 2730    lngarray$(6) = "ERREUR - Le fichier ne existe pas"
@@ -205,8 +205,8 @@
 3040 END IF
 3050 IF d_lang$ = "D"
 3060    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-3070    lngarray$(2) = "      Version 2.7.2d"
-3080    lngarray$(3) = " By Timothy Swenson"
+3070    lngarray$(2) = "Version 2.7.2e"
+3080    lngarray$(3) = "By Timothy Swenson"
 3090    lngarray$(4) = "Eingansdatei Angeben: ("
 3100    lngarray$(5) = "Fehler - Datei ist Offen"
 3110    lngarray$(6) = "Fehler - Datei Existiert Nicht"
@@ -243,7 +243,7 @@
 3420 END IF
 3430 IF d_lang$ = "K"
 3440    lngarray$ (1) = "tlham SUPERBASIC FILTER"
-3450    lngarray$ (2) = "2.7.2d Version"
+3450    lngarray$ (2) = "2.7.2e Version"
 3460    lngarray$ (3) = "pong Timothy Swenson"
 3470    lngarray$ (4) = "teywI' input:"
 3480    lngarray$ (5) = "Qagh-teywI' neH lo'" 
@@ -281,8 +281,8 @@
 3800 END IF
 3810 IF d_lang$ = "W"
 3820    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-3830    lngarray$(2) = "      Fersiwn 2.7.2d"
-3840    lngarray$(3) = " Gan Timothy Swenson"
+3830    lngarray$(2) = "Fersiwn 2.7.2e"
+3840    lngarray$(3) = "Gan Timothy Swenson"
 3850    lngarray$(4) = "Ffeil fewnbwn: ("
 3860    lngarray$(5) = "GWALL - Ffeil Mewn Defnydd"
 3870    lngarray$(6) = "GWALL - Ffeil Ddim Yn Bod"
@@ -320,496 +320,514 @@
 4190 OPEN #3,"con_300x160a75x10_32"
 4200 BORDER #3,2,4
 4210 PAPER #3,0 : INK #3,7 :  CLS #3
-4220 PRINT #3,"     ";lngarray$(1)
+4220 centre 3, lngarray$(1)
 4230 INK #3,2
-4240 PRINT #3,"            ";lngarray$(2)
-4250 PRINT #3,"         ";lngarray$(3)
+4240 centre 3, lngarray$(2)
+4250 centre 3, lngarray$(3)
 4260 PRINT #3
 4270 INK #3,4
 4280 IF d_work2$ = "" THEN d_work2$ = d_working$
 4290 command$ = OPTION_CMD$
-4300 count = 0
-4310 y = LEN(command$)
-4320 IF y > 0 THEN
-4330   FOR x = 1 TO y
-4340     IF command$(x) = " " THEN count=count+1
-4350   NEXT x
-4360   IF count = y THEN command$=""
-4370 END IF
-4380 IF command$ = "" THEN
-4390   REPEAT input_loop
-4400     PRINT #3,lngarray$(4);d_in$;") "
-4410     INK #3,7
-4420     INPUT #3,file$
-4430     IF file$ = "" THEN abort_out
-4440     INK #3,2
-4450     in_file$ = d_working$&file$&d_in$
-4460     temp = FTEST(in_file$)
-4470     IF temp = 0 THEN EXIT input_loop
-4480     IF temp = -9 THEN
-4490       BEEP 1000,10
-4500         PRINT #3,"      ";lngarray$(5)
-4510     END IF
-4520     IF temp = -7 THEN
-4530       BEEP 1000,10
-4540       PRINT #3,"      ";lngarray$(6)
-4550     END IF
-4560     IF temp = -11 THEN
-4570       BEEP 1000,10
-4580       PRINT #3,"      ";lngarray$(7)
-4590     END IF
-4600   END REPEAT input_loop
-4610   REPEAT output_loop
-4620     INK #3,4
-4630     PRINT #3,lngarray$(8);d_work2$&file$&d_out$;") "
-4640     INK #3,7
-4650     INPUT #3,out_file$
-4660     IF out_file$ = "" THEN
-4670       out_file$ = d_work2$&file$&d_out$
-4680     ELSE
-4690       out_file$ = d_work2$&out_file$&d_out$
+4300 command$ = trim$(command$)
+4310 IF command$ = "" THEN
+4320   REPEAT input_loop
+4330     PRINT #3,lngarray$(4);d_in$;") "
+4340     INK #3,7
+4350     INPUT #3,file$
+4360     IF file$ = "" THEN abort_out
+4370     INK #3,2
+4380     in_file$ = d_working$&file$&d_in$
+4390     temp = FTEST(in_file$)
+4400     IF temp = 0 THEN EXIT input_loop
+4410     IF temp = -9 THEN
+4420       BEEP 1000,10
+4430         centre 3, lngarray$(5)
+4440     END IF
+4450     IF temp = -7 THEN
+4460       BEEP 1000,10
+4470       centre 3, lngarray$(6)
+4480     END IF
+4490     IF temp = -11 THEN
+4500       BEEP 1000,10
+4510       centre 3, lngarray$(7)
+4520     END IF
+4530   END REPEAT input_loop
+4540   REPEAT output_loop
+4550     INK #3,4
+4560     PRINT #3,lngarray$(8); d_work2$ & file$ & d_out$; ") "
+4570     INK #3,7
+4580     INPUT #3,out_file$
+4590     IF out_file$ = "" THEN
+4600       out_file$ = d_work2$ & file$ & d_out$
+4610     ELSE
+4620       out_file$ = d_work2$ & out_file$ & d_out$
+4630     END IF
+4640       INK #3,2
+4650     temp = FTEST(out_file$)
+4660     IF temp = -7 THEN EXIT output_loop
+4670     IF temp = -9 THEN
+4680       BEEP 1000,10
+4690       centre 3, lngarray$(5)
 4700     END IF
-4710       INK #3,2
-4720     temp = FTEST(out_file$)
-4730     IF temp = -7 THEN EXIT output_loop
-4740     IF temp = -9 THEN
-4750       BEEP 1000,10
-4760       PRINT #3,"       ";lngarray$(5)
-4770     END IF
-4780     IF temp = -11 THEN
-4790       BEEP 1000,10
-4800       PRINT #3,"       ";lngarray$(7)
-4810     END IF
-4820     IF temp = 0 THEN
-4830       BEEP 1000,10
-4840       PRINT #3,"       ";lngarray$(9)
-4850       PRINT #3,"        ";lngarray$(10)
-4860       temp$ = INKEY$(#3,-1)
-4870       IF temp$ = "y" OR temp$="Y" or temp$="S" or temp$="s" THEN
-4880         DELETE out_file$
-4890         EXIT output_loop
-4900         ELSE
-4910           abort_out
-4920       END IF
-4930     END IF
-4940   END REPEAT output_loop
-4950   REPEAT start_loop
-4960     IF t_start$ <> "" THEN
-4970        line_num_d = t_start$
-4980        EXIT start_loop
-4990     END IF
-5000     INK #3,4
-5010     PRINT #3,lngarray$(11);d_start;")"
-5020     INK #3,7
-5030     INPUT #3,line_num$
-5040     INK #3,2
-5050     IF line_num$ = "" THEN
-5060       line_num_d = d_start
-5070       EXIT start_loop
-5080     ELSE
-5090       IF isnum(line_num$) THEN
-5100         line_num_d = line_num$
-5110         EXIT start_loop
-5120       END IF
-5130       BEEP 1000,10
-5140       PRINT #3,lngarray$(12)
+4710     IF temp = -11 THEN
+4720       BEEP 1000,10
+4730       centre 3, lngarray$(7)
+4740     END IF
+4750     IF temp = 0 THEN
+4760       BEEP 1000,10
+4770       centre 3, lngarray$(9)
+4780       centre 3, lngarray$(10)
+4790       temp$ = INKEY$(#3,-1)
+4800       IF temp$ == "Y" or temp$ == "S" THEN
+4810         DELETE out_file$
+4820         EXIT output_loop
+4830         ELSE
+4840           abort_out
+4850       END IF
+4860     END IF
+4870   END REPEAT output_loop
+4880   REPEAT start_loop
+4890     IF t_start$ <> "" THEN
+4900        line_num_d = t_start$
+4910        EXIT start_loop
+4920     END IF
+4930     INK #3,4
+4940     PRINT #3, lngarray$(11); d_start; ")"
+4950     INK #3,7
+4960     INPUT #3,line_num$
+4970     INK #3,2
+4980     IF line_num$ = "" THEN
+4990       line_num_d = d_start
+5000       EXIT start_loop
+5010     ELSE
+5020       IF isnum(line_num$) THEN
+5030         line_num_d = line_num$
+5040         EXIT start_loop
+5050       END IF
+5060       BEEP 1000,10
+5070       PRINT #3,lngarray$(12)
+5080     END IF
+5090     INK #3,4
+5100   END REPEAT start_loop
+5110   REPEAT delta_loop
+5120     IF t_delta$ <> "" THEN
+5130        line_delta = t_delta$
+5140        EXIT delta_loop
 5150     END IF
 5160     INK #3,4
-5170   END REPEAT start_loop
-5180   REPEAT delta_loop
-5190     IF t_delta$ <> "" THEN
-5200        line_delta = t_delta$
-5210        EXIT delta_loop
-5220     END IF
-5230     INK #3,4
-5240     PRINT #3,lngarray$(36);d_delta;")"
-5250     INK #3,7
-5260     INPUT #3,line_delta$
-5270     INK #3,2
-5280     IF line_delta$ = "" THEN
-5290       line_delta = d_delta
-5300       EXIT delta_loop
-5310     ELSE
-5320       IF isnum(line_delta$) THEN
-5330         line_delta = line_delta$
-5340         EXIT delta_loop
-5350       END IF
-5360       BEEP 1000,10
-5370       PRINT #3,lngarray$(12)
-5380     END IF
-5390     INK #3,4
-5400   END REPEAT delta_loop
-5410 ELSE
-5420   REPEAT loop_lb
-5430     IF command$(1) = " " THEN
-5440       command$=command$(2 TO )
-5450     ELSE
-5460       EXIT loop_lb
-5470     END IF
-5480   END REPEAT loop_lb
-5490   REPEAT loop_tb
-5500     x = LEN(command$)
-5510     IF command$(x)=" " THEN
-5520       command$=command$(1 TO x-1)
-5530     ELSE
-5540       EXIT loop_tb
-5550     END IF
-5560   END REPEAT loop_tb
-5570   x = " " INSTR command$
-5580   IF x THEN
-5590     argfile$ = command$(1 TO x-1)
-5600     command$ = command$( x+1 TO )
-5610     REPEAT loop_lb
-5620       IF command$(1) = " " THEN
-5630         command$ = command$(2 TO )
-5640       ELSE
-5650         EXIT loop_lb
-5660       END IF
-5670     END REPEAT loop_lb
-5680     IF isnum(command$) = 0 THEN
-5690       INK #3,2
-5700       BEEP 1000,10
-5710       PRINT #3,"      ";lngarray$(13)
-5720       abort_out
-5730     END IF
-5740     d_start = command$
-5750   ELSE
-5760     argfile$ = command$
-5770   END IF
-5780   in_file$ = d_working$&argfile$&d_in$
-5790   out_file$ = d_work2$&argfile$&d_out$
-5800   temp = FTEST(out_file$)
-5810   IF temp = 0 THEN
-5820     IF d_over$=="Y" or d_over$=="S" THEN
-5830       DELETE out_file$
-5840     ELSE
-5850       BEEP 1000,10
-5860       INK #3,2
-5870       PRINT #3,"       ";lngarray$(14)
-5880       abort_out
-5890     END IF
-5900   END IF
-5910   IF temp = -11 THEN
-5920     BEEP 1000,10
-5930     INK #3,2
-5940     PRINT #3,"       ";lngarray$(15)
-5950     abort_out
-5960   END IF
-5970   IF temp = -9 THEN
-5980     BEEP 1000,10
-5990     INK #3,2
-6000     PRINT #3,"       ";lngarray$(16)
-6010     abort_out
-6020   END IF
-6030   line_delta = d_delta
-6040   line_num_d = d_start
-6050 END IF
-6060 line_num = line_num_d
-6070 INK #3,4
-6080 PRINT #3,"    ";lngarray$(17)
-6090 pass_one in_file$, file_num
-6100 line_num = line_num_d
-6110 PRINT #3
-6120 PRINT #3,"    ";lngarray$(18)
-6130 num_count = 0
-6140 file_num = 5
-6150 OPEN_NEW #4,out_file$
-6160 pass_two in_file$, file_num
-6170 CLOSE #4
-6180 PRINT #3
-6190 PRINT #3,"           ";lngarray$(19)
-6200 PRINT #3,""
-6210 IF OPTION_CMD$="" THEN
-6220   INK #3,7
-6230   PRINT #3,"           ";lngarray$(20)
-6240   temp$ = INKEY$(#3,-1)
-6250 END IF
-6260 CLOSE #3
-6270 STOP
-6280 DEFine PROCedure pass_one (in_file$, file_num)
-6290   errorx = FOP_IN(#file_num,in_file$)
-6300   INK #3,2
-6310   IF errorx = -12 THEN
-6320     BEEP 1000,10
-6330     PRINT #3,lngarray$(21);in_file$
-6340     abort_out
-6350   END IF
-6360   IF errorx = -7 THEN
-6370     BEEP 1000,10
-6380     PRINT #3,lngarray$(22);in_file$
-6390     abort_out
-6400   END IF
-6410   IF errorx = -9 THEN
-6420     BEEP 1000,10
-6430     PRINT #3,lngarray$(23);in_file$
-6440     abort_out
-6450   END IF
-6460   INK #3,4
-6470   REPeat pass_1
-6480     num_count = num_count + 1
-6490     IF (num_count MOD 10) = 0 THEN PRINT #3,CHR$(1);
-6500     IF EOF(#file_num) THEN EXIT pass_1
-6510     INPUT #file_num,in$
-6520     temp=first_char(in$)
-6530     IF temp=0 THEN NEXT pass_1
-6540     IF in$(temp TO temp+1)=CHR$(35)&CHR$(35) THEN NEXT pass_1
-6550     IF in$(temp)="." THEN NEXT pass_1
-6560     IF LEN(in$) >= 6 THEN
-6570       IF in$(1 TO 6) = "#ENDIF" THEN NEXT pass_1
-6580     END IF
-6590     REPeat loop
-6600       IF in$(LEN(in$))="\" THEN
-6610         IF EOF(#file_num) THEN
-6620           BEEP 1000,10
-6630           INK #3,2
-6640           PRINT #3,lngarray$(24)
-6650           PRINT #3,lngarray$(25);in_file$
-6660           abort_out
-6670         END IF
-6680         INPUT #file_num,in2$
-6690         temp = first_char(in2$)
-6700         in$ = in$( TO LEN(in$))&" "&in2$(temp TO)
-6710       ELSE
-6720         EXIT loop
-6730       END IF
-6740     END REPeat loop
-6750     IF in$(1)=CHR$(64) THEN
-6760       IF LEN(in$) > d_length+1 THEN
-6770         BEEP 1000,10
-6780         INK #3,2
-6790         PRINT #3,lngarray$(26);in$;lngarray$(27)
-6800         PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
-6810         abort_out
-6820       END IF
-6830       IF label_var = d_labels THEN
-6840         BEEP 1000,10
-6850         INK #3,2
-6860         PRINT #3,lngarray$(30)
-6870         PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
-6880         abort_out
-6890       END IF
-6900       label$(label_var) = in$
-6910       label(label_var) = line_num
-6920       label_var = label_var + 1
-6930     ELSE
-6940       IF upper$(in$(1 TO 8))="#INCLUDE" THEN
-6950         pass_one d_working$&in$(10 to ), file_num+1
-6960       ELSE
-6970         IF upper$(in$(1 TO 7))="#DEFINE" THEN
-6980           IF LEN(in$(9 TO)) > d_length THEN
-6990             BEEP 1000,10
-7000             INK #3,2
-7010             PRINT #3,lngarray$(31);in$(9 TO);lngarray$(27)
-7020             PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
-7030             abort_out
-7040           END IF
-7050           IF define_var = d_labels THEN
-7060             BEEP 1000,10
-7070             INK #3,2
-7080             PRINT #3,lngarray$(33)
-7090             PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
-7100             abort_out
-7110           END IF
-7120           defn$(define_var) = upper$(in$( 9 TO))
-7130           define_var = define_var+1
-7140         ELSE
-7150           IF upper$(in$(1 TO 6))="#IFDEF" THEN
-7160             temp = 0
-7170             temp$ = upper$(in$(8 TO))
-7180             FOR x = 1 TO define_var
-7190               IF temp$ = defn$(x) THEN temp = 1
-7200             NEXT X
-7210             IF temp = 0 THEN
-7220               REPEAT loop
-7230                 IF EOF(#file_num) THEN
-7240                   BEEP 1000,10
-7250                   INK #3,2
-7260                   PRINT #3,lngarray$(34)
-7270                   PRINT #3,lngarray$(25);in_file$
-7280                   abort_out
-7290                 END IF
-7300                 INPUT #file_num,in2$
-7310                 IF LEN(in2$) < 6 THEN NEXT loop
-7320                 IF upper$(in2$(1 TO 6))="#ENDIF" THEN EXIT loop
-7330               END REPeat loop
-7340             END IF
-7350           ELSE
-7360             line_num = line_num + line_delta
-7370           END IF
-7380         END IF
-7390       END IF
-7400     END IF
-7410   END REPeat pass_1
-7420   CLOSE #file_num
-7430 END DEFine pass_one
-7440 DEFine PROCedure pass_two (in_file$, file_num)
-7450   LOCal in3$(100), a$(100)
-7460   OPEN_IN #file_num,in_file$
-7470   REPeat pass_2
-7480     num_count = num_count + 1
-7490     IF (num_count MOD 10) = 0 THEN PRINT #3,CHR$(1);
-7500     IF EOF(#file_num) THEN EXIT pass_2
-7510     INPUT #file_num,in$
-7520     temp=first_char(in$)
-7530     IF temp=0 THEN
-7540       IF d_ignore$ == "Y" THEN
-7550         NEXT pass_2
-7560       ELSE
-7570         print #4, line_num; " :"           
-7580         line_num = line_num + line_delta
-7590         next pass_2
-7600       END IF
-7610     END IF
-7620     IF in$(1)=CHR$(64) THEN NEXT pass_2
-7630     IF in$(temp TO temp+1)=CHR$(35)&CHR$(35) THEN NEXT pass_2
-7640     IF in$(temp)="." THEN NEXT pass_2
-7650     temp2 = CHR$(35)&CHR$(35) INSTR in$
-7660     IF temp2 <> 0 THEN
-7670       if not inString%(in$, temp2) then
-7680         in$ = in$( 1 to temp2-1)
-7690       end if
-7700     END IF
-7710     temp2 = CHR$(42) & CHR$(42) INSTR in$
-7720     IF temp2 > temp then
-7730       if not inString%(in$, temp2) then
-7740         in$ = in$(1 to temp2 - 1) & "REMark" & in$(temp2 + 2 to)
-7750       end if
-7760     END IF
-7770     IF upper$(in$(1 TO 7))="#DEFINE" THEN NEXT pass_2
-7780     IF LEN(in$) >= 6 THEN
-7790       IF in$(1 TO 6) = "#ENDIF" THEN NEXT pass_2
-7800     END IF
-7810     REPeat loop
-7820       IF in$(LEN(in$))="\" THEN
-7830         INPUT #file_num,in2$
-7840         temp = first_char(in2$)
-7850         in$ = in$(1 TO (LEN(in$)-1))&in2$(temp TO)
-7860       ELSE
-7870         EXIT loop
-7880       END IF
-7890     END REPeat loop
-7900     IF in$(temp TO temp+1)= CHR$(42) & CHR$(42) THEN
-7910       IF temp = 1 THEN
-7920         in3$=" "
-7930       ELSE
-7940         in3$=in$(1 to temp-1)
-7950       END IF
-7960       PRINT #4,line_num;in3$;"REMark";in$(temp+2 TO )
-7970       line_num = line_num + line_delta
-7980     ELSE
-7990       temp = CHR$(64) INSTR in$
-8000       IF temp<>0 THEN
-8010         a$ = in$(temp TO )
-8020         temp2 = 0
-8030         REPEAT loop2
-8040           temp2 = temp2 + 1
-8050           IF temp2 > d_labels THEN
-8060             BEEP 1000,10
-8070             INK #3,2
-8080             PRINT #3,lngarray$(35);a$;lngarray$(32)
-8090             PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
-8100             abort_out
-8110           END IF
-8120           IF label$(temp2) == a$ THEN EXIT loop2
-8130         END REPEAT loop2
-8140         PRINT #4,line_num;" ";in$(1 TO temp-1);label(temp2)
-8150         line_num = line_num + line_delta
-8160       ELSE
-8170         IF upper$(in$(1 to 8))="#INCLUDE" THEN
-8180           pass_two d_working$&in$(10 to), file_num+1
-8190         ELSE
-8200           IF upper$(in$(1 TO 6))="#IFDEF" THEN
-8210             temp = 0
-8220             temp$ = upper$(in$(8 TO))
-8230             FOR x = 1 TO define_var
-8240               IF temp$ = defn$((x),1 TO LEN(temp$)) THEN temp = x
-8250             NEXT X
-8260             IF temp = 0 THEN
-8270               REPEAT loop
-8280                 INPUT #file_num,in2$
-8290                 IF LEN(in2$) < 6 THEN NEXT loop
-8300                 IF upper$(in2$(1 TO 6))="#ENDIF" THEN EXIT loop
-8310               END REPeat loop
-8320             END IF
-8330           ELSE
-8340             PRINT #4,line_num;" ";in$
-8350             line_num = line_num + line_delta
-8360           END IF
-8370         END IF
-8380       END IF
-8390     END IF
-8400   END REPeat pass_2
-8410   CLOSE #file_num
-8420 END DEFine pass_two
-8430 DEFine FuNction inString% (in$, stopHere)
-8440   local x, Double%, Single%
-8450   Double% = 0: Single% = 0
-8460   FOR x = 1 to stopHere
-8470    REMark Check for double quotes.
-8480     if in$(x) = '"' THEN
-8490       if Double% = 1 then
-8500         Double% = 0
-8510       else
-8520         Double% = 1
-8530       end if
-8540     else
-8550      REMark Try single quotes.
-8560       if in$(x) = "'" then
-8570         if Single% = 1 then
-8580           Single% = 0
-8590         else
-8600           Single% = 1
-8610         end if
-8620       end if
-8630     end if
-8640   END FOR x
-8650  REMark If Double% or Single% = 1 then
-8660  REMark we opened a string before the
-8670  REMark marker characters for REMark or
-8680  REMark invisible REMark, so we return
-8690  REMark true, else false.
-8700   return Double% or single%
-8710 END DEFine inString%
-8720 DEFine FuNction first_char (a$)
-8730    LOCal count
-8740    count=0
-8750    count=count+1
-8760    IF count > LEN(a$) THEN RETurn 0
-8770    IF a$(count)=" " THEN GO TO 8750
-8780    RETurn count
-8790 END DEFine first_char
-8800 DEF FuNction upper$(up$)
-8810     LOCal x, temp
-8820     FOR x = 1 TO LEN(up$)
-8830        temp = CODE(up$(x))
-8840        IF temp > 96 AND temp < 123 THEN up$(x)=CHR$(temp-32)
-8850     NEXT x
-8860     RETURN up$
-8870 END DEFine
-8880 DEFine FuNCtion isnum (var$)
-8890    LOCal x,y
-8900    FOR x = 1 TO LEN(var$)
-8910       y = CODE(var$(x))
-8920       IF y < 48 OR y > 57 THEN RETURN 0
-8930    NEXT x
-8940    RETURN 1
-8950 END DEFine isnum
-8960 DEF PROCedure abort_out
-8970 CLOSE #4
-8980 IF OPTION_CMD$<>"" AND out_file$<>"" THEN DELETE out_file$
-8990 IF file_num = 5 THEN
-9000     CLOSE #5
-9010 ELSE
-9020     FOR x = 5 TO file_num
-9030        CLOSE #x
-9040     NEXT X
-9050 END IF
-9060 IF OPTION_CMD$<>"" THEN
-9070     PRINT #3,""
-9080     INK #3,7
-9090     PRINT #3,"         ";lngarray$(20)
-9100     temp$ = INKEY$(#3,-1)
-9110 END IF
-9120     CLOSE #3
-9130     STOP
-9140 END DEFine abort_out
+5170     PRINT #3,lngarray$(36); " "; d_delta; ")"
+5180     INK #3,7
+5190     INPUT #3,line_delta$
+5200     INK #3,2
+5210     IF line_delta$ = "" THEN
+5220       line_delta = d_delta
+5230       EXIT delta_loop
+5240     ELSE
+5250       IF isnum(line_delta$) THEN
+5260         line_delta = line_delta$
+5270         EXIT delta_loop
+5280       END IF
+5290       BEEP 1000,10
+5300       PRINT #3,lngarray$(12)
+5310     END IF
+5320     INK #3,4
+5330   END REPEAT delta_loop
+5340 ELSE
+5350   command$ = Trim$(command$)
+5360   x = " " INSTR command$
+5370   IF x THEN
+5380     argfile$ = command$(1 TO x-1)
+5390     command$ = command$( x+1 TO )
+5400     command$ = trim$(command$)
+5410     IF isnum(command$) = 0 THEN
+5420       INK #3,2
+5430       BEEP 1000,10
+5440       centre 3, lngarray$(13)
+5450       abort_out
+5460     END IF
+5470     d_start = command$
+5480   ELSE
+5490     argfile$ = command$
+5500   END IF
+5510   in_file$ = d_working$ & argfile$ & d_in$
+5520   out_file$ = d_work2$ & argfile$ & d_out$
+5530   temp = FTEST(out_file$)
+5540   IF temp = 0 THEN
+5550     IF d_over$ == "Y" or d_over$ == "S" THEN
+5560       DELETE out_file$
+5570     ELSE
+5580       BEEP 1000,10
+5590       INK #3,2
+5600       centre 3, lngarray$(14)
+5610       abort_out
+5620     END IF
+5630   END IF
+5640   IF temp = -11 THEN
+5650     BEEP 1000,10
+5660     INK #3,2
+5670     centre 3, lngarray$(15)
+5680     abort_out
+5690   END IF
+5700   IF temp = -9 THEN
+5710     BEEP 1000,10
+5720     INK #3,2
+5730     centre 3, lngarray$(16)
+5740     abort_out
+5750   END IF
+5760   line_delta = d_delta
+5770   line_num_d = d_start
+5780 END IF
+5790 line_num = line_num_d
+5800 INK #3,4
+5810 centre 3, lngarray$(17)
+5820 pass_one in_file$, file_num
+5830 line_num = line_num_d
+5840 PRINT #3
+5850 centre 3, lngarray$(18)
+5860 num_count = 0
+5870 file_num = 5
+5880 OPEN_NEW #4,out_file$
+5890 pass_two in_file$, file_num
+5900 CLOSE #4
+5910 PRINT #3
+5920 centre 3, lngarray$(19)
+5930 PRINT #3,""
+5940 IF OPTION_CMD$="" THEN
+5950   INK #3,7
+5960   centre 3, lngarray$(20)
+5970   temp$ = INKEY$(#3,-1)
+5980 END IF
+5990 CLOSE #3
+6000 STOP
+6010 DEFine PROCedure pass_one (in_file$, file_num)
+6020   errorx = FOP_IN(#file_num,in_file$)
+6030   INK #3,2
+6040   IF errorx = -12 THEN
+6050     BEEP 1000,10
+6060     PRINT #3,lngarray$(21);in_file$
+6070     abort_out
+6080   END IF
+6090   IF errorx = -7 THEN
+6100     BEEP 1000,10
+6110     PRINT #3,lngarray$(22);in_file$
+6120     abort_out
+6130   END IF
+6140   IF errorx = -9 THEN
+6150     BEEP 1000,10
+6160     PRINT #3,lngarray$(23);in_file$
+6170     abort_out
+6180   END IF
+6190   INK #3,4
+6200   REPeat pass_1
+6210     num_count = num_count + 1
+6220     IF (num_count MOD 10) = 0 THEN PRINT #3,CHR$(1);
+6230     IF EOF(#file_num) THEN EXIT pass_1
+6240     INPUT #file_num,in$
+6250     temp=first_char(in$)
+6260     IF temp=0 THEN NEXT pass_1
+6270     IF in$(temp TO temp+1)=CHR$(35)&CHR$(35) THEN NEXT pass_1
+6280     IF in$(temp)="." THEN NEXT pass_1
+6290     IF LEN(in$) >= 6 THEN
+6300       IF in$(1 TO 6) = "#ENDIF" THEN NEXT pass_1
+6310     END IF
+6320     REPeat loop
+6330       IF in$(LEN(in$))="\" THEN
+6340         IF EOF(#file_num) THEN
+6350           BEEP 1000,10
+6360           INK #3,2
+6370           PRINT #3,lngarray$(24)
+6380           PRINT #3,lngarray$(25);in_file$
+6390           abort_out
+6400         END IF
+6410         INPUT #file_num,in2$
+6420         temp = first_char(in2$)
+6430         in$ = in$( TO LEN(in$))&" "&in2$(temp TO)
+6440       ELSE
+6450         EXIT loop
+6460       END IF
+6470     END REPeat loop
+6480     IF in$(1)=CHR$(64) THEN
+6490       IF LEN(in$) > d_length+1 THEN
+6500         BEEP 1000,10
+6510         INK #3,2
+6520         PRINT #3,lngarray$(26);in$;lngarray$(27)
+6530         PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
+6540         abort_out
+6550       END IF
+6560       IF label_var = d_labels THEN
+6570         BEEP 1000,10
+6580         INK #3,2
+6590         PRINT #3,lngarray$(30)
+6600         PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
+6610         abort_out
+6620       END IF
+6630       label$(label_var) = in$
+6640       label(label_var) = line_num
+6650       label_var = label_var + 1
+6660     ELSE
+6670       IF upper$(in$(1 TO 8))="#INCLUDE" THEN
+6680         pass_one d_working$&in$(10 to ), file_num+1
+6690       ELSE
+6700         IF upper$(in$(1 TO 7))="#DEFINE" THEN
+6710           IF LEN(in$(9 TO)) > d_length THEN
+6720             BEEP 1000,10
+6730             INK #3,2
+6740             PRINT #3,lngarray$(31);in$(9 TO);lngarray$(27)
+6750             PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
+6760             abort_out
+6770           END IF
+6780           IF define_var = d_labels THEN
+6790             BEEP 1000,10
+6800             INK #3,2
+6810             PRINT #3,lngarray$(33)
+6820             PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
+6830             abort_out
+6840           END IF
+6850           defn$(define_var) = upper$(in$( 9 TO))
+6860           define_var = define_var+1
+6870         ELSE
+6880           IF upper$(in$(1 TO 6))="#IFDEF" THEN
+6890             temp = 0
+6900             temp$ = upper$(in$(8 TO))
+6910             FOR x = 1 TO define_var
+6920               IF temp$ = defn$(x) THEN temp = 1
+6930             END FOR X
+6940             IF temp = 0 THEN
+6950               REPEAT loop
+6960                 IF EOF(#file_num) THEN
+6970                   BEEP 1000,10
+6980                   INK #3,2
+6990                   PRINT #3,lngarray$(34)
+7000                   PRINT #3,lngarray$(25);in_file$
+7010                   abort_out
+7020                 END IF
+7030                 INPUT #file_num,in2$
+7040                 IF LEN(in2$) < 6 THEN NEXT loop
+7050                 IF upper$(in2$(1 TO 6))="#ENDIF" THEN EXIT loop
+7060               END REPeat loop
+7070             END IF
+7080           ELSE
+7090             line_num = line_num + line_delta
+7100           END IF
+7110         END IF
+7120       END IF
+7130     END IF
+7140   END REPeat pass_1
+7150   CLOSE #file_num
+7160 END DEFine pass_one
+7170 DEFine PROCedure pass_two (in_file$, file_num)
+7180   LOCal in3$(100), a$(100)
+7190   OPEN_IN #file_num,in_file$
+7200   REPeat pass_2
+7210     num_count = num_count + 1
+7220     IF (num_count MOD 10) = 0 THEN PRINT #3,CHR$(1);
+7230     IF EOF(#file_num) THEN EXIT pass_2
+7240     INPUT #file_num,in$
+7250     temp=first_char(in$)
+7260     IF temp=0 THEN
+7270       IF d_ignore$ == "Y" THEN
+7280         NEXT pass_2
+7290       ELSE
+7300         print #4, line_num; " :"           
+7310         line_num = line_num + line_delta
+7320         next pass_2
+7330       END IF
+7340     END IF
+7350     IF in$(1)=CHR$(64) THEN NEXT pass_2
+7360     IF in$(temp TO temp+1)=CHR$(35)&CHR$(35) THEN NEXT pass_2
+7370     IF in$(temp)="." THEN NEXT pass_2
+7380     temp2 = CHR$(35)&CHR$(35) INSTR in$
+7390     IF temp2 <> 0 THEN
+7400       if not inString%(in$, temp2) then
+7410         in$ = in$( 1 to temp2-1)
+7420       end if
+7430     END IF
+7440     temp2 = CHR$(42) & CHR$(42) INSTR in$
+7450     IF temp2 > temp then
+7460       if not inString%(in$, temp2) then
+7470         in$ = in$(1 to temp2 - 1) & "REMark" & in$(temp2 + 2 to)
+7480       end if
+7490     END IF
+7500     IF upper$(in$(1 TO 7))="#DEFINE" THEN NEXT pass_2
+7510     IF LEN(in$) >= 6 THEN
+7520       IF in$(1 TO 6) = "#ENDIF" THEN NEXT pass_2
+7530     END IF
+7540     REPeat loop
+7550       IF in$(LEN(in$))="\" THEN
+7560         INPUT #file_num,in2$
+7570         temp = first_char(in2$)
+7580         in$ = in$(1 TO (LEN(in$)-1))&in2$(temp TO)
+7590       ELSE
+7600         EXIT loop
+7610       END IF
+7620     END REPeat loop
+7630     IF in$(temp TO temp+1)= CHR$(42) & CHR$(42) THEN
+7640       IF temp = 1 THEN
+7650         in3$=" "
+7660       ELSE
+7670         in3$=in$(1 to temp-1)
+7680       END IF
+7690       PRINT #4,line_num;in3$;"REMark";in$(temp+2 TO )
+7700       line_num = line_num + line_delta
+7710     ELSE
+7720       temp = CHR$(64) INSTR in$
+7730       IF temp<>0 THEN
+7740         a$ = in$(temp TO )
+7750         temp2 = 0
+7760         REPEAT loop2
+7770           temp2 = temp2 + 1
+7780           IF temp2 > d_labels THEN
+7790             BEEP 1000,10
+7800             INK #3,2
+7810             PRINT #3,lngarray$(35);a$;lngarray$(32)
+7820             PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
+7830             abort_out
+7840           END IF
+7850           IF label$(temp2) == a$ THEN EXIT loop2
+7860         END REPEAT loop2
+7870         PRINT #4,line_num;" ";in$(1 TO temp-1);label(temp2)
+7880         line_num = line_num + line_delta
+7890       ELSE
+7900         IF upper$(in$(1 to 8))="#INCLUDE" THEN
+7910           pass_two d_working$&in$(10 to), file_num+1
+7920         ELSE
+7930           IF upper$(in$(1 TO 6))="#IFDEF" THEN
+7940             temp = 0
+7950             temp$ = upper$(in$(8 TO))
+7960             FOR x = 1 TO define_var
+7970               IF temp$ = defn$((x),1 TO LEN(temp$)) THEN temp = x
+7980             END FOR X
+7990             IF temp = 0 THEN
+8000               REPEAT loop
+8010                 INPUT #file_num,in2$
+8020                 IF LEN(in2$) < 6 THEN NEXT loop
+8030                 IF upper$(in2$(1 TO 6))="#ENDIF" THEN EXIT loop
+8040               END REPeat loop
+8050             END IF
+8060           ELSE
+8070             PRINT #4,line_num;" ";in$
+8080             line_num = line_num + line_delta
+8090           END IF
+8100         END IF
+8110       END IF
+8120     END IF
+8130   END REPeat pass_2
+8140   CLOSE #file_num
+8150 END DEFine pass_two
+8160 DEFine FuNction Trim$(text$)
+8170     IF text$ <> "" THEN
+8180         RETurn RTrim$(LTrim$(text$))
+8190     ELSE
+8200         RETurn ""
+8210     END IF
+8220 END DEFine LTrim$
+8230 :
+8240 :
+8250 DEFine FuNction LTrim$(text$)
+8260     LOCal x, ret$
+8270     :
+8280     IF text$ = "" THEN RETurn "": END IF
+8290     :
+8300     FOR x = 1 to LEN(text$)
+8310         if text$(x) <> " " THEN EXIT x: END IF
+8320     END FOR x
+8330     ret$ = text$(x TO)
+8340     if ret$ = " " then ret$ = "": end if
+8350     return ret$
+8360 END DEFine LTrim$
+8370 :
+8380 :
+8390 DEFine FuNction RTrim$(text$)
+8400     LOCal x, ret$
+8410     :
+8420     IF text$ = "" THEN RETurn "": END IF
+8430     :
+8440     FOR x = LEN(text$) TO 1 STEP -1
+8450         if text$(x) <> " " THEN EXIT x: END IF
+8460     END FOR x
+8470     ret$ = text$(TO x)
+8480     if ret$ = " " then ret$ = "": end if
+8490     return ret$
+8500 END DEFine RTrim$
+8510 DEFine PROCedure centre(ch, text$)
+8520     LOCal size, winSize
+8530     :
+8540     winSize = (300-2-2)/6
+8550     size = len(text$)
+8560     print #ch, to (winSize-size)/2; text$
+8570 END DEF centre
+8580 :
+8590 :
+8600 DEFine FuNction inString% (in$, stopHere)
+8610   local x, Double%, Single%
+8620   Double% = 0: Single% = 0
+8630   FOR x = 1 to stopHere
+8640    REMark Check for double quotes.
+8650     if in$(x) = '"' THEN
+8660       if Double% = 1 then
+8670         Double% = 0
+8680       else
+8690         Double% = 1
+8700       end if
+8710     else
+8720      REMark Try single quotes.
+8730       if in$(x) = "'" then
+8740         if Single% = 1 then
+8750           Single% = 0
+8760         else
+8770           Single% = 1
+8780         end if
+8790       end if
+8800     end if
+8810   END FOR x
+8820 :
+8830  REMark If Double% or Single% = 1 then
+8840  REMark we opened a string before the
+8850  REMark marker characters for REMark or
+8860  REMark invisible REMark, so we return
+8870  REMark true, else false.
+8880   return Double% or single%
+8890 END DEFine inString%
+8900 DEFine FuNction first_char (a$)
+8910    LOCal count
+8920    count=0
+8930    count=count+1
+8940    IF count > LEN(a$) THEN RETurn 0
+8950    IF a$(count)=" " THEN GO TO 8930
+8960    RETurn count
+8970 END DEFine first_char
+8980 DEF FuNction upper$(up$)
+8990     LOCal x, temp
+9000     FOR x = 1 TO LEN(up$)
+9010        temp = CODE(up$(x))
+9020        IF temp > 96 AND temp < 123 THEN up$(x)=CHR$(temp-32)
+9030     END FOR x
+9040     RETURN up$
+9050 END DEFine
+9060 DEFine FuNCtion isnum (var$)
+9070    LOCal x,y
+9080    FOR x = 1 TO LEN(var$)
+9090       y = CODE(var$(x))
+9100       IF y < 48 OR y > 57 THEN RETURN 0
+9110    END FOR x
+9120    RETURN 1
+9130 END DEFine isnum
+9140 DEF PROCedure abort_out
+9150 CLOSE #4
+9160 IF OPTION_CMD$<>"" AND out_file$<>"" THEN DELETE out_file$
+9170 IF file_num = 5 THEN
+9180     CLOSE #5
+9190 ELSE
+9200     FOR x = 5 TO file_num
+9210        CLOSE #x
+9220     END FOR X
+9230 END IF
+9240 IF OPTION_CMD$<>"" THEN
+9250     PRINT #3,""
+9260     INK #3,7
+9270     centre 3, lngarray$(20)
+9280     temp$ = INKEY$(#3,-1)
+9290 END IF
+9300     CLOSE #3
+9310     STOP
+9320 END DEFine abort_out

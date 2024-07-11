@@ -1,0 +1,216 @@
+IF command$ = "" THEN
+
+  REPEAT input_loop
+    ## Enter Input File
+    PRINT #3,lngarray$(4);d_in$;") "
+    INK #3,7
+    INPUT #3,file$
+
+    ## If enter a null string, exit program
+    IF file$ = "" THEN abort_out
+
+    ## Set Ink Color to Red for Errors
+    INK #3,2
+
+    in_file$ = d_working$&file$&d_in$
+    temp = FTEST(in_file$)
+    ## File Exists
+    IF temp = 0 THEN EXIT input_loop
+
+    IF temp = -9 THEN
+      BEEP 1000,10
+        ## ERROR - File In Use
+        centre 3, lngarray$(5)
+    END IF
+
+    IF temp = -7 THEN
+      BEEP 1000,10
+      ## ERROR - File Does Not Exist
+      centre 3, lngarray$(6)
+    END IF
+
+    IF temp = -11 THEN
+      BEEP 1000,10
+      ## ERROR - Bad File Name
+      centre 3, lngarray$(7)
+    END IF
+
+  END REPEAT input_loop
+
+  ## Check for extension.  If no ext. add _ssb
+
+
+  REPEAT output_loop
+    ## Enter Output File: Default
+    INK #3,4
+    PRINT #3,lngarray$(8); d_work2$ & file$ & d_out$; ") "
+    INK #3,7
+    INPUT #3,out_file$
+
+    IF out_file$ = "" THEN
+      out_file$ = d_work2$ & file$ & d_out$
+    ELSE
+      out_file$ = d_work2$ & out_file$ & d_out$
+    END IF
+
+    ## Set Ink Color to Red for Errors
+      INK #3,2
+
+    temp = FTEST(out_file$)
+    ## If file does not exist
+    IF temp = -7 THEN EXIT output_loop
+    IF temp = -9 THEN
+      BEEP 1000,10
+      ## ERROR - File In Use
+      centre 3, lngarray$(5)
+    END IF
+
+    IF temp = -11 THEN
+      BEEP 1000,10
+      ## ERROR - Bad File Name
+      centre 3, lngarray$(7)
+    END IF
+
+    IF temp = 0 THEN
+      BEEP 1000,10
+      ## ERROR - File Exists
+      centre 3, lngarray$(9)
+      ## OK to Delete (Y/N)
+      centre 3, lngarray$(10)
+      temp$ = INKEY$(#3,-1)
+      ##
+      IF temp$ == "Y" or temp$ == "S" THEN
+        DELETE out_file$
+        EXIT output_loop
+        ELSE
+          abort_out
+      END IF
+    END IF
+
+  END REPEAT output_loop
+
+  ## Check for extension. If no ext. add _bas
+
+  REPEAT start_loop
+    ## IF start has been set by ENV VAR don't get input
+    IF t_start$ <> "" THEN
+       line_num_d = t_start$
+       EXIT start_loop
+    END IF
+    ## Enter Starting Line Number: (Default
+    INK #3,4
+    PRINT #3, lngarray$(11); d_start; ")"
+    INK #3,7
+    INPUT #3,line_num$
+
+    INK #3,2
+    IF line_num$ = "" THEN
+      line_num_d = d_start
+      EXIT start_loop
+    ELSE
+      ## Check to make sure a number is entered.
+      IF isnum(line_num$) THEN
+        line_num_d = line_num$
+        EXIT start_loop
+      END IF
+      BEEP 1000,10
+      ## ERROR - Must Enter A Number
+      PRINT #3,lngarray$(12)
+    END IF
+    INK #3,4
+  END REPEAT start_loop
+
+  REPEAT delta_loop
+    ## If delta has been set by ENV VAR then don't get input
+    IF t_delta$ <> "" THEN
+       line_delta = t_delta$
+       EXIT delta_loop
+    END IF
+    ## Enter Increment for Line Numbers: (Default
+    INK #3,4
+    PRINT #3,lngarray$(36); " "; d_delta; ")"
+    INK #3,7
+    INPUT #3,line_delta$
+    INK #3,2
+
+    ## Default for line number increment is 10.
+    ## Check to make sure a number is entered.
+    IF line_delta$ = "" THEN
+      line_delta = d_delta
+      EXIT delta_loop
+    ELSE
+      ## Check to make sure a number is entered.
+      IF isnum(line_delta$) THEN
+        line_delta = line_delta$
+        EXIT delta_loop
+      END IF
+      BEEP 1000,10
+      ## ERROR - Must Enter A Number
+      PRINT #3,lngarray$(12)
+    END IF
+    INK #3,4
+  END REPEAT delta_loop
+
+ELSE
+  ## Command Line Argument processing
+  ## Trim any Leading & Trailing Blanks
+
+  command$ = Trim$(command$)
+
+  ## Break out arguments
+  ## Check to see if there are 1 or two arguments
+
+  x = " " INSTR command$
+  IF x THEN
+    argfile$ = command$(1 TO x-1)
+    command$ = command$( x+1 TO )
+    ## Check for any Leading Blanks
+    command$ = trim$(command$)
+
+    ## Check to make sure line number argument is a number
+    IF isnum(command$) = 0 THEN
+      INK #3,2
+      BEEP 1000,10
+      ## ERROR - 2nd Arg is Not a Valid Number
+      centre 3, lngarray$(13)
+      abort_out
+    END IF
+    d_start = command$
+  ELSE
+    argfile$ = command$
+  END IF
+
+  in_file$ = d_working$ & argfile$ & d_in$
+  out_file$ = d_work2$ & argfile$ & d_out$
+
+  temp = FTEST(out_file$)
+  IF temp = 0 THEN
+    IF d_over$ == "Y" or d_over$ == "S" THEN
+      DELETE out_file$
+    ELSE
+      BEEP 1000,10
+      INK #3,2
+      ## ERROR - Output File Exists
+      centre 3, lngarray$(14)
+      abort_out
+    END IF
+  END IF
+  IF temp = -11 THEN
+    BEEP 1000,10
+    INK #3,2
+    ## ERROR - Bad File Name - Output File
+    centre 3, lngarray$(15)
+    abort_out
+  END IF
+  IF temp = -9 THEN
+    BEEP 1000,10
+    INK #3,2
+    ## ERROR - Output File In Use
+    centre 3, lngarray$(16)
+    abort_out
+  END IF
+
+  line_delta = d_delta
+  line_num_d = d_start
+END IF
+
