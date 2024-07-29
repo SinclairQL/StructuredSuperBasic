@@ -1,4 +1,0 @@
-10 COPY win2_ssb272_ssb272_ssb TO ram1_ssb272_ssb
-20 COPY win2_ssb272_ssblang_ssb TO ram1_ssblang_ssb
-30 COPY win2_ssb272_ssbpass1_ssb TO ram1_ssbpass1_ssb
-40 COPY win2_ssb272_ssbpass2_ssb TO ram1_ssbpass2_ssb

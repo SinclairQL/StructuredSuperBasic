@@ -2,8 +2,8 @@
 ## Author:       Timothy Swenson
 ## Date Created: 16 Oct 1990
 ## Date Revised: 4 Oct 2021
-##             : 4 Jul 2024 Norman Dunbar
-## Version:      2.7.2d
+##             : 28 Jul 2024 Norman Dunbar
+## Version:      2.7.2f
 ##
 ##   This program takes in SSB code and outputs a file
 ##     that is runnable in SuperBasic
@@ -35,7 +35,7 @@
 
 ## ONLY CHANGE THIS LINE WHEN AMENDING THE SOURCE 
 ## FOR A NEW VERSION. 
-TURBO_taskn "ssb 2.7.2e"
+TURBO_taskn "ssb 2.7.2f"
 
 ## DO NOT CHANGE THE OBJFIL NAME.
 TURBO_objfil "dev7_ssb272_exe"
@@ -203,6 +203,7 @@ DEFine FuNction first_char (a$)
    RETurn count
 END DEFine first_char
 
+ 
 ## Function upper$
 ##   Takes in input string and returns the
 ##   same string in all upper case letters.

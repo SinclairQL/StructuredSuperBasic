@@ -59,13 +59,19 @@ DEFine PROCedure centre(ch, text$)
 END DEF centre
 :
 :
-## ND-272c
-## A function to determine if we found
-## a REMark or invisible REMark characters
-## within a string. We don't want to be
-## messing up the user's data!
+## Function inString%
+##   ND-272c
+##   A function to determine if we found
+##   a REMark or invisible REMark characters
+##   within a string. We don't want to be
+##   messing up the user's data!
+##
+##   ND-272F
+##   Modified to return the closing quote index
+##   if in a string, or zero if not.
+
 DEFine FuNction inString% (in$, stopHere)
-  local x, Double%, Single%
+  local x, Double%, Single%,quote$(1)
   Double% = 0: Single% = 0
   FOR x = 1 to stopHere
     ** Check for double quotes.
@@ -92,5 +98,143 @@ DEFine FuNction inString% (in$, stopHere)
   ** marker characters for REMark or
   ** invisible REMark, so we return
   ** true, else false.
-  return Double% or single%
+  IF Double% + Single% = 0 THEN RETurn 0: END IF
+
+  ** Now look for the terminating quote
+  IF Double% THEN 
+    quote$ = '"'
+  ELSE 
+    quote$ = "'"
+  END IF
+
+  FOR x = stopHere TO LEN(in$)
+    IF in$(x) = quote$ THEN RETurn x: END IF
+  END FOR x
 END DEFine inString%
+
+
+## Function stripTab$
+##   Replaces any hard tab characters in the line
+##   with a single space. Hard tabs (CHR$(9) cause
+##   non-REMark lines to "MISTake" on loading.
+##   ND-272F.
+DEFine FuNction stripTab$ (a$)
+  LOCal x, loop
+
+  IF a$ = "" THEN return a$: END IF
+  REPeat loop
+    x = CHR$(9) INSTR a$
+    IF x = 0 THEN EXIT loop: END IF
+    IF x = 1 THEN
+       ** SMSQ Bug workaround. See ssbpass2_ssb for details.
+       a$ = " " & a$(2 TO)
+       NEXT loop
+    END IF
+
+    a$ = a$(TO x-1) & " " & a$(x + 1 TO)
+  END REPeat loop
+
+  RETurn a$
+END DEFine stripTab$
+
+
+## Function joinLine$
+##   When a line continuation flag is found at the end
+##   of a line, we come here to join as many continuation
+##   lines as necessary. The completely joined line is
+##   returned for further processing.
+##   ND-272F.
+DEFine FuNction joinLine$(a$)
+  LOCal in$(2048),out$(2048), joinLoop, temp
+  :
+  out$ = a$ ## Entire line, including "\".
+  REPeat joinloop
+    IF NOT out$(LEN(out$)) = "\" THEN EXIT joinLoop: END IF
+
+    ## No need for EOF check because we would have
+    ## caught it in pass_one.
+    INPUT #file_num,in$
+    temp = first_char(in$)
+    out$ = rtrim$(out$(TO (LEN(out$)-1))) & " " & in$(temp TO)
+  END REPeat joinloop
+
+  RETurn out$
+END DEFine joinLine$
+
+## Function stripComment$
+##   Strips invisible comments from a line, but
+##   not if they appear in a string. Everything after
+##   the first ## is stripped off.
+##   ND-272F.
+DEFine FuNction stripComment$(a$)
+  LOCal in$, out$, stripLoop, temp, whereQuote
+  :
+  in$ = a$
+  out$ = ""  
+
+  ** Quick test for start of line.
+  IF comm$ INSTR in$ = 1 THEN 
+    RETURN out$
+  END IF
+
+  REPeat stripLoop
+    temp = comm$ INSTR in$
+    IF temp = 0 THEN
+      out$ = out$ & in$
+      EXIT stripLoop
+    END IF
+
+    ** If not in a string, strip to the end.
+    whereQuote = inString%(in$, temp)
+    IF NOT whereQuote THEN
+      out$ = out$ & in$(1 TO temp - 1)
+      EXIT stripLoop
+    END IF
+
+    ** Must be in a string, so extend out$ and try again.
+    out$ = in$(1 to whereQuote)
+    in$ = in$(whereQuote + 1 TO)
+  END REPeat stripLoop
+
+  RETurn out$
+END DEFine stripComment$
+
+## Function doRemark$
+##   Convert a double asterisk, which is not in a string, 
+##   into a REMark. 
+##   ND-272F.
+DEFine FuNction doRemark$(a$)
+  LOCal in$(2048), out$(2048), remarkLoop, temp
+  :
+  in$ = a$
+  out$ = ""
+
+  ** Quick test for start of line.
+  IF rem$ INSTR in$ = 1 THEN 
+    RETURN "REMark" & in$(3 TO)
+  END IF
+
+  REPeat remarkLoop
+    temp = rem$ INSTR in$
+
+    ## No more? We are done.
+    IF temp = 0 THEN
+      out$ = out$ & in$
+      EXIT remarkLoop
+    END IF
+      
+    ** If not in a string, replace it & exit as 
+    ** anything after it is part of the REMark.
+    whereQuote = inString%(in$, temp)
+    IF NOT whereQuote THEN
+      out$ = out$ & in$(TO temp - 1) & "REMark" & in$(temp + 2 TO)
+      EXIT remarkLoop
+    END IF
+
+    ** Must be in a string, so extend out$ and try again.
+    out$ = out$ & in$(1 to whereQuote)
+    in$ = in$(whereQuote + 1 TO)
+  END REPeat remarkLoop
+
+  RETurn out$
+END DEFine doRemark$

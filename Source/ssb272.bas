@@ -616,218 +616,293 @@
 7150   CLOSE #file_num
 7160 END DEFine pass_one
 7170 DEFine PROCedure pass_two (in_file$, file_num)
-7180   LOCal in3$(100), a$(100)
-7190   OPEN_IN #file_num,in_file$
-7200   REPeat pass_2
-7210     num_count = num_count + 1
-7220     IF (num_count MOD 10) = 0 THEN PRINT #3,CHR$(1);
-7230     IF EOF(#file_num) THEN EXIT pass_2
-7240     INPUT #file_num,in$
-7250     temp=first_char(in$)
-7260     IF temp=0 THEN
-7270       IF d_ignore$ == "Y" THEN
-7280         NEXT pass_2
-7290       ELSE
-7300         print #4, line_num; " :"           
-7310         line_num = line_num + line_delta
-7320         next pass_2
-7330       END IF
-7340     END IF
-7350     IF in$(1)=CHR$(64) THEN NEXT pass_2
-7360     IF in$(temp TO temp+1)=CHR$(35)&CHR$(35) THEN NEXT pass_2
-7370     IF in$(temp)="." THEN NEXT pass_2
-7380     temp2 = CHR$(35)&CHR$(35) INSTR in$
-7390     IF temp2 <> 0 THEN
-7400       if not inString%(in$, temp2) then
-7410         in$ = in$( 1 to temp2-1)
-7420       end if
-7430     END IF
-7440     temp2 = CHR$(42) & CHR$(42) INSTR in$
-7450     IF temp2 > temp then
-7460       if not inString%(in$, temp2) then
-7470         in$ = in$(1 to temp2 - 1) & "REMark" & in$(temp2 + 2 to)
-7480       end if
-7490     END IF
-7500     IF upper$(in$(1 TO 7))="#DEFINE" THEN NEXT pass_2
-7510     IF LEN(in$) >= 6 THEN
-7520       IF in$(1 TO 6) = "#ENDIF" THEN NEXT pass_2
+7180   LOCal in3$(100), a$(100), space$(1), rem$(2)
+7190   LOCal comm$(2), at$(1), lab$(1)
+7200   rem$ = CHR$(42) & CHR$(42): REMark REMark flag.
+7210   comm$ = CHR$(35) & CHR$(35): REMark Comment flag, ignore these lines.
+7220   lab$ = CHR$(64): REMark Label flag. 
+7230   OPEN_IN #file_num,in_file$
+7240   REPeat pass_2
+7250     num_count = num_count + 1
+7260     IF (num_count MOD 10) = 0 THEN PRINT #3,CHR$(1);
+7270     IF EOF(#file_num) THEN EXIT pass_2
+7280     INPUT #file_num,in$
+7290     in$ = stripTab$(in$)  
+7300     temp=first_char(in$)
+7310     IF temp=0 THEN
+7320       IF d_ignore$ == "Y" THEN
+7330         NEXT pass_2
+7340       ELSE
+7350         print #4, line_num; " :"           
+7360         line_num = line_num + line_delta
+7370         next pass_2
+7380       END IF
+7390     END IF
+7400     IF in$(1) = lab$ THEN NEXT pass_2: END IF
+7410     IF in$(temp TO temp + 1) = comm$ THEN NEXT pass_2: END IF
+7420     IF in$(temp) = "." THEN NEXT pass_2: END IF
+7430     IF in$(LEN(in$)) = "\" THEN
+7440      REMark Join lines until we have the complete line.
+7450      REMark ready for further processing.
+7460       in$ = joinLine$(in$)
+7470     END IF
+7480     IF comm$ INSTR in$ THEN
+7490       in$ = stripComment$(in$)
+7500     END IF
+7510     IF rem$ INSTR in$ THEN
+7520       in$ = doRemark$(in$)
 7530     END IF
-7540     REPeat loop
-7550       IF in$(LEN(in$))="\" THEN
-7560         INPUT #file_num,in2$
-7570         temp = first_char(in2$)
-7580         in$ = in$(1 TO (LEN(in$)-1))&in2$(temp TO)
-7590       ELSE
-7600         EXIT loop
-7610       END IF
-7620     END REPeat loop
-7630     IF in$(temp TO temp+1)= CHR$(42) & CHR$(42) THEN
-7640       IF temp = 1 THEN
-7650         in3$=" "
-7660       ELSE
-7670         in3$=in$(1 to temp-1)
-7680       END IF
-7690       PRINT #4,line_num;in3$;"REMark";in$(temp+2 TO )
-7700       line_num = line_num + line_delta
-7710     ELSE
-7720       temp = CHR$(64) INSTR in$
-7730       IF temp<>0 THEN
-7740         a$ = in$(temp TO )
-7750         temp2 = 0
-7760         REPEAT loop2
-7770           temp2 = temp2 + 1
-7780           IF temp2 > d_labels THEN
-7790             BEEP 1000,10
-7800             INK #3,2
-7810             PRINT #3,lngarray$(35);a$;lngarray$(32)
-7820             PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
-7830             abort_out
-7840           END IF
-7850           IF label$(temp2) == a$ THEN EXIT loop2
-7860         END REPEAT loop2
-7870         PRINT #4,line_num;" ";in$(1 TO temp-1);label(temp2)
-7880         line_num = line_num + line_delta
-7890       ELSE
-7900         IF upper$(in$(1 to 8))="#INCLUDE" THEN
-7910           pass_two d_working$&in$(10 to), file_num+1
+7540     IF upper$(in$(1 TO 7))="#DEFINE" THEN NEXT pass_2: END IF
+7550     IF LEN(in$) >= 6 THEN
+7560       IF in$(1 TO 6) = "#ENDIF" THEN NEXT pass_2: END IF
+7570     END IF
+7580     temp = lab$ INSTR in$
+7590     IF temp<>0 THEN
+7600       a$ = in$(temp TO )
+7610       temp2 = 0
+7620       REPEAT loop2
+7630         temp2 = temp2 + 1
+7640         IF temp2 > d_labels THEN
+7650           BEEP 1000,10
+7660           INK #3,2
+7670           PRINT #3,lngarray$(35);a$;lngarray$(32)
+7680           PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
+7690           abort_out
+7700         END IF
+7710         IF label$(temp2) == a$ THEN EXIT loop2
+7720       END REPEAT loop2
+7730       PRINT #4,line_num;" ";in$(1 TO temp-1);label(temp2)
+7740       line_num = line_num + line_delta
+7750     ELSE
+7760       IF upper$(in$(1 to 8))="#INCLUDE" THEN
+7770         pass_two d_working$&in$(10 to), file_num+1
+7780       ELSE
+7790         IF upper$(in$(1 TO 6))="#IFDEF" THEN
+7800           temp = 0
+7810           temp$ = upper$(in$(8 TO))
+7820           FOR x = 1 TO define_var
+7830             IF temp$ = defn$((x),1 TO LEN(temp$)) THEN temp = x
+7840           END FOR X
+7850           IF temp = 0 THEN
+7860             REPEAT loop
+7870               INPUT #file_num,in2$
+7880               IF LEN(in2$) < 6 THEN NEXT loop
+7890               IF upper$(in2$(1 TO 6))="#ENDIF" THEN EXIT loop
+7900             END REPeat loop
+7910           END IF
 7920         ELSE
-7930           IF upper$(in$(1 TO 6))="#IFDEF" THEN
-7940             temp = 0
-7950             temp$ = upper$(in$(8 TO))
-7960             FOR x = 1 TO define_var
-7970               IF temp$ = defn$((x),1 TO LEN(temp$)) THEN temp = x
-7980             END FOR X
-7990             IF temp = 0 THEN
-8000               REPEAT loop
-8010                 INPUT #file_num,in2$
-8020                 IF LEN(in2$) < 6 THEN NEXT loop
-8030                 IF upper$(in2$(1 TO 6))="#ENDIF" THEN EXIT loop
-8040               END REPeat loop
-8050             END IF
-8060           ELSE
-8070             PRINT #4,line_num;" ";in$
-8080             line_num = line_num + line_delta
-8090           END IF
-8100         END IF
-8110       END IF
-8120     END IF
-8130   END REPeat pass_2
-8140   CLOSE #file_num
-8150 END DEFine pass_two
-8160 DEFine FuNction Trim$(text$)
-8170     IF text$ <> "" THEN
-8180         RETurn RTrim$(LTrim$(text$))
-8190     ELSE
-8200         RETurn ""
-8210     END IF
-8220 END DEFine LTrim$
+7930           PRINT #4,line_num;" ";in$
+7940           line_num = line_num + line_delta
+7950         END IF
+7960       END IF
+7970     END IF
+7980   END REPeat pass_2
+7990   CLOSE #file_num
+8000 END DEFine pass_two
+8010 DEFine FuNction Trim$(text$)
+8020     IF text$ <> "" THEN
+8030         RETurn RTrim$(LTrim$(text$))
+8040     ELSE
+8050         RETurn ""
+8060     END IF
+8070 END DEFine LTrim$
+8080 :
+8090 :
+8100 DEFine FuNction LTrim$(text$)
+8110     LOCal x, ret$
+8120     :
+8130     IF text$ = "" THEN RETurn "": END IF
+8140     :
+8150     FOR x = 1 to LEN(text$)
+8160         if text$(x) <> " " THEN EXIT x: END IF
+8170     END FOR x
+8180     ret$ = text$(x TO)
+8190     if ret$ = " " then ret$ = "": end if
+8200     return ret$
+8210 END DEFine LTrim$
+8220 :
 8230 :
-8240 :
-8250 DEFine FuNction LTrim$(text$)
-8260     LOCal x, ret$
-8270     :
-8280     IF text$ = "" THEN RETurn "": END IF
-8290     :
-8300     FOR x = 1 to LEN(text$)
-8310         if text$(x) <> " " THEN EXIT x: END IF
-8320     END FOR x
-8330     ret$ = text$(x TO)
-8340     if ret$ = " " then ret$ = "": end if
-8350     return ret$
-8360 END DEFine LTrim$
-8370 :
-8380 :
-8390 DEFine FuNction RTrim$(text$)
-8400     LOCal x, ret$
-8410     :
-8420     IF text$ = "" THEN RETurn "": END IF
-8430     :
-8440     FOR x = LEN(text$) TO 1 STEP -1
-8450         if text$(x) <> " " THEN EXIT x: END IF
-8460     END FOR x
-8470     ret$ = text$(TO x)
-8480     if ret$ = " " then ret$ = "": end if
-8490     return ret$
-8500 END DEFine RTrim$
-8510 DEFine PROCedure centre(ch, text$)
-8520     LOCal size, winSize
-8530     :
-8540     winSize = (300-2-2)/6
-8550     size = len(text$)
-8560     print #ch, to (winSize-size)/2; text$
-8570 END DEF centre
-8580 :
-8590 :
-8600 DEFine FuNction inString% (in$, stopHere)
-8610   local x, Double%, Single%
-8620   Double% = 0: Single% = 0
-8630   FOR x = 1 to stopHere
-8640    REMark Check for double quotes.
-8650     if in$(x) = '"' THEN
-8660       if Double% = 1 then
-8670         Double% = 0
-8680       else
-8690         Double% = 1
-8700       end if
-8710     else
-8720      REMark Try single quotes.
-8730       if in$(x) = "'" then
-8740         if Single% = 1 then
-8750           Single% = 0
-8760         else
-8770           Single% = 1
-8780         end if
-8790       end if
-8800     end if
-8810   END FOR x
-8820 :
-8830  REMark If Double% or Single% = 1 then
-8840  REMark we opened a string before the
-8850  REMark marker characters for REMark or
-8860  REMark invisible REMark, so we return
-8870  REMark true, else false.
-8880   return Double% or single%
-8890 END DEFine inString%
-8900 DEFine FuNction first_char (a$)
-8910    LOCal count
-8920    count=0
-8930    count=count+1
-8940    IF count > LEN(a$) THEN RETurn 0
-8950    IF a$(count)=" " THEN GO TO 8930
-8960    RETurn count
-8970 END DEFine first_char
-8980 DEF FuNction upper$(up$)
-8990     LOCal x, temp
-9000     FOR x = 1 TO LEN(up$)
-9010        temp = CODE(up$(x))
-9020        IF temp > 96 AND temp < 123 THEN up$(x)=CHR$(temp-32)
-9030     END FOR x
-9040     RETURN up$
-9050 END DEFine
-9060 DEFine FuNCtion isnum (var$)
-9070    LOCal x,y
-9080    FOR x = 1 TO LEN(var$)
-9090       y = CODE(var$(x))
-9100       IF y < 48 OR y > 57 THEN RETURN 0
-9110    END FOR x
-9120    RETURN 1
-9130 END DEFine isnum
-9140 DEF PROCedure abort_out
-9150 CLOSE #4
-9160 IF OPTION_CMD$<>"" AND out_file$<>"" THEN DELETE out_file$
-9170 IF file_num = 5 THEN
-9180     CLOSE #5
-9190 ELSE
-9200     FOR x = 5 TO file_num
-9210        CLOSE #x
-9220     END FOR X
-9230 END IF
-9240 IF OPTION_CMD$<>"" THEN
-9250     PRINT #3,""
-9260     INK #3,7
-9270     centre 3, lngarray$(20)
-9280     temp$ = INKEY$(#3,-1)
-9290 END IF
-9300     CLOSE #3
-9310     STOP
-9320 END DEFine abort_out
+8240 DEFine FuNction RTrim$(text$)
+8250     LOCal x, ret$
+8260     :
+8270     IF text$ = "" THEN RETurn "": END IF
+8280     :
+8290     FOR x = LEN(text$) TO 1 STEP -1
+8300         if text$(x) <> " " THEN EXIT x: END IF
+8310     END FOR x
+8320     ret$ = text$(TO x)
+8330     if ret$ = " " then ret$ = "": end if
+8340     return ret$
+8350 END DEFine RTrim$
+8360 DEFine PROCedure centre(ch, text$)
+8370     LOCal size, winSize
+8380     :
+8390     winSize = (300-2-2)/6
+8400     size = len(text$)
+8410     print #ch, to (winSize-size)/2; text$
+8420 END DEF centre
+8430 :
+8440 :
+8450 DEFine FuNction inString% (in$, stopHere)
+8460   local x, Double%, Single%,quote$(1)
+8470   Double% = 0: Single% = 0
+8480   FOR x = 1 to stopHere
+8490    REMark Check for double quotes.
+8500     if in$(x) = '"' THEN
+8510       if Double% = 1 then
+8520         Double% = 0
+8530       else
+8540         Double% = 1
+8550       end if
+8560     else
+8570      REMark Try single quotes.
+8580       if in$(x) = "'" then
+8590         if Single% = 1 then
+8600           Single% = 0
+8610         else
+8620           Single% = 1
+8630         end if
+8640       end if
+8650     end if
+8660   END FOR x
+8670 :
+8680  REMark If Double% or Single% = 1 then
+8690  REMark we opened a string before the
+8700  REMark marker characters for REMark or
+8710  REMark invisible REMark, so we return
+8720  REMark true, else false.
+8730   IF Double% + Single% = 0 THEN RETurn 0: END IF
+8740  REMark Now look for the terminating quote
+8750   IF Double% THEN 
+8760     quote$ = '"'
+8770   ELSE 
+8780     quote$ = "'"
+8790   END IF
+8800   FOR x = stopHere TO LEN(in$)
+8810     IF in$(x) = quote$ THEN RETurn x: END IF
+8820   END FOR x
+8830 END DEFine inString%
+8840 DEFine FuNction stripTab$ (a$)
+8850   LOCal x, loop
+8860   IF a$ = "" THEN return a$: END IF
+8870   REPeat loop
+8880     x = CHR$(9) INSTR a$
+8890     IF x = 0 THEN EXIT loop: END IF
+8900     IF x = 1 THEN
+8910       REMark SMSQ Bug workaround. See ssbpass2_ssb for details.
+8920        a$ = " " & a$(2 TO)
+8930        NEXT loop
+8940     END IF
+8950     a$ = a$(TO x-1) & " " & a$(x + 1 TO)
+8960   END REPeat loop
+8970   RETurn a$
+8980 END DEFine stripTab$
+8990 DEFine FuNction joinLine$(a$)
+9000   LOCal in$(2048),out$(2048), joinLoop
+9010   :
+9020   out$ = a$ 
+9030   REPeat joinloop
+9040     IF NOT out$(LEN(out$)) = "\" THEN EXIT joinLoop: END IF
+9050     INPUT #file_num,in$
+9060     out$ = rtrim$(out$(1 TO (LEN(out$)-1))) & " " & in$(temp TO)
+9070   END REPeat joinloop
+9080   RETurn out$
+9090 END DEFine joinLine$
+9100 DEFine FuNction stripComment$(a$)
+9110   LOCal in$, out$, stripLoop, temp, whereQuote
+9120   :
+9130   in$ = a$
+9140   out$ = ""  
+9150  REMark Quick test for start of line.
+9160   IF comm$ INSTR in$ = 1 THEN 
+9170     RETURN out$
+9180   END IF
+9190   REPeat stripLoop
+9200     temp = comm$ INSTR in$
+9210     IF temp = 0 THEN
+9220       out$ = out$ & in$
+9230       EXIT stripLoop
+9240     END IF
+9250    REMark If not in a string, strip to the end.
+9260     whereQuote = inString%(in$, temp)
+9270     IF NOT whereQuote THEN
+9280       out$ = out$ & in$(1 TO temp - 1)
+9290       EXIT stripLoop
+9300     END IF
+9310    REMark Must be in a string, so extend out$ and try again.
+9320     out$ = in$(1 to whereQuote)
+9330     in$ = in$(whereQuote + 1 TO)
+9340   END REPeat stripLoop
+9350   RETurn out$
+9360 END DEFine stripComment$
+9370 DEFine FuNction doRemark$(a$)
+9380   LOCal in$(2048), out$(2048), remarkLoop, temp
+9390   :
+9400   in$ = a$
+9410   out$ = ""
+9420  REMark Quick test for start of line.
+9430   IF tab$ INSTR in$ = 1 THEN 
+9440     RETURN "REMark" & in$(3 TO)
+9450   END IF
+9460   REPeat remarkLoop
+9470     temp = tab$ INSTR in$
+9480     IF temp = 0 THEN
+9490       out$ = out$ & in$
+9500       EXIT remarkLoop
+9510     END IF
+9520    REMark If not in a string, replace it & exit as 
+9530    REMark anything after it is part of the REMark.
+9540     whereQuote = inString%(in$, temp)
+9550     IF NOT whereQuote THEN
+9560       out$ = out$ & in$(TO temp - 1) & "REMark" & in$(temp + 2 TO)
+9570       EXIT remarkLoop
+9580     END IF
+9590    REMark Must be in a string, so extend out$ and try again.
+9600     out$ = out$ & in$(1 to whereQuote)
+9610     in$ = in$(whereQuote + 1 TO)
+9620   END REPeat remarkLoop
+9630   RETurn out$
+9640 END DEFine doRemark$
+9650 DEFine FuNction first_char (a$)
+9660    LOCal count
+9670    count=0
+9680    count=count+1
+9690    IF count > LEN(a$) THEN RETurn 0
+9700    IF a$(count)=" " THEN GO TO 9680
+9710    RETurn count
+9720 END DEFine first_char
+9730 DEF FuNction upper$(up$)
+9740     LOCal x, temp
+9750     FOR x = 1 TO LEN(up$)
+9760        temp = CODE(up$(x))
+9770        IF temp > 96 AND temp < 123 THEN up$(x)=CHR$(temp-32)
+9780     END FOR x
+9790     RETURN up$
+9800 END DEFine
+9810 DEFine FuNCtion isnum (var$)
+9820    LOCal x,y
+9830    FOR x = 1 TO LEN(var$)
+9840       y = CODE(var$(x))
+9850       IF y < 48 OR y > 57 THEN RETURN 0
+9860    END FOR x
+9870    RETURN 1
+9880 END DEFine isnum
+9890 DEF PROCedure abort_out
+9900 CLOSE #4
+9910 IF OPTION_CMD$<>"" AND out_file$<>"" THEN DELETE out_file$
+9920 IF file_num = 5 THEN
+9930     CLOSE #5
+9940 ELSE
+9950     FOR x = 5 TO file_num
+9960        CLOSE #x
+9970     END FOR X
+9980 END IF
+9990 IF OPTION_CMD$<>"" THEN
+10000     PRINT #3,""
+10010     INK #3,7
+10020     centre 3, lngarray$(20)
+10030     temp$ = INKEY$(#3,-1)
+10040 END IF
+10050     CLOSE #3
+10060     STOP
+10070 END DEFine abort_out
