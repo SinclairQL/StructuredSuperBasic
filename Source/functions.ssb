@@ -149,13 +149,13 @@ DEFine FuNction joinLine$(a$)
   :
   out$ = a$ ## Entire line, including "\".
   REPeat joinloop
-    IF NOT out$(LEN(out$)) = "\" THEN EXIT joinLoop: END IF
+    IF NOT out$(LEN(out$)-1 TO) = "\+" THEN EXIT joinLoop: END IF
 
     ## No need for EOF check because we would have
     ## caught it in pass_one.
     INPUT #file_num,in$
     temp = first_char(in$)
-    out$ = rtrim$(out$(TO (LEN(out$)-1))) & " " & in$(temp TO)
+    out$ = rtrim$(out$(TO (LEN(out$)-2))) & " " & in$(temp TO)
   END REPeat joinloop
 
   RETurn out$

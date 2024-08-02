@@ -16,12 +16,13 @@
 DEFine PROCedure pass_two (in_file$, file_num)
 
   LOCal in3$(100), a$(100), space$(1), rem$(2)
-  LOCal comm$(2), at$(1), lab$(1)
+  LOCal comm$(2), at$(1), lab$(1), cont$(2)
 
   ## Temporary variables for scanning.
   rem$ = CHR$(42) & CHR$(42): ** REMark flag.
   comm$ = CHR$(35) & CHR$(35): ** Comment flag, ignore these lines.
   lab$ = CHR$(64): ** Label flag. 
+  cont$ = "\+": ** Continuation flag, join this to the next line(s).
 
   ## No need for file checking since we've already
   ## opened the file before.
@@ -58,14 +59,15 @@ DEFine PROCedure pass_two (in_file$, file_num)
 
 ######################################################
 
-    ## A \ is at the end of a line meaning to add the next line.
+    ## A \ at the end of a line meaning to add the next line.
     ## ND: THIS IS BROKEN! 
     ## If there is a statement like "PRINT "Hello"\\ then we
     ## get the following line concatenated to the PRINT line. MISTake!
     ##
     ## ND-272F - extracted to separate function.
+    ## ND-272G - amended to "\+" instead of "\" for PRINT separators.
     ##
-    IF in$(LEN(in$)) = "\" THEN
+    IF in$(LEN(in$)-1 TO) = "\+" THEN
       ** Join lines until we have the complete line.
       ** ready for further processing.
       in$ = joinLine$(in$)

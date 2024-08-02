@@ -65,7 +65,7 @@ DEFine PROCedure pass_one (in_file$, file_num)
 
     ## A \ is at the end of a line meaning to add the next line
     REPeat loop
-      IF in$(LEN(in$))="\" THEN
+      IF in$(LEN(in$)-1 TO)="\+" THEN
         IF EOF(#file_num) THEN
           BEEP 1000,10
           INK #3,2
@@ -77,7 +77,7 @@ DEFine PROCedure pass_one (in_file$, file_num)
         END IF
         INPUT #file_num,in2$
         temp = first_char(in2$)
-        in$ = in$( TO LEN(in$))&" "&in2$(temp TO)
+        in$ = in$( TO LEN(in$)-2) & " " & in2$(temp TO)
       ELSE
         EXIT loop
       END IF
