@@ -1,4 +1,4 @@
-1000 TURBO_taskn "ssb 2.7.2f"
+1000 TURBO_taskn "ssb 2.7.2g"
 1010 TURBO_objfil "dev7_ssb272_exe"
 1020 TURBO_windo 0
 1030 TURBO_repfil "dev7_ssb272_err"
@@ -53,7 +53,7 @@
 1520 DIM lngarray$(36,42)
 1530 IF d_lang$ = "E"
 1540    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-1550    lngarray$(2) = "Version 2.7.2f"
+1550    lngarray$(2) = "Version 2.7.2g"
 1560    lngarray$(3) = "By Timothy Swenson"
 1570    lngarray$(4) = "Enter Input File: ("
 1580    lngarray$(5) = "ERROR - File In Use"
@@ -91,7 +91,7 @@
 1900 END IF
 1910 IF d_lang$ = "S"
 1920    lngarray$(1) = "FILTRO SUPERBASIC ESTRUCTURADO"
-1930    lngarray$(2) = "Versiñn 2.7.2f"
+1930    lngarray$(2) = "Versiñn 2.7.2g"
 1940    lngarray$(3) = "Por: Timothy Swenson"
 1950    lngarray$(4) = "Introduzca el archivo de entrada: ("
 1960    lngarray$(5) = "ERROR - Archivo en uso"
@@ -129,7 +129,7 @@
 2280 END IF
 2290 IF d_lang$="I"
 2300    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-2310    lngarray$(2) = "Versione 2.7.2f"
+2310    lngarray$(2) = "Versione 2.7.2g"
 2320    lngarray$(3) = "di Timothy Swenson"
 2330    lngarray$(4) = "File di input: ("
 2340    lngarray$(5) = "ERRORE - Il file ê in uso"
@@ -167,7 +167,7 @@
 2660 END IF
 2670 IF d_lang$="F"
 2680    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-2690    lngarray$(2) = "Version 2.7.2f"
+2690    lngarray$(2) = "Version 2.7.2g"
 2700    lngarray$(3) = "par Timothy Swenson"
 2710    lngarray$(4) = "Fichied d'entrÉe: ("
 2720    lngarray$(5) = "ERREUR - Le fichier est en cours d'utilisation"
@@ -205,7 +205,7 @@
 3040 END IF
 3050 IF d_lang$ = "D"
 3060    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-3070    lngarray$(2) = "Version 2.7.2f"
+3070    lngarray$(2) = "Version 2.7.2g"
 3080    lngarray$(3) = "By Timothy Swenson"
 3090    lngarray$(4) = "Eingansdatei Angeben: ("
 3100    lngarray$(5) = "Fehler - Datei ist Offen"
@@ -243,7 +243,7 @@
 3420 END IF
 3430 IF d_lang$ = "K"
 3440    lngarray$ (1) = "tlham SUPERBASIC FILTER"
-3450    lngarray$ (2) = "2.7.2f Version"
+3450    lngarray$ (2) = "2.7.2g Version"
 3460    lngarray$ (3) = "pong Timothy Swenson"
 3470    lngarray$ (4) = "teywI' input:"
 3480    lngarray$ (5) = "Qagh-teywI' neH lo'" 
@@ -281,7 +281,7 @@
 3800 END IF
 3810 IF d_lang$ = "W"
 3820    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-3830    lngarray$(2) = "Fersiwn 2.7.2f"
+3830    lngarray$(2) = "Fersiwn 2.7.2g"
 3840    lngarray$(3) = "Gan Timothy Swenson"
 3850    lngarray$(4) = "Ffeil fewnbwn: ("
 3860    lngarray$(5) = "GWALL - Ffeil Mewn Defnydd"

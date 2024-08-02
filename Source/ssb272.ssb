@@ -2,8 +2,8 @@
 ## Author:       Timothy Swenson
 ## Date Created: 16 Oct 1990
 ## Date Revised: 4 Oct 2021
-##             : 28 Jul 2024 Norman Dunbar
-## Version:      2.7.2f
+##             : 2 Aug 2024 Norman Dunbar
+## Version:      2.7.2g
 ##
 ##   This program takes in SSB code and outputs a file
 ##     that is runnable in SuperBasic
@@ -35,7 +35,7 @@
 
 ## ONLY CHANGE THIS LINE WHEN AMENDING THE SOURCE 
 ## FOR A NEW VERSION. 
-TURBO_taskn "ssb 2.7.2f"
+TURBO_taskn "ssb 2.7.2g"
 
 ## DO NOT CHANGE THE OBJFIL NAME.
 TURBO_objfil "dev7_ssb272_exe"
