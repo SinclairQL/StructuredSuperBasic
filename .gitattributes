@@ -1,0 +1,4 @@
+*.ssb  text eol=lf
+*.bas  text eol=lf
+*_bas  text eol=lf
+*_exe  binary
