@@ -8,7 +8,7 @@ executable until this version has been tested with your own programs.
 The translator's own implementation uses ordinary SSB 2.7.2g syntax and parallel
 tables. Its record facility is for translated user programs. The existing
 SSB 2.7.2g can preprocess all current compiler sources; no separate record-capable
-bootstrap is required. The `ssb272` / `ssbpass1` / `ssbpass2` structure is retained.
+bootstrap is required. The `ssb280` / `ssbpass1` / `ssbpass2` structure is retained.
 
 ## Using records
 
@@ -203,7 +203,7 @@ The implementation follows the existing SSB source structure:
 
 | Source | Responsibility |
 |---|---|
-| `Source/ssb272.ssb` | Configuration, command processing, calling both passes, work-file lifecycle, diagnostics and safe output publication. |
+| `Source/ssb280.ssb` | Configuration, command processing, calling both passes, work-file lifecycle, diagnostics and safe output publication. |
 | `Source/ssbpass1.ssb` | Selecting active includes/conditionals, record and routine declarations, layout checks, preparing the expanded stream, counting line numbers and recording labels. |
 | `Source/ssbpass2.ssb` | Expansion routines for fields, storage, copies, calls and pools; numbering and writing the prepared stream with resolved label references. |
 | `Source/functions.ssb` | Existing text helpers plus shared lexical, name, dimension and source-slice routines. |
@@ -252,7 +252,7 @@ are UTF-8 and the test runner explicitly converts their literals to QL bytes.
 
 For a QL build, copy the sources to RAM1, set `SSBWORK` and `SSBWORK2` to empty
 (the includes already specify `ram1_`), set `SSBSTART=100`, `SSBINC=1`, and run
-the existing SSB against `ram1_ssb272`. Load `ram1_ssb272_bas` into S*BASIC and
+the existing SSB against `ram1_ssb280`. Load `ram1_ssb280_bas` into S*BASIC and
 compile with Turbo. The object/report names are `ram1_ssbrecdev_exe` and
 `ram1_ssbrecdev_err`. Reprocess the same source with the new executable and
 compare the two numbered files byte-for-byte, then compile that second output.
@@ -298,3 +298,25 @@ Classic QL ROMs, QLiberator and the existing SSBGO editor/grep handoff have not
 been certified. The original Quill manual remains the released manual; this file
 documents the development extension. A QL-readable text supplement is provided
 as `records.txt`.
+
+## Correctness fixes on 14 November 2026
+
+The inherited 2.7.2g comment scanner now retains the accumulated text when more
+than one quoted invisible-comment marker appears on a line. It also tracks the
+active string delimiter, so an apostrophe in a double-quoted string or a double
+quote in a single-quoted string cannot start a second string. Comments in the
+source explain both inherited fixes. The original ssb272.bas remains unchanged
+as the bootstrap baseline.
+
+Record-aware procedure calls now retain later arguments when the first argument
+is a parenthesized expression. Inline FOR expansion keeps the complete scalar
+record-field counter, including embedded field paths. Numbering validates the
+number of an actual statement rather than rejecting an unused next line number;
+a final line numbered 32767 is accepted.
+
+Tests/legacy-comments.ssb covers ordinary programs without records.
+Tests/review-regressions.ssb covers the comment fixes, parenthesized arguments and
+inline record-field counters. Tools/test_line_ranges.py checks final line 32767,
+an unused overflowing next number, trailing non-statements, actual overflow and
+a zero increment against the compiled filter. Build helpers now use the renamed
+ssb280.ssb driver while retaining the original ssb272.bas bootstrap.

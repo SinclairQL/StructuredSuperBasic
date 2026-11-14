@@ -95,16 +95,19 @@ requires the original SSBGO tools; its full UI workflow is not certified.
 
 To rebuild, copy all Source modules as ram1_name_ssb. Set SSBWORK and
 SSBWORK2 empty because includes already name ram1_. Use existing SSB to
-preprocess ram1_ssb272, load the output and CHARGE it with Turbo. Compare
+preprocess ram1_ssb280, load the output and CHARGE it with Turbo. Compare
 output against preprocessing with the new executable. The development
 object name is ram1_ssbrecdev_exe, not the released SSB name.
 
-Implementation follows the existing SSB modules: ssb272 coordinates both
+Implementation follows the existing SSB modules: ssb280 coordinates both
 passes and owns file cleanup/publication; ssbpass1 prepares record layouts
 and expanded source before counting labels; ssbpass2 contains expansion
 and numbered-output routines. functions holds shared text/lexical helpers.
 There are no separate ssbrec source modules or host-language translator.
 Preparation uses internal analysis/planning walks, not just two file reads.
+The comment scanner retains repeated quoted markers and respects mixed quotes.
+Parenthesized first arguments, inline field loop counters and final line 32767
+are covered by the 14 November 2026 correctness fixes.
 The compiler itself uses ordinary SSB 2.7.2g syntax, with parallel tables.
 Records are supported in user programs; the compiler does not use them
 internally and needs no separate record-capable bootstrap.
@@ -139,7 +142,7 @@ with zipfile.ZipFile(out / 'ssb-records-dev.zip', 'w', zipfile.ZIP_DEFLATED) as 
             offset = struct.unpack_from('>H', data, 18)[0] * 2
             attributes = data[20:30]
             data = data[offset:]
-        info = zipfile.ZipInfo(name, (2026, 11, 13, 0, 0, 0))
+        info = zipfile.ZipInfo(name, (2026, 11, 14, 0, 0, 0))
         info.compress_type = zipfile.ZIP_DEFLATED
         info.extra = qdos_extra(name, data, attributes)
         archive.writestr(info, data)

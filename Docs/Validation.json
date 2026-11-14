@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-13",
+  "date": "2026-11-14",
   "target": "SMSQ/E 3.43, SMSQmulator 3.03 68000 CPU; native checks 4 MiB RAM, bootstrap/interpreter checks 8 MiB RAM",
   "compiler": "Turbo parser 5.09, code generator F5.37, SMS Turbo toolkit",
   "interpreter_tests": [
@@ -33,6 +33,10 @@
     },
     {
       "name": "float_implicit",
+      "passed": true
+    },
+    {
+      "name": "legacy-comments",
       "passed": true
     },
     {
@@ -77,6 +81,10 @@
     },
     {
       "name": "reserved_name",
+      "passed": true
+    },
+    {
+      "name": "review-regressions",
       "passed": true
     },
     {
@@ -196,6 +204,40 @@
       "passed": true,
       "ram_mib": 4,
       "actual": "506"
+    },
+    {
+      "name": "legacy-comments",
+      "passed": true,
+      "ram_mib": 4,
+      "actual": "## one|## two|## three\nHe said \" ## here\nIt's ## here\nHe said \" ** here\nIt's ** here"
+    },
+    {
+      "name": "review-regressions",
+      "passed": true,
+      "ram_mib": 4,
+      "actual": "## one|## two|## three\nHe said \" ## here\nIt's ## here\nHe said \" ** here\nIt's ** here\n3,9"
+    }
+  ],
+  "line_number_boundary_tests": [
+    {
+      "name": "final_32767",
+      "passed": true
+    },
+    {
+      "name": "unused_next_overflow",
+      "passed": true
+    },
+    {
+      "name": "trailing_nonstatements",
+      "passed": true
+    },
+    {
+      "name": "actual_overflow",
+      "passed": true
+    },
+    {
+      "name": "zero_increment",
+      "passed": true
     }
   ],
   "memory": {
@@ -211,9 +253,9 @@
   },
   "bootstrap": {
     "passed": true,
-    "old_output_bytes": 93886,
-    "new_output_bytes": 93886,
-    "numbered_sha256": "c1763aa7ee74af9c7beff937c1db04d8bf4d84bc7237b89ce7072ff95ab4bb4c",
+    "old_output_bytes": 93599,
+    "new_output_bytes": 93599,
+    "numbered_sha256": "67bf8811d8e6875c50a6c539ad18cb98c423da93f217f83d598e46314a49914e",
     "built_from_ssb_output": true,
     "preprocessor": "SSB 2.7.2g"
   },
@@ -250,6 +292,13 @@
         "before_bytes": 7155,
         "after_bytes": 7155,
         "sha256": "6e5d2a400842b88fef9efca20ef6fad69106b757b4a5978fc951ac4e0ec9163c"
+      },
+      {
+        "name": "pure-builtins",
+        "passed": true,
+        "before_bytes": 5520,
+        "after_bytes": 5520,
+        "sha256": "9b8b8ecc1a28204a782c76e01544c6fa1431ad01eb038538b1dc35143ecd3401"
       },
       {
         "name": "reference-stream",
@@ -295,19 +344,19 @@
   },
   "source_sha256": {
     "commands.ssb": "447d1acf1e34bfc3da21b13795bd31c7ce8b5e083a478fd12bdd70fa34f09918",
-    "functions.ssb": "8ee31519ff4997fe15fce3b6f06af42ea35b67c034e5edda796edd5d9ef63f0e",
-    "ssb272.ssb": "56ec7b03ff34746b3cb08f9a500a1a97e8f1ff1453bfaa1ae49d861f22805075",
+    "functions.ssb": "b949b17f17d8b5f58a28f17a29a55c8dd6b245a2786e122576f138492757a16a",
+    "ssb280.ssb": "86baf5ba177896d2085081308788e7f6e68b1699520e79e75e9c9e3d95ab0077",
     "ssblang.ssb": "1e526384e57068228009b29638ca453bff835dc0ab163279b6d5bf04133ad2a4",
-    "ssbpass1.ssb": "919e46bc3896cc7dfbfecd2ce877839f9ca03312a5ab87363cbcb9c5ea0a0e96",
-    "ssbpass2.ssb": "87c4bb3fd2bc4a358a271b1c30e44fe55e9f28e938e0a54af2a1e65fdbb5b3b7"
+    "ssbpass1.ssb": "643fc6d3cfbe9eedfd724bfc64265029c23c1769f5cf91a96772bae652a40a23",
+    "ssbpass2.ssb": "56744292cd5039ad890e1ee347caf3db698b12e813b8ffcf91016d2099e10b1c"
   },
-  "validated_executable_sha256": "1e227c6148877ae104c01ffb3f5201d13c6c2fdb739d83ec5a68a93f8fb611de",
+  "validated_executable_sha256": "df80aad995c83f766ba1b3cd19c7f78758c7c7ecfab5beb3f9fa75a116d38f22",
   "distribution_sha256": {
     "Source.zip": "334a7b55168a1ae52772498b17c11bf3665d7d70984ae6af1d2e5c90a657ae89",
-    "ssb-records-dev.zip": "718afe00b7479f0ee1a715511653f5d23107f1ac33aa13316dd45f1fbfef2577",
+    "ssb-records-dev.zip": "3f2d6f0f2c64494c7618f76eea775c18d3db7c6e02d3f86cf1383989a943c2df",
     "ssbgorecdev_exe": "8fd0f4505a6e9a59893d3ac79c3d0ed6249dc970953965be7be92d76bbd12d4c",
-    "ssbrecdev_bas": "c1763aa7ee74af9c7beff937c1db04d8bf4d84bc7237b89ce7072ff95ab4bb4c",
-    "ssbrecdev_exe": "1e227c6148877ae104c01ffb3f5201d13c6c2fdb739d83ec5a68a93f8fb611de"
+    "ssbrecdev_bas": "67bf8811d8e6875c50a6c539ad18cb98c423da93f217f83d598e46314a49914e",
+    "ssbrecdev_exe": "df80aad995c83f766ba1b3cd19c7f78758c7c7ecfab5beb3f9fa75a116d38f22"
   },
   "limitations": [
     "Turbo rejects individual record-array-element reference arguments; standalone work records and whole-array references are supported.",

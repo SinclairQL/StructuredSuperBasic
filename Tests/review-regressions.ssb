@@ -1,0 +1,26 @@
+TYPE point
+ x
+ y
+END TYPE
+TYPE container
+ home AS point
+END TYPE
+DIM p AS point, box AS container
+consume (1+2),p
+callValue=p.x
+sum=0
+FOR p.x=1 TO 3 : sum=sum+p.x
+FOR box.home.x=1 TO 2 : sum=sum+box.home.x
+OPEN_NEW #9,"win1_result"
+PRINT #9,"## one";"|";"## two";"|";"## three" ## real comment
+PRINT #9,'He said " ## here'
+PRINT #9,"It's ## here"
+PRINT #9,'He said " ** here'
+PRINT #9,"It's ** here"
+PRINT #9,callValue;",";sum
+CLOSE #9
+OPEN_NEW #9,"win1_done":PRINT #9,"OK":CLOSE #9
+STOP
+DEFine PROCedure consume(VAL n,out AS point)
+ out.x=n
+END DEFine

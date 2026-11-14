@@ -41,6 +41,8 @@ for name,expected in [('core','4,3\n4,3\n5'),('arrays-pools','Lau,22\n91,clinica
 cases.append(dict(name='pure-builtins',source=(ROOT/'Tests'/'pure-builtins.ssb').read_text(encoding='ascii'),expected='506'))
 cases.append(dict(name='pure-element-selectors',source=(ROOT/'Tests'/'pure-element-selectors.ssb').read_text(encoding='ascii'),expected='11,11,11',profile='SBASIC'))
 element=(ROOT/'Tests'/'element-reference.ssb').read_text(encoding='utf-8')
+cases.append(dict(name='legacy-comments',source=(ROOT/'Tests'/'legacy-comments.ssb').read_text(encoding='ascii'),expected='## one|## two|## three\nHe said " ## here\nIt\'s ## here\nHe said " ** here\nIt\'s ** here'))
+cases.append(dict(name='review-regressions',source=(ROOT/'Tests'/'review-regressions.ssb').read_text(encoding='ascii'),expected='## one|## two|## three\nHe said " ## here\nIt\'s ## here\nHe said " ** here\nIt\'s ** here\n3,9'))
 cases.append(dict(name='reference-stream',source=(ROOT/'Tests'/'reference-stream.ssb').read_text(encoding='utf-8'),expected='9,hello,16,18'))
 cases.append(dict(name='element-reference',source=element,expected='2,11,0',profile='SBASIC'))
 cases.append(dict(name='turbo-element-rejected',source=element,error='Turbo cannot pass record array elements'))

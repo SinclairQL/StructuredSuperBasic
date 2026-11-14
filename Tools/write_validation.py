@@ -14,14 +14,17 @@ bootstrap = read('self-host-result.json')
 safety = read('output-safety-result.json')
 compiled = read('compiled-app/build.json')
 compatibility = read('output-compatibility.json')
+line_ranges = read('line-range-result.json')
 sources = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT / 'Source').glob('*.ssb')}
 assert interpreted['sources'] == bootstrap['sources'] == compiled['sources'] == sources
 assert all(test['passed'] for test in interpreted['tests'])
-assert len(native) == 8 and all(test['passed'] and test['ram_mib']==4 for test in native)
+assert len(native) == 10 and all(test['passed'] and test['ram_mib']==4 for test in native)
 assert bootstrap['passed'] and safety['passed'] and compiled['self_host']
 legacy_basic=(Path(bootstrap['folder'])/'old_output_bas').read_bytes().replace(b'ram1_ssbrecdev_err',b'nfa1_report')
 assert hashlib.sha256(legacy_basic).hexdigest()==compiled['numbered_sha256'], 'The final executable must be built from 2.7.2g output'
 assert compatibility['passed']
+assert len(line_ranges) == 5 and all(t['passed'] for t in line_ranges)
+assert all(hashlib.sha256((Path(t['folder'])/'ssbrecdev_exe').read_bytes()).hexdigest()==hashlib.sha256((build/'compiled-app'/'ssbrecdev_exe').read_bytes()).hexdigest() for t in line_ranges)
 executable_hash=hashlib.sha256((build/'compiled-app'/'ssbrecdev_exe').read_bytes()).hexdigest()
 executable=(build/'compiled-app'/'ssbrecdev_exe').read_bytes()
 assert executable.startswith(b']!QDOS File Header')
@@ -36,11 +39,12 @@ report = (build / 'compiled-app' / 'report').read_text(encoding='latin1')
 summary = re.search(r'(\d+) errors and (\d+) warnings', report)
 assert summary and summary[1] == '0'
 result = dict(
-    date='2026-11-13',
+    date='2026-11-14',
     target='SMSQ/E 3.43, SMSQmulator 3.03 68000 CPU; native checks 4 MiB RAM, bootstrap/interpreter checks 8 MiB RAM',
     compiler='Turbo parser 5.09, code generator F5.37, SMS Turbo toolkit',
     interpreter_tests=[dict(name=t['name'], passed=t['passed']) for t in sorted(interpreted['tests'], key=lambda t: t['name'])],
     compiled_filter_and_compiled_program_tests=[dict(name=t['name'], passed=t['passed'], ram_mib=t['ram_mib'], actual=t['result'].strip()) for t in native],
+    line_number_boundary_tests=[dict(name=t['name'], passed=t['passed']) for t in line_ranges],
     memory=dict(previous_dataspace_bytes=2*1024*1024, dataspace_bytes=1024*1024, reduction_percent=50,
         default_table_capacity=256, token_text_matrices_removed=True, reference_directives_streamed=True,
         colon_statement_tail_processed=True, tested_runtime_ram_mib=4,

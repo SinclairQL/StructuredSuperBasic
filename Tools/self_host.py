@@ -13,7 +13,7 @@ source=(ROOT/'Source'/'ssb272.bas').read_bytes().replace(b'dev7_ssb272_exe',b'ra
 (folder/'boot').write_text('100 LRESPR "nfa1_env_bin"\n110 LRESPR "nfa1_ttk"\n120 DEFAULT_DEVICE "sfa1_"\n130 LOAD "nfa1_compile_bas"\n',encoding='ascii')
 lines=['SETENV "SSBWORK="','SETENV "SSBWORK2="','SETENV "SSBSTART=100"','SETENV "SSBINC=1"','SETENV "SSBOVER=Y"','SETENV "SSBRECWORK=ram1_"','SETENV "SSBRECLOG=nfa1_errorlog"']
 for p in (ROOT/'Source').glob('*.ssb'):lines.append('COPY "nfa1_'+p.stem+'_ssb" TO "ram1_'+p.stem+'_ssb"')
-lines += ['EXECUTE_W "ram1_baseline_exe";"ram1_ssb272"','COPY "ram1_ssb272_bas" TO "nfa1_old_output_bas"','DELETE "ram1_ssb272_bas"','EXECUTE_W "sfa1_ssbrecdev_exe";"ram1_ssb272"','COPY "ram1_ssb272_bas" TO "nfa1_new_output_bas"','OPEN_NEW #9,"nfa1_done":PRINT #9,"OK":CLOSE #9']
+lines += ['EXECUTE_W "ram1_baseline_exe";"ram1_ssb280"','COPY "ram1_ssb280_bas" TO "nfa1_old_output_bas"','DELETE "ram1_ssb280_bas"','EXECUTE_W "sfa1_ssbrecdev_exe";"ram1_ssb280"','COPY "ram1_ssb280_bas" TO "nfa1_new_output_bas"','OPEN_NEW #9,"nfa1_done":PRINT #9,"OK":CLOSE #9']
 (folder/'finish').write_text(''.join(str(100+i*10)+' '+s+'\n' for i,s in enumerate(lines)),encoding='ascii')
 (folder/'commands').write_text('\n\nLRUN nfa1_boot\nCHARGE '+chr(92)+'\n'+chr(2)+'\nLRUN nfa1_finish\n',encoding='ascii')
 cp=str(ROOT/'build'/'newclasses')+';'+str(ROOT/'build'/'emulator-lib'/'*')

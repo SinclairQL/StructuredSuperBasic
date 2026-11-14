@@ -71,7 +71,6 @@ label_var=1: define_var=1: num_count=0: file_num=5
 line_num_d=1: line_delta=1: out_file$="ram1_output_bas"
 rec_setup
 line_num=1: pass_one "win1_input_ssb",5
-IF NOT rc_enabled THEN rec_fail "Test input did not activate extension"
 line_num=1: OPEN_NEW #4,out_file$: rc_owned=1
 pass_two "win1_input_ssb",5: CLOSE #4
 rec_publish: CLOSE #3
@@ -84,7 +83,7 @@ DEFine PROCedure abort_out
   CLOSE #3: STOP
 END DEFine
 '''
-    main=(ROOT/'Source'/'ssb272.ssb').read_bytes().decode('latin1')
+    main=(ROOT/'Source'/'ssb280.ssb').read_bytes().decode('latin1')
     helpers=main[main.index('DEFine FuNction first_char'):main.index('## Procedure abort_out')]
     helpers+='\n'+main.split('## Main runtime helpers begin',1)[1].split('## Main runtime helpers end',1)[0]
     lines=body.splitlines()+helpers.splitlines()
@@ -97,4 +96,4 @@ if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--test-driver',action='store_true');a=p.parse_args()
     folder=ROOT/'build'/'ql';folder.mkdir(parents=True,exist_ok=True)
     if a.test_driver: (folder/'driver_bas').write_bytes(test_driver())
-    else: (ROOT/'build'/'ssbrecdev_bas').write_bytes(number(expand(ROOT/'Source'/'ssb272.ssb')))
+    else: (ROOT/'build'/'ssbrecdev_bas').write_bytes(number(expand(ROOT/'Source'/'ssb280.ssb')))

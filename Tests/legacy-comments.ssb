@@ -1,0 +1,9 @@
+OPEN_NEW #9,"win1_result"
+PRINT #9,"## one";"|";"## two";"|";"## three" ## real comment
+PRINT #9,'He said " ## here'
+PRINT #9,"It's ## here"
+PRINT #9,'He said " ** here'
+PRINT #9,"It's ** here"
+CLOSE #9
+OPEN_NEW #9,"win1_done":PRINT #9,"OK":CLOSE #9
+STOP

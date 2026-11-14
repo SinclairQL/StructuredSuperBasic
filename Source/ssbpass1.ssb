@@ -59,7 +59,6 @@ DEFine PROCedure pass_one_file (in_file$, file_num)
     IF EOF(#file_num) THEN EXIT pass_1
     INPUT #file_num,in$
     rec_origin
-    rec_range
 
     ## Get first non-space character
     temp=first_char(in$)
@@ -180,8 +179,9 @@ DEFine PROCedure pass_one_file (in_file$, file_num)
               END REPeat loop
             END IF
           ELSE
+            ## Check the number of this statement, not an unused next line.
+            rec_range
             line_num = line_num + line_delta
-          rec_range
           END IF
         END IF
       END IF

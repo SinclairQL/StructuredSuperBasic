@@ -51,4 +51,6 @@ r=dict(name=name,compiled_target=compile_target,ram_mib=ram_mib,exit=p.returncod
 expected={'core':'4,3\n4,3\n5','arrays-pools':'Lau,22\n91,clinical\n3,4\n2,11,12\n1,2,1,0\n6\n5,6','bounds-labels':'0,0,0\n3,0\n7\n1,1,0\nmail@example: TYPE AS VAL ## untouched\n132\n11,42,1,0','value-only':'9','limits':'1,64','strings':'180,z\n137.5'}
 expected['reference-stream']='9,hello,16,18'
 expected['pure-builtins']='506'
+expected['legacy-comments']='## one|## two|## three\nHe said " ## here\nIt\'s ## here\nHe said " ** here\nIt\'s ** here'
+expected['review-regressions']='## one|## two|## three\nHe said " ## here\nIt\'s ## here\nHe said " ** here\nIt\'s ** here\n3,9'
 sys.exit(0 if p.returncode==0 and r['done']=='OK' and not r['error'] and r['result'].strip()==expected[name] else 1)

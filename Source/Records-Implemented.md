@@ -1,6 +1,6 @@
 # Records for Structured SuperBASIC
 
-Status: implemented development version, documented 14 November 2026. This describes the local build validated on 13 November 2026.
+Status: implemented development version, documented 14 November 2026. This describes the local build validated on 14 November 2026, including the five correctness fixes recorded below.
 
 Structured SuperBASIC (SSB) now accepts record declarations, dotted field access, whole-record copying, record parameters and optional record pools. It translates them into ordinary S*BASIC variables, arrays and routines before assigning BASIC line numbers. The generated program can be interpreted or compiled with Turbo within the restrictions below.
 
@@ -220,7 +220,7 @@ The original source structure is retained:
 
 | Source file | Responsibility |
 |---|---|
-| `Source/ssb272.ssb` | Driver, configuration, work files, diagnostics and safe output publication |
+| `Source/ssb280.ssb` | Driver, configuration, work files, diagnostics and safe output publication |
 | `Source/ssbpass1.ssb` | Active-source collection, declarations, layouts, planning and labels |
 | `Source/ssbpass2.ssb` | Record expansion, selector checks and numbered output |
 | `Source/functions.ssb` | Shared lexical and text helpers |
@@ -324,8 +324,8 @@ The local distribution contains:
 
 | Artifact | Description |
 |---|---|
-| `Distribution/ssbrecdev_bas` | Numbered translator source, 93,886 bytes |
-| `Distribution/ssbrecdev_exe` | Turbo-built translator, 81,820 bytes including its Qemu header |
+| `Distribution/ssbrecdev_bas` | Numbered translator source, 93,599 bytes |
+| `Distribution/ssbrecdev_exe` | Turbo-built translator, 81,886 bytes including its Qemu header |
 | `Distribution/ssb-records-dev.zip` | Development package with QDOS executable metadata |
 | `Docs/Records-Development.md` | Operational development documentation |
 | `Docs/records.txt` | QL-readable supplement |
@@ -336,34 +336,34 @@ The original `Source/ssb272.bas` remains the 2.7.2g bootstrap baseline. Original
 The executable checked when writing this document matches the validation manifest:
 
 ```text
-SHA256 1e227c6148877ae104c01ffb3f5201d13c6c2fdb739d83ec5a68a93f8fb611de
+SHA256 df80aad995c83f766ba1b3cd19c7f78758c7c7ecfab5beb3f9fa75a116d38f22
 ```
 
-The records implementation and its development package remain local, uncommitted work as recorded in this project's handover. They were not included in the earlier GitHub publication of the upstream history and LF attributes commit.
+The records implementation was committed locally as 475ecb8, including the driver rename to ssb280.ssb. The correctness fixes and rebuilt artifacts described here are subsequent local changes; they have not been committed or pushed.
 
 ### 17. Latest SMSQ/E validation
 
-The 13 November validation used SMSQ/E 3.43, SMSQmulator 3.03 emulating a 68000, Turbo parser 5.09 and code generator F5.37.
+The 14 November validation used SMSQ/E 3.43, SMSQmulator 3.03 emulating a 68000, Turbo parser 5.09 and code generator F5.37.
 
 | Check | Result and scope |
 |---|---|
-| Interpreter suite | 36/36 checks passed, including expected rejection cases |
-| Compiled filter and Turbo-compiled generated programs | 8/8 cases passed at 4 MiB total RAM |
-| Legacy bootstrap | Old 2.7.2g and new SSB generated identical 93,886-byte translator BASIC |
-| Previous generated-program compatibility | Seven earlier outputs remained byte identical |
+| Interpreter suite | 38/38 checks passed, including expected rejection cases |
+| Compiled filter and Turbo-compiled generated programs | 10/10 cases passed at 4 MiB total RAM |
+| Legacy bootstrap | Old 2.7.2g and new SSB generated identical 93,599-byte translator BASIC |
+| Previous generated-program compatibility | Eight earlier outputs remained byte identical |
 | Translator compilation | 0 errors, 83 warnings; not a warning-free build |
 | Output safety | Seven checks passed, covering replacement refusal, failure, backups, diagnostics, recovery and cleanup |
-| SSBGO stale-output protection | Compiled wrapper failure test passed |
+| SSBGO stale-output protection | Unchanged wrapper retains its previously recorded passing failure test |
 | Package | Executable and QDOS metadata checked |
 
-The eight compiled cases are `core`, `arrays-pools`, `bounds-labels`, `value-only`, `limits`, `strings`, `reference-stream` and `pure-builtins`. The pure-builtins case exercises the 22 accepted functions and produces the expected sum 506.
+The ten compiled cases are `core`, `arrays-pools`, `bounds-labels`, `value-only`, `limits`, `strings`, `reference-stream`, `pure-builtins`, `legacy-comments` and `review-regressions`. The pure-builtins case exercises the 22 accepted functions and produces the expected sum 506.
 
 The suite also checks that a pure outer function does not hide an effectful nested call, that shadowing a built-in remains conservative, and that built-in-name prefixes are not accepted accidentally. Selected-element reference extensions are interpreter-only tests.
 
 The final executable was compiled from BASIC generated by the original SSB 2.7.2g, rather than relying solely on a host numbering helper. Both bootstrap outputs have SHA256:
 
 ```text
-c1763aa7ee74af9c7beff937c1db04d8bf4d84bc7237b89ce7072ff95ab4bb4c
+67bf8811d8e6875c50a6c539ad18cb98c423da93f217f83d598e46314a49914e
 ```
 
 ### 18. Earlier classic QDOS validation
@@ -373,3 +373,17 @@ A preceding build was tested using Q-emuLator 3.5.1 with Minerva 1.97 and Sincla
 Seven individual cases passed on each ROM: `core`, `arrays-pools`, `bounds-labels`, `value-only`, `limits`, `strings` and `reference-stream`. The compiled translator generated BASIC, which was then interpreted. Generated targets were not Turbo-compiled during this run.
 
 Fixture adjustments initialized a counter before its first read, replaced SMSQ/E-specific numeric literal forms with equivalent decimal expressions, and used a real-valued loop counter on Sinclair JS. They did not change the translator.
+
+
+### 19. Correctness fixes on 14 November 2026
+
+The two inherited 2.7.2g comment-handling bugs are fixed: repeated quoted
+invisible-comment markers no longer discard earlier statement text, and mixed
+quote characters no longer confuse the active string delimiter. Source comments
+explain both changes. The original ssb272.bas remains the bootstrap baseline.
+
+The record-aware parser now accepts parenthesized first arguments followed by
+other arguments and retains the full record-field counter when expanding an
+inline FOR. Numbering accepts a final line at 32767 without validating an unused
+next number. Five compiled-filter boundary checks cover valid terminal numbers,
+trailing non-statements, real overflow and an invalid zero increment.

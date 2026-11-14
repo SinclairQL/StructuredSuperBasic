@@ -71,45 +71,23 @@ END DEF centre
 ##   if in a string, or zero if not.
 
 DEFine FuNction inString% (in$, stopHere)
-  local x, Double%, Single%,quote$(1)
-  Double% = 0: Single% = 0
-  FOR x = 1 to stopHere
-    ** Check for double quotes.
-    if in$(x) = '"' THEN
-      if Double% = 1 then
-        Double% = 0
-      else
-        Double% = 1
-      end if
-    else
-      ** Try single quotes.
-      if in$(x) = "'" then
-        if Single% = 1 then
-          Single% = 0
-        else
-          Single% = 1
-        end if
-      end if
-    end if
+  LOCal x,quote$(1)
+  ## Fix inherited from 2.7.2g: only the active delimiter closes a string.
+  ## The other quote character is literal content, not a second opener.
+  quote$ = ""
+  FOR x = 1 TO stopHere
+    IF quote$ <> "" THEN
+      IF in$(x) = quote$ THEN quote$ = ""
+    ELSE
+      IF in$(x) = '"' OR in$(x) = "'" THEN quote$ = in$(x)
+    END IF
   END FOR x
-:
-  ** If Double% or Single% = 1 then
-  ** we opened a string before the
-  ** marker characters for REMark or
-  ** invisible REMark, so we return
-  ** true, else false.
-  IF Double% + Single% = 0 THEN RETurn 0: END IF
-
-  ** Now look for the terminating quote
-  IF Double% THEN 
-    quote$ = '"'
-  ELSE 
-    quote$ = "'"
-  END IF
-
-  FOR x = stopHere TO LEN(in$)
-    IF in$(x) = quote$ THEN RETurn x: END IF
+  IF quote$ = "" THEN RETurn 0
+  FOR x = stopHere + 1 TO LEN(in$)
+    IF in$(x) = quote$ THEN RETurn x
   END FOR x
+  ## An unmatched quote must not fall through without a function result.
+  RETurn 0
 END DEFine inString%
 
 
@@ -192,7 +170,8 @@ DEFine FuNction stripComment$(a$)
     END IF
 
     ** Must be in a string, so extend out$ and try again.
-    out$ = in$(1 to whereQuote)
+    ## Fix inherited from 2.7.2g: retain earlier quoted comment markers.
+    out$ = out$ & in$(1 to whereQuote)
     in$ = in$(whereQuote + 1 TO)
   END REPeat stripLoop
 

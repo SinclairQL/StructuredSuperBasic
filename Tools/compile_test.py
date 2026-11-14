@@ -14,7 +14,7 @@ if '--self-host' in sys.argv:
     # The comparison proves old/new output identical. Build from 2.7.2g's file.
     source=(Path(proof['folder'])/'old_output_bas').read_bytes()
 else:
-    source=number(expand(ROOT/'Source'/'ssb272.ssb'),start=100)
+    source=number(expand(ROOT/'Source'/'ssb280.ssb'),start=100)
 source=source.replace(b'ram1_ssbrecdev_err',b'nfa1_report')
 (folder/'compile_bas').write_bytes(source)
 (folder/'build.json').write_text(json.dumps(dict(self_host='--self-host' in sys.argv, numbered_sha256=hashlib.sha256(source).hexdigest(), sources={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT/'Source').glob('*.ssb')}),indent=2),encoding='utf-8')

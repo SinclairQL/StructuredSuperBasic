@@ -43,7 +43,6 @@ DEFine PROCedure pass_two_file (in_file$, file_num)
 
     INPUT #file_num,in$
     rec_origin
-    rec_range
     in$ = stripTab$(in$)  ## ND-272F.
     temp=first_char(in$)
 
@@ -53,9 +52,9 @@ DEFine PROCedure pass_two_file (in_file$, file_num)
         NEXT pass_2
       ELSE
         ## Convert blank lines to "line_no :" ND-272B.
+        rec_range
         print #4, line_num; " :"           ## ND-272C.
         line_num = line_num + line_delta
-          rec_range
         next pass_2
       END IF
     END IF
@@ -128,9 +127,9 @@ DEFine PROCedure pass_two_file (in_file$, file_num)
         END IF
         IF label$(temp2) == a$ THEN EXIT loop2
       END REPEAT loop2
+      rec_range
       PRINT #4,line_num;" ";in$(1 TO temp-1);label(temp2)
       line_num = line_num + line_delta
-          rec_range
     ELSE
       ## Look for #INCLUDE
       IF upper$(in$(1 to 8))="#INCLUDE" THEN
@@ -153,9 +152,9 @@ DEFine PROCedure pass_two_file (in_file$, file_num)
             END REPeat loop
           END IF
         ELSE
+          rec_range
           PRINT #4,line_num;" ";in$
           line_num = line_num + line_delta
-          rec_range
         END IF
       END IF
     END IF
@@ -686,9 +685,20 @@ DEFine PROCedure rec_statement(text$)
           IF rec_upper$(rec_token$(j+1))=kind$ THEN rec_fail "Use multiline form for explicitly closed inline loops"
         END IF
       END FOR j
+      ## Keep the complete counter, including an embedded record field path.
+      s$=rec_token$(2)
+      IF kind$="FOR" THEN
+        j=3
+        REPeat rec_counter_end
+          IF j>=cut THEN rec_fail "FOR counter requires an assignment"
+          IF rec_token$(j)="=" THEN EXIT rec_counter_end
+          j=j+1
+        END REPeat rec_counter_end
+        s$=rec_part$(2,j-1)
+      END IF
       rec_statement rec_part$(1,cut-1)
       rec_statement rec_part$(cut+1,rk_n)
-      rec_put "END " & rec_token$(1) & " " & rec_expr$(rec_token$(2)): RETurn
+      rec_put "END " & rec_token$(1) & " " & rec_expr$(s$): RETurn
     END IF
     IF cut>1 THEN rec_statement rec_part$(1,cut-1)
     ## Iterate over the rest instead of keeping a parser frame per colon.
@@ -723,7 +733,11 @@ DEFine PROCedure rec_statement(text$)
   v=rec_find(rec_token$(1),rr_name$,rr_n)
   IF v AND NOT rr_fun(v) THEN
     i=2: j=b
-    IF i<=b AND rec_token$(i)="(" THEN j=rec_match(i,b)-1: i=i+1
+    IF i<=b AND rec_token$(i)="(" THEN
+      k=rec_match(i,b)
+      ## Parentheses around the first argument do not enclose later arguments.
+      IF k=b THEN j=k-1: i=i+1
+    END IF
     s$=rec_arguments$(v,rec_part$(i,j),0)
     IF s$<>"" THEN s$=" " & s$
     rec_put rec_token$(1) & s$: RETurn
