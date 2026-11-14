@@ -10,9 +10,10 @@ Tim has given his blessing for future development to take place via GitHub, so h
 
 This working tree includes a Turbo-built records extension with explicit output
 record parameters, scalar VAL parameters, record copies, arrays and optional pools.
+The [Quill manual](Docs/ssb280.doc) includes records syntax, examples and limitations in section 8. Copy it to a QL filename ending `_doc` and open it in Quill.
 See [the development guide](Docs/Records-Development.md),
 [the design reference](Docs/Records-Plan.md), and [the example](Examples/records.ssb).
-The development build is distributed separately as `ssbrecdev_exe`; the supplied
+The development build is distributed separately as `ssb280_exe`; the supplied
 original BASIC and executable artifacts remain release baselines.
 
 The default Turbo 5.09 profile requires a standalone work record when passing one

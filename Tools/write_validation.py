@@ -16,6 +16,11 @@ compiled = read('compiled-app/build.json')
 compatibility = read('output-compatibility.json')
 line_ranges = read('line-range-result.json')
 sources = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT / 'Source').glob('*.ssb')}
+manual_proof_path = ROOT/'Docs'/'Quill-Manual-Validation.json'
+manual_proof = json.loads(manual_proof_path.read_text(encoding='utf-8')) if manual_proof_path.exists() else None
+if manual_proof:
+    assert hashlib.sha256((ROOT/manual_proof['manual']).read_bytes()).hexdigest()==manual_proof['manual_sha256']
+    assert manual_proof['native_quill_saved'] and manual_proof['native_quill_reloaded']
 assert interpreted['sources'] == bootstrap['sources'] == compiled['sources'] == sources
 assert all(test['passed'] for test in interpreted['tests'])
 assert len(native) == 10 and all(test['passed'] and test['ram_mib']==4 for test in native)
@@ -55,6 +60,7 @@ result = dict(
     output_safety=safety['checks'],
     ssbgo_failure_test=dict(compiled=True, failed_final_absent=True, previous_output_preserved=True),
     source_sha256=sources,
+    quill_manual=manual_proof,
     validated_executable_sha256=executable_hash,
     distribution_sha256={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT/'Distribution').iterdir() if p.is_file()},
     limitations=[

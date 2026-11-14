@@ -1,0 +1,35 @@
+{
+  "date": "2026-11-14",
+  "manual": "Docs/ssb280.doc",
+  "ql_filename": "ssb280_doc",
+  "format": "Psion Quill vrm1qdf0",
+  "manual_sha256": "33f5286cd264333bc80e7cb9b02dbc1c0a01111b41acfced23e38f289d4086b8",
+  "manual_bytes": 73563,
+  "paragraphs": 918,
+  "original_manual_sha256": "3b33012331955d9814f33ba42631c9bc6499a8da211d158b392935902befb540",
+  "original_paragraphs": 646,
+  "records_chapter": "8.0 through 8.14",
+  "records_chapter_words": 2446,
+  "native_quill_loaded": true,
+  "native_quill_saved": true,
+  "native_quill_reloaded": true,
+  "native_round_trip_text_and_attributes_identical": true,
+  "environment": "SMSQ/E 3.43 on SMSQmulator 3.03, 68000, 8 MiB RAM",
+  "complete_examples": {
+    "point": {
+      "compiled": true,
+      "ram_mib": 4,
+      "output": "4,3\n5"
+    },
+    "pool": {
+      "compiled": true,
+      "ram_mib": 4,
+      "output": "42,7\n0"
+    }
+  },
+  "verification_method": "Load, save and reload with native Quill; compare all paragraph text and formatting; inspect syntax/example pages.",
+  "edition": "2.8.0",
+  "examples_unchanged_from_tested_manual": true,
+  "previous_native_manual_sha256": "e5e8411c1f3bcc40a2b602d809d698512b17c60a2d3005b446bfcd5c407abd7b",
+  "legacy_manual_retained_in_git": true
+}

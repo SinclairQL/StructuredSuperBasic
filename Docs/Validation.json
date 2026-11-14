@@ -352,17 +352,52 @@
   },
   "validated_executable_sha256": "df80aad995c83f766ba1b3cd19c7f78758c7c7ecfab5beb3f9fa75a116d38f22",
   "distribution_sha256": {
-    "Source.zip": "334a7b55168a1ae52772498b17c11bf3665d7d70984ae6af1d2e5c90a657ae89",
-    "ssb-records-dev.zip": "3f2d6f0f2c64494c7618f76eea775c18d3db7c6e02d3f86cf1383989a943c2df",
-    "ssbgorecdev_exe": "8fd0f4505a6e9a59893d3ac79c3d0ed6249dc970953965be7be92d76bbd12d4c",
-    "ssbrecdev_bas": "67bf8811d8e6875c50a6c539ad18cb98c423da93f217f83d598e46314a49914e",
-    "ssbrecdev_exe": "df80aad995c83f766ba1b3cd19c7f78758c7c7ecfab5beb3f9fa75a116d38f22"
+    "Source.zip": "daca436530fcd235e8b68332c0628e804a79eeee794e411d75dfd7c460e3d2f3",
+    "ssb280.zip": "2ffe5a6e46ffea2ab431e03a56ded761b5d6e5ab49a2e8e20651333e439c64d9",
+    "ssb280go_exe": "8fd0f4505a6e9a59893d3ac79c3d0ed6249dc970953965be7be92d76bbd12d4c",
+    "ssb280_bas": "67bf8811d8e6875c50a6c539ad18cb98c423da93f217f83d598e46314a49914e",
+    "ssb280_exe": "df80aad995c83f766ba1b3cd19c7f78758c7c7ecfab5beb3f9fa75a116d38f22"
   },
   "limitations": [
     "Turbo rejects individual record-array-element reference arguments; standalone work records and whole-array references are supported.",
     "SBASIC-only reference forms were tested in the interpreter, not compiled.",
     "Classic QL ROMs, a 128 KiB machine, QLiberator and the full editor/grep SSBGO workflow were not certified.",
-    "New record diagnostics use English. The existing Quill release manual was preserved.",
+    "New record diagnostics use English. The updated Quill manual documents the records extension.",
     "Publication/backup tests ran on the QL RAM filesystem because Windows NFA rename in this emulator reports files in use."
-  ]
+  ],
+  "quill_manual": {
+    "date": "2026-11-14",
+    "manual": "Docs/ssb280.doc",
+    "ql_filename": "ssb280_doc",
+    "format": "Psion Quill vrm1qdf0",
+    "manual_sha256": "33f5286cd264333bc80e7cb9b02dbc1c0a01111b41acfced23e38f289d4086b8",
+    "manual_bytes": 73563,
+    "paragraphs": 918,
+    "original_manual_sha256": "3b33012331955d9814f33ba42631c9bc6499a8da211d158b392935902befb540",
+    "original_paragraphs": 646,
+    "records_chapter": "8.0 through 8.14",
+    "records_chapter_words": 2446,
+    "native_quill_loaded": true,
+    "native_quill_saved": true,
+    "native_quill_reloaded": true,
+    "native_round_trip_text_and_attributes_identical": true,
+    "environment": "SMSQ/E 3.43 on SMSQmulator 3.03, 68000, 8 MiB RAM",
+    "complete_examples": {
+      "point": {
+        "compiled": true,
+        "ram_mib": 4,
+        "output": "4,3\n5"
+      },
+      "pool": {
+        "compiled": true,
+        "ram_mib": 4,
+        "output": "42,7\n0"
+      }
+    },
+    "verification_method": "Load, save and reload with native Quill; compare all paragraph text and formatting; inspect syntax/example pages.",
+    "edition": "2.8.0",
+    "examples_unchanged_from_tested_manual": true,
+    "previous_native_manual_sha256": "e5e8411c1f3bcc40a2b602d809d698512b17c60a2d3005b446bfcd5c407abd7b",
+    "legacy_manual_retained_in_git": true
+  }
 }

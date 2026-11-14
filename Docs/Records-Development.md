@@ -2,7 +2,7 @@
 
 This implements the procedure-based records plan in the existing QL SSB filter.
 The implementation is S*BASIC, built with Turbo. It is independent of the F# SB
-project. The development executable is `ssbrecdev_exe`; keep the released SSB
+project. The development executable is `ssb280_exe`; keep the released SSB
 executable until this version has been tested with your own programs.
 
 The translator's own implementation uses ordinary SSB 2.7.2g syntax and parallel
@@ -44,7 +44,7 @@ SETENV "SSBWORK=ram1_"
 SETENV "SSBWORK2=ram1_"
 SETENV "SSBSTART=100"
 SETENV "SSBINC=1"
-EXECUTE_W "ram1_ssbrecdev_exe";"example"
+EXECUTE_W "ram1_ssb280_exe";"example"
 LRUN "ram1_example_bas"
 ```
 
@@ -239,7 +239,7 @@ The updated `Utilities/ssbgo.ssb` checks the actual configured output path and
 moves an authorized old output to `_goN` before invoking SSB, preventing a failed
 invocation from being mistaken for a fresh result. Its optional `SSBFILTER`
 setting chooses the filter filename; the default remains `ssb`. Set it to
-`ssbrecdev_exe` for this build. `SSBEXEC` still supplies the executable prefix.
+`ssb280_exe` for this build. `SSBEXEC` still supplies the executable prefix.
 `SSBINPUTEXT`/`SSBOUTPUTEXT` are compatibility fallbacks; the filter's existing
 `SSBINPUT`/`SSBOUTPUT` settings take precedence.
 
@@ -253,8 +253,8 @@ are UTF-8 and the test runner explicitly converts their literals to QL bytes.
 For a QL build, copy the sources to RAM1, set `SSBWORK` and `SSBWORK2` to empty
 (the includes already specify `ram1_`), set `SSBSTART=100`, `SSBINC=1`, and run
 the existing SSB against `ram1_ssb280`. Load `ram1_ssb280_bas` into S*BASIC and
-compile with Turbo. The object/report names are `ram1_ssbrecdev_exe` and
-`ram1_ssbrecdev_err`. Reprocess the same source with the new executable and
+compile with Turbo. Turbo writes `ram1_ssbrecdev_exe` and `ram1_ssbrecdev_err`;
+the package publishes the executable as `ssb280_exe`. Reprocess the same source with the new executable and
 compare the two numbered files byte-for-byte, then compile that second output.
 The supplied original `Source/ssb272.bas` remains the baseline, not an updated
 generated artifact.
@@ -295,8 +295,8 @@ the production rename with a non-atomic host copy.
 
 See `Validation.json` for the exact checks completed with this development build.
 Classic QL ROMs, QLiberator and the existing SSBGO editor/grep handoff have not
-been certified. The original Quill manual remains the released manual; this file
-documents the development extension. A QL-readable text supplement is provided
+been certified. The Quill manual, `Docs/ssb280.doc`, now includes records syntax, examples and
+limitations in section 8; its earlier chapters retain the original manual. A QL-readable text supplement is provided
 as `records.txt`.
 
 ## Correctness fixes on 14 November 2026

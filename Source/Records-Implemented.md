@@ -4,7 +4,7 @@ Status: implemented development version, documented 14 November 2026. This descr
 
 Structured SuperBASIC (SSB) now accepts record declarations, dotted field access, whole-record copying, record parameters and optional record pools. It translates them into ordinary S*BASIC variables, arrays and routines before assigning BASIC line numbers. The generated program can be interpreted or compiled with Turbo within the restrictions below.
 
-The implementation is part of the existing SSB filter. The development executable is `ssbrecdev_exe`; its banner is `SSB records development`. It has not been assigned a new numbered release but 2.8.0 is anticipated.
+The implementation is part of the existing SSB filter. The development executable is `ssb280_exe`; its banner is `SSB records development`. It has not been assigned a new numbered release but 2.8.0 is anticipated.
 
 Part 1 describes the implemented language. Part 2 explains how it is translated. Part 3 records the build, validation and remaining limits.
 
@@ -324,14 +324,14 @@ The local distribution contains:
 
 | Artifact | Description |
 |---|---|
-| `Distribution/ssbrecdev_bas` | Numbered translator source, 93,599 bytes |
-| `Distribution/ssbrecdev_exe` | Turbo-built translator, 81,886 bytes including its Qemu header |
-| `Distribution/ssb-records-dev.zip` | Development package with QDOS executable metadata |
+| `Distribution/ssb280_bas` | Numbered translator source, 93,599 bytes |
+| `Distribution/ssb280_exe` | Turbo-built translator, 81,886 bytes including its Qemu header |
+| `Distribution/ssb280.zip` | Development package with QDOS executable metadata |
 | `Docs/Records-Development.md` | Operational development documentation |
 | `Docs/records.txt` | QL-readable supplement |
 | `Docs/Validation.json` | Machine-readable validation evidence |
 
-The original `Source/ssb272.bas` remains the 2.7.2g bootstrap baseline. Original release artifacts and the Quill manual were preserved. All seven language blocks use the development banner; new record diagnostics are English.
+The original `Source/ssb272.bas` remains the 2.7.2g bootstrap baseline. Original release artifacts were retained. The Quill manual includes the records chapter and the updated 2.8.0 edition information; the original manual remains available in Git history. All seven language blocks use the development banner; new record diagnostics are English.
 
 The executable checked when writing this document matches the validation manifest:
 
@@ -339,7 +339,7 @@ The executable checked when writing this document matches the validation manifes
 SHA256 df80aad995c83f766ba1b3cd19c7f78758c7c7ecfab5beb3f9fa75a116d38f22
 ```
 
-The records implementation was committed locally as 475ecb8, including the driver rename to ssb280.ssb. The correctness fixes and rebuilt artifacts described here are subsequent local changes; they have not been committed or pushed.
+The records implementation was committed locally as 475ecb8, including the driver rename to ssb280.ssb. The correctness fixes were committed as 10664f8. The linked fork also includes the updated Quill manual and versioned distribution filenames.
 
 ### 17. Latest SMSQ/E validation
 

@@ -13,7 +13,7 @@ out.mkdir(exist_ok=True)
 guide = '''SSB RECORDS DEVELOPMENT
 Based on Structured SuperBASIC 2.7.2g. Development build, not a release.
 
-Copy the included executable to ram1_ssbrecdev_exe with a QDOS-aware unzip.
+Copy the included executable to ram1_ssb280_exe with a QDOS-aware unzip.
 Keep your released SSB. This build reserves 1 MiB data, reduced from 2 MiB.
 Compiled regression checks pass with 4 MiB total SMSQ/E 3.43 RAM, using
 Turbo 5.09 / F5.37 and the SMS Turbo toolkit. Bootstrap/interpreter tests
@@ -27,13 +27,13 @@ raw executable data with QDOS file-type and dataspace metadata.
   SETENV "SSBWORK2=ram1_"
   SETENV "SSBSTART=100"
   SETENV "SSBINC=1"
-  EXECUTE_W "ram1_ssbrecdev_exe";"example"
+  EXECUTE_W "ram1_ssb280_exe";"example"
 
 Input example_ssb produces numbered example_bas. Existing SSB settings
 and label syntax still apply. Use a positive increment and line numbers
 within 1..32767. Repository .ssb, .bas and _bas text files use LF endings
 through .gitattributes. Preserve their QL character bytes when editing or
-copying them. The expanded ssbrecdev_bas in this ZIP is already QL text.
+copying them. The expanded ssb280_bas in this ZIP is already QL text.
 
 EXAMPLE
   TYPE point
@@ -89,15 +89,16 @@ Authorized replacements preserve the old output as _bakN. On a failed
 translation the final output is absent; the backup is retained. Refused
 replacements leave the old output intact. SSBGO preserves an old output
 as _goN, then checks for fresh output before invoking the compiler. Set
-SSBFILTER=ssbrecdev_exe and SSBEXEC to the executable device prefix to use
-the separate ssbgorecdev_exe wrapper. Successful editor/grep handoff still
+SSBFILTER=ssb280_exe and SSBEXEC to the executable device prefix to use
+the separate ssb280go_exe wrapper. Successful editor/grep handoff still
 requires the original SSBGO tools; its full UI workflow is not certified.
 
 To rebuild, copy all Source modules as ram1_name_ssb. Set SSBWORK and
 SSBWORK2 empty because includes already name ram1_. Use existing SSB to
 preprocess ram1_ssb280, load the output and CHARGE it with Turbo. Compare
 output against preprocessing with the new executable. The development
-object name is ram1_ssbrecdev_exe, not the released SSB name.
+object name is ram1_ssbrecdev_exe; packaging publishes it as
+ssb280_exe.
 
 Implementation follows the existing SSB modules: ssb280 coordinates both
 passes and owns file cleanup/publication; ssbpass1 prepares record layouts
@@ -114,14 +115,16 @@ internally and needs no separate record-capable bootstrap.
 
 See Docs/Records-Development.md and Docs/Validation.json in the source
 repository for full syntax, limits, implementation and validation details.
-The original Quill manual remains the released SSB manual.
+The included ssb280_doc is the native Quill manual, with records syntax,
+examples and limitations in section 8.
+Copy it to a filename ending _doc and open it in Quill, not Microsoft Word.
 '''
 (ROOT / 'Docs' / 'records.txt').write_bytes(guide.encode('ascii'))
 proof = json.loads((ROOT / 'build' / 'self-host-result.json').read_text(encoding='utf-8'))
 assert proof['passed'], 'A successful self-bootstrap is required'
-shutil.copy2(Path(proof['folder']) / 'new_output_bas', out / 'ssbrecdev_bas')
-for name, directory in [('ssbrecdev_exe', 'compiled-app'), ('ssbgorecdev_exe', 'compiled-wrapper')]:
-    shutil.copy2(ROOT / 'build' / directory / name, out / name)
+shutil.copy2(Path(proof['folder']) / 'new_output_bas', out / 'ssb280_bas')
+for name, published, directory in [('ssbrecdev_exe', 'ssb280_exe', 'compiled-app'), ('ssbgorecdev_exe', 'ssb280go_exe', 'compiled-wrapper')]:
+    shutil.copy2(ROOT / 'build' / directory / name, out / published)
 
 def qdos_extra(name, data, attributes=b'\0' * 10):
     header = bytearray(64)
@@ -132,9 +135,9 @@ def qdos_extra(name, data, attributes=b'\0' * 10):
     header[16:16 + len(encoded)] = encoded
     return struct.pack('<HH', 0xFB4A, 72) + b'QDOS02\0\0' + header
 
-with zipfile.ZipFile(out / 'ssb-records-dev.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
-    for name in ['ssbrecdev_exe', 'ssbgorecdev_exe', 'ssbrecdev_bas', 'records_txt']:
-        source = ROOT / 'Docs' / 'records.txt' if name == 'records_txt' else out / name
+with zipfile.ZipFile(out / 'ssb280.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
+    for name in ['ssb280_exe', 'ssb280go_exe', 'ssb280_bas', 'records_txt', 'ssb280_doc']:
+        source = {'records_txt': ROOT/'Docs'/'records.txt', 'ssb280_doc': ROOT/'Docs'/'ssb280.doc'}.get(name, out/name)
         data = source.read_bytes()
         attributes = b'\0' * 10
         if name.endswith('_exe'):
@@ -146,8 +149,24 @@ with zipfile.ZipFile(out / 'ssb-records-dev.zip', 'w', zipfile.ZIP_DEFLATED) as 
         info.compress_type = zipfile.ZIP_DEFLATED
         info.extra = qdos_extra(name, data, attributes)
         archive.writestr(info, data)
-with zipfile.ZipFile(out / 'ssb-records-dev.zip') as archive:
+with zipfile.ZipFile(out / 'ssb280.zip') as archive:
     assert archive.testzip() is None
     for item in archive.infolist():
         assert struct.unpack_from('>I', item.extra, 12)[0] == item.file_size
-print('Created', out / 'ssb-records-dev.zip')
+print('Created', out / 'ssb280.zip')
+
+
+# Publish current source bytes; keep ssb272.bas as the legacy bootstrap.
+with zipfile.ZipFile(out / 'Source.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
+    for source in sorted((ROOT/'Source').iterdir()):
+        if source.is_file() and source.suffix.lower() in {'.ssb', '.bas', '.md'}:
+            data = source.read_bytes()
+            info = zipfile.ZipInfo(source.name, (2026, 11, 14, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.extra = qdos_extra(source.name, data)
+            archive.writestr(info, data)
+with zipfile.ZipFile(out / 'Source.zip') as archive:
+    assert archive.testzip() is None
+    for source in (ROOT/'Source').glob('*.ssb'):
+        assert archive.read(source.name) == source.read_bytes()
+print('Created', out / 'Source.zip')
