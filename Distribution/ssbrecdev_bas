@@ -1,0 +1,2337 @@
+100 TURBO_taskn "ssb records dev"
+101 TURBO_objfil "ram1_ssbrecdev_exe"
+102 TURBO_windo 0
+103 TURBO_repfil "ram1_ssbrecdev_err"
+104 TURBO_objdat 1024
+105 TURBO_model ">"
+106 TURBO_buffersz 400
+107 TURBO_optim 0
+108 TURBO_diags 2
+109 TURBO_locstr 1
+110 TURBO_struct 0
+111 IMPLICIT% d_labels, d_length, d_start, d_delta, label_var, define_var
+112 IMPLICIT% num_count, file_num, x, y, temp, line_num_d, line_delta
+113 d_labels = 30
+114 d_length = 16
+115 d_in$    = "_ssb"
+116 d_out$   = "_bas"
+117 d_start  = 1000
+118 d_delta  = 10
+119 d_working$ = ""
+120 d_work2$ = ""
+121 d_over$  = ""
+122 d_lang$  = "E"
+123 d_ignore$ = "Y"
+124 DIM out_file$(100), command$(100), file$(100), in_file$(100), temp$(100)
+125 DIM line_num$(10), line_delta$(10), argfile$(100), in$(1000), in2$(1000)
+126 DIM label$(d_labels,d_length)
+127 DIM label(d_labels)
+128 DIM defn$(d_labels,d_length)
+129 label_var = 1
+130 define_var = 1
+131 num_count = 0
+132 file_num = 5
+133 out_file$ = ""
+134 rec_setup
+135 WHEN ERRor
+136   rec_log "SSB runtime error " & ERNUM% & " at compiler line " & ERLIN%
+137   PRINT #3,"SSB runtime/I/O error; translation stopped"
+138   IF rc_enabled THEN PRINT #3,rc_file$;":";rc_line
+139   IF rc_backup$<>"" THEN PRINT #3,"Old output retained: ";rc_backup$
+140   abort_out
+141 END WHEN
+142 t_in$ = GETENV$("SSBINPUT")
+143 IF t_in$ <> "" THEN d_in$ = t_in$
+144 t_out$ = GETENV$("SSBOUTPUT")
+145 IF t_out$ <> "" THEN d_out$ = t_out$
+146 t_start$ = GETENV$("SSBSTART")
+147 IF t_start$ <> "" THEN d_start = t_start$
+148 t_delta$ = GETENV$("SSBINC")
+149 IF t_delta$ <> "" THEN d_delta = t_delta$
+150 t_working$ = GETENV$("SSBWORK")
+151 IF t_working$ <> "" THEN d_working$ = t_working$
+152 t_work2$ = GETENV$("SSBWORK2")
+153 IF t_work2$ <> "" THEN d_work2$ = t_work2$
+154 t_over$ = GETENV$("SSBOVER")
+155 IF t_over$ <> "" THEN d_over$ = t_over$
+156 t_lang$ = GETENV$("SSBLANG")
+157 IF t_lang$ <> "" THEN d_lang$ = t_lang$
+158 t_ignore$ = GETENV$("SSBIGNORE_BLANKS")
+159 IF t_ignore$ <> "" THEN d_ignore$ = t_ignore$
+160 DIM lngarray$(36,42)
+161 IF d_lang$ = "E"
+162    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
+163    lngarray$(2) = "SSB records development"
+164    lngarray$(3) = "By Timothy Swenson"
+165    lngarray$(4) = "Enter Input File: ("
+166    lngarray$(5) = "ERROR - File In Use"
+167    lngarray$(6) = "ERROR - File Does Not Exist"
+168    lngarray$(7) = "ERROR - Bad File Name"
+169    lngarray$(8) = "Enter Output File: (Default "
+170    lngarray$(9) = "ERROR - File Exists"
+171    lngarray$(10) = "OK to Delete (Y/N)"
+172    lngarray$(11) = "Enter Starting Line Number: (Default "
+173    lngarray$(12) = "ERROR - Must Enter A Number"
+174    lngarray$(13) = "ERROR - 2nd Arg is Not A Valid Number"
+175    lngarray$(14) = "ERROR - Output File Exists"
+176    lngarray$(15) = "ERROR - Bad File Name - Output File"
+177    lngarray$(16) = "ERROR - Output File In Use"
+178    lngarray$(17) = "Pass 1"
+179    lngarray$(18) = "Pass 2"
+180    lngarray$(19) = "Program Done"
+181    lngarray$(20) = "Hit Any Key"
+182    lngarray$(21) = "FATAL ERROR - Bad Name "
+183    lngarray$(22) = "FATAL ERROR - File Not Found "
+184    lngarray$(23) = "FATAL ERROR - File In Use "
+185    lngarray$(24) = "FATAL ERROR - End of File Found While Looking for \"
+186    lngarray$(25) = "FILE : "
+187    lngarray$(26) = "FATAL ERROR - Label"
+188    lngarray$(27) = " Too Long"
+189    lngarray$(28) = "LINE NUMBER: "
+190    lngarray$(29) = " IN FILE: "
+191    lngarray$(30) = "FATAL ERROR - Too Many Labels"
+192    lngarray$(31) = "FATAL ERROR - DEFINE "
+193    lngarray$(32) = " Not Found"
+194    lngarray$(33) = "FATAL ERROR - Too Many DEFINE's"
+195    lngarray$(34) = "FATAL ERROR - End of File Found Before #ENDIF"
+196    lngarray$(35) = "FATAL ERROR - Label "
+197    lngarray$(36) = "Enter Increment for Line Numbers: (Default "
+198 END IF
+199 IF d_lang$ = "S"
+200    lngarray$(1) = "FILTRO SUPERBASIC ESTRUCTURADO"
+201    lngarray$(2) = "SSB records development"
+202    lngarray$(3) = "Por: Timothy Swenson"
+203    lngarray$(4) = "Introduzca el archivo de entrada: ("
+204    lngarray$(5) = "ERROR - Archivo en uso"
+205    lngarray$(6) = "ERROR - El archivo no existe"
+206    lngarray$(7) = "ERROR - nombre de archivo incorrecto"
+207    lngarray$(8) = "Introduzca el archivo de salida: (Por defecto "
+208    lngarray$(9) = "ERROR - El archivo existe"
+209    lngarray$(10) = "Confirme para borrar (Y/N)"
+210    lngarray$(11) = "Introduzca el nômero de lìnea inicial: (Por defecto "
+211    lngarray$(12) = "ERROR - Debe introducir un nômero"
+212    lngarray$(13) = "ERROR - El 2∫ argumento no es un nômero vålido"
+213    lngarray$(14) = "ERROR - El archivo de salida existe"
+214    lngarray$(15) = "ERROR - Nombre de archivo incorrecto: Archivo de salida"
+215    lngarray$(16) = "ERROR - Archivo de salida en uso"
+216    lngarray$(17) = "Paso 1"
+217    lngarray$(18) = "Paso 2"
+218    lngarray$(19) = "Programa listo"
+219    lngarray$(20) = "Pulse una tecla"
+220    lngarray$(21) = "ERROR FATAL - Nombre incorrecto "
+221    lngarray$(22) = "ERROR FATAL - Archivo no encontrado "
+222    lngarray$(23) = "ERROR FATAL - Archivo en uso "
+223    lngarray$(24) = "ERROR FATAL - Fin del archivo encontrado mientras se buscaba \"
+224    lngarray$(25) = "Archivo : "
+225    lngarray$(26) = "ERROR FATAL - Etiqueta"
+226    lngarray$(27) = " Demasiado largo"
+227    lngarray$(28) = "NUMERO DE LINEA: "
+228    lngarray$(29) = " EN EL ARCHIVO: "
+229    lngarray$(30) = "ERROR FATAL - Demasiadas etiquetas"
+230    lngarray$(31) = "ERROR FATAL - DEFINE "
+231    lngarray$(32) = " No encontrado"
+232    lngarray$(33) = "ERROR FATAL - Demasiados DEFINEs"
+233    lngarray$(34) = "ERROR FATAL - Fin del archivo encontrado antes de #ENDIF"
+234    lngarray$(35) = "ERROR FATAL - Etiqueta "
+235    lngarray$(36) = "Introduzca el incremento para los nômeros de lìnea: (Por defecto "
+236 END IF
+237 IF d_lang$="I"
+238    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
+239    lngarray$(2) = "SSB records development"
+240    lngarray$(3) = "di Timothy Swenson"
+241    lngarray$(4) = "File di input: ("
+242    lngarray$(5) = "ERRORE - Il file ê in uso"
+243    lngarray$(6) = "ERRORE - Il file non esiste"
+244    lngarray$(7) = "ERRORE - Nome di file errato"
+245    lngarray$(8) = "File di output: (Default "
+246    lngarray$(9) = "ERRORE - File gia' esistente"
+247    lngarray$(10) = "Cancellarlo (S/N)"
+248    lngarray$(11) = "Inserisci il numero iniziale della numerazione: (Default "
+249    lngarray$(12) = "ERRORE - Devi inserire un numero"
+250    lngarray$(13) = "ERRORE - Il Secondo Argomento non e' Un numero valido"
+251    lngarray$(14) = "ERRORE - File di output giç esistente"
+252    lngarray$(15) = "ERRORE - Nome Errato - Output File"
+253    lngarray$(16) = "ERRORE - File di output In Uso"
+254    lngarray$(17) = "Fase 1"
+255    lngarray$(18) = "Fase 2"
+256    lngarray$(19) = "Creato Programma"
+257    lngarray$(20) = "Premi Un Tasto"
+258    lngarray$(21) = "ERRORE BLOCCANTE - Nome errato "
+259    lngarray$(22) = "ERRORE BLOCCANTE - File on trovato "
+260    lngarray$(23) = "ERRORE BLOCCANTE - File in uso "
+261    lngarray$(24) = "ERRORE BLOCCANTE - Fine del file trovata cercando \"
+262    lngarray$(25) = "FILE : "
+263    lngarray$(26) = "ERRORE BLOCCANTE - Etichetta"
+264    lngarray$(27) = " Troppo Lunga"
+265    lngarray$(28) = "NUMERO INIZIALE: "
+266    lngarray$(29) = " IN FILE: "
+267    lngarray$(30) = "ERRORE BLOCCANTE - Troppe Etichette"
+268    lngarray$(31) = "ERRORE BLOCCANTE - DEFINE "
+269    lngarray$(32) = " Non Trovata"
+270    lngarray$(33) = "ERRORE BLOCCANTE - Troppe DEFINE's"
+271    lngarray$(34) = "ERRORE BLOCCANTE - Fine del file trovata prima di  #ENDIF"
+272    lngarray$(35) = "ERRORE BLOCCANTE - Etichette "
+273    lngarray$(36) = "Incremento del numero di linea: (Default "
+274 END IF
+275 IF d_lang$="F"
+276    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
+277    lngarray$(2) = "SSB records development"
+278    lngarray$(3) = "par Timothy Swenson"
+279    lngarray$(4) = "Fichied d'entrÉe: ("
+280    lngarray$(5) = "ERREUR - Le fichier est en cours d'utilisation"
+281    lngarray$(6) = "ERREUR - Le fichier ne existe pas"
+282    lngarray$(7) = "ERREUR - nom de fichier incorrect"
+283    lngarray$(8) = "Fichier Sortie: (Default "
+284    lngarray$(9) = "ERREUR - Fichier dejç existantes"
+285    lngarray$(10) = "Supprimer (O/N)"
+286    lngarray$(11) = "Entrez le numÉro de dÉpart de la numÉrotation: (Default "
+287    lngarray$(12) = "ERREUR - Vous devez entrer un nombre "
+288    lngarray$(13) = "ERREUR - Le deuxiême argument n'est pas un nombre valide"
+289    lngarray$(14) = "ERREUR - Fichier de sortie existe dÉjç"
+290    lngarray$(15) = "ERREUR - nom incorrect - fichier de sortie"
+291    lngarray$(16) = "ERREUR - fichier de sortie en cours d'utilisation"
+292    lngarray$(17) = "Phase 1"
+293    lngarray$(18) = "Phase 2"
+294    lngarray$(19) = "CrÉe Programme"
+295    lngarray$(20) = "Appuyez sur une touche"
+296    lngarray$(21) = "ERREUR BLOCAGE - Nom incorrect "
+297    lngarray$(22) = "ERREUR BLOCAGE - Fichier ne pas trouvÉe "
+298    lngarray$(23) = "ERREUR BLOCAGE - Fichier en cors d'utilisation"
+299    lngarray$(24) = "ERREUR BLOCAGE - Fin de fichier trouvÉ essayer \"
+300    lngarray$(25) = "FICHIER : "
+301    lngarray$(26) = "ERREUR BLOCAGE- Étiquette"
+302    lngarray$(27) = " Trop LONG"
+303    lngarray$(28) = "PREMIERE NUMERO: "
+304    lngarray$(29) = " EN FICHIER: "
+305    lngarray$(30) = "ERREUR BLOCAGE - Trop d'etiquettes"
+306    lngarray$(31) = "ERREUR BLOCAGE - DEFINE "
+307    lngarray$(32) = " Non Trovata"
+308    lngarray$(33) = "ERREUR BLOCAGE - Trop DEFINE's"
+309    lngarray$(34) = "ERREUR BLOCAGE - Fin de fichier trouvÉ avant #ENDIF"
+310    lngarray$(35) = "ERREUR BLOCAGE - Etiquettes "
+311    lngarray$(36) = "Augmentation du nombre de ligne: (Default "
+312 END IF
+313 IF d_lang$ = "D"
+314    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
+315    lngarray$(2) = "SSB records development"
+316    lngarray$(3) = "By Timothy Swenson"
+317    lngarray$(4) = "Eingansdatei Angeben: ("
+318    lngarray$(5) = "Fehler - Datei ist Offen"
+319    lngarray$(6) = "Fehler - Datei Existiert Nicht"
+320    lngarray$(7) = "Fehler - Falscher Dateien Name"
+321    lngarray$(8) = "Ausgansdatei Angeben: (Vorgabewert "
+322    lngarray$(9) = "Fehler - Datei Existiert"
+323    lngarray$(10) = "OK zu Lˆschen (Y/N)"
+324    lngarray$(11) = "Anf‰nginge Linien Number Eingeben: (Vorgabewert "
+325    lngarray$(12) = "Fehler - Eine Nummer muss eihgegeben werden"
+326    lngarray$(13) = "Fehler - Das Zweite Argument ist eine Invalide Nummer"
+327    lngarray$(14) = "Fehler - Ausgansdatei Existiert"
+328    lngarray$(15) = "Fehler - Falscher Dateien Name - Ausgansdatei"
+329    lngarray$(16) = "Fehler - Ausgangsdatei ist Offen"
+330    lngarray$(17) = "Pass 1"
+331    lngarray$(18) = "Pass 2"
+332    lngarray$(19) = "Program Fertig"
+333    lngarray$(20) = "Irgend eine Taste Dr¸cken"
+334    lngarray$(21) = "Fataler Fehler - Falscher Name"
+335    lngarray$(22) = "Fataler Fehler - Datei Nicht Gefunden"
+336    lngarray$(23) = "Fataler Fehler - Datei ist Offen"
+337    lngarray$(24) = "Fataler Fehler - Ende der Datei Gefunden Beim Gesuch Nach \"
+338    lngarray$(25) = "Datei : "
+339    lngarray$(26) = "Fataler Fehler - Kennsatz"
+340    lngarray$(27) = " Zu Lange"
+341    lngarray$(28) = "Linien Nummer: "
+342    lngarray$(29) = " In Datei: "
+343    lngarray$(30) = "Fataler Fehler - Zu Viele Kenns‰tze"
+344    lngarray$(31) = "Fataler Fehler - Definieren "
+345    lngarray$(32) = " Nicht Gefunden"
+346    lngarray$(33) = "Fataler Fehler - Zu Viele Definierungen "
+347    lngarray$(34) = "Fataler Fehler - Ende der Datei Gefunden Bevor #ENDIF"
+348    lngarray$(35) = "Fataler Fehler - Kennsatz"
+349    lngarray$(36) = "Erhˆhung der Linien Nummern Eintragen: (Vorgabewert "
+350 END IF
+351 IF d_lang$ = "K"
+352    lngarray$ (1) = "tlham SUPERBASIC FILTER"
+353    lngarray$ (2) = "SSB records development"
+354    lngarray$ (3) = "pong Timothy Swenson"
+355    lngarray$ (4) = "teywI' input:"
+356    lngarray$ (5) = "Qagh-teywI' neH lo'" 
+357    lngarray$ (6) = "wej nIv'e' Qagh-teywI'" 
+358    lngarray$ (7) = "Qagh-vo' ruv nge' teywI' pong"
+359    lngarray$ (8) = "teywI' output: (Default"
+360    lngarray$ (9) = "chonayta' nIv'e' Qagh-teywI'"
+361    lngarray$ (10) = "qIl (s ghap n)"
+362    lngarray$ (11) = "So'meH mI' pImchugh chuqmey poHmey 'el: (Default"
+363    lngarray$ (12) = "Qagh-mI' ghob'e' 'el SoH"
+364    lngarray$ (13) = "Qagh-2nd arg wej mach Valid mI'"
+365    lngarray$ (14) = "Qagh-Output teywI' nIv'e'"
+366    lngarray$ (15) = "Qagh-qab teywI' pong-teywI' Output"
+367    lngarray$ (16) = "Qagh-Output teywI' neH lo'" 
+368    lngarray$ (17) = "1" 
+369    lngarray$ (18) = "2" 
+370    lngarray$ (19) = "HIja'" 
+371    lngarray$ (20) = "qIp vay' ngaQHa'moHwI'mey" 
+372    lngarray$ (21) = "HeghmoH Qagh-qab pong" 
+373    lngarray$ (22) = "HeghmoH Qagh-teywI' wej tu'"
+374    lngarray$ (23) = "HeghmoH Qagh-teywI' neH lo'"
+375    lngarray$ (24) = "HeghmoH Qagh-bertlham teywI' found poStaHvIS looking"
+376    lngarray$ (25) = "teywI':"
+377    lngarray$ (26) = "HeghmoH Qagh-per"
+378    lngarray$ (27) = "tIqqu' "
+379    lngarray$ (28) = "tlhegh mI':"
+380    lngarray$ (29) = "teywI':"
+381    lngarray$ (30) = "HeghmoH Qagh-tlhoy law' per"
+382    lngarray$ (31) = "HeghmoH Qagh-DEFINE"
+383    lngarray$ (32) = "wej tu'"
+384    lngarray$ (33) = "HeghmoH Qagh-tlhoy law' define"
+385    lngarray$ (34) = "HeghmoH Qagh-bertlham teywI' tu' pa' #endif"
+386    lngarray$ (35) = "HeghmoH Qagh-per"
+387    lngarray$ (36) = "'el Increment tlhegh numbers: (Default "
+388 END IF
+389 IF d_lang$ = "W"
+390    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
+391    lngarray$(2) = "SSB records development"
+392    lngarray$(3) = "Gan Timothy Swenson"
+393    lngarray$(4) = "Ffeil fewnbwn: ("
+394    lngarray$(5) = "GWALL - Ffeil Mewn Defnydd"
+395    lngarray$(6) = "GWALL - Ffeil Ddim Yn Bod"
+396    lngarray$(7) = "GWALL - Enw Ffeil Anaddas"
+397    lngarray$(8) = "Ffeil allbwn: (Rhagosodiad "
+398    lngarray$(9) = "GWALL - Ffeil Yn Bod Eisoes"
+399    lngarray$(10) = "Iawn Dileu (Y/N)"
+400    lngarray$(11) = "Rhif Llinell Gyntaf: (Rhagosodiad "
+401    lngarray$(12) = "GWALL - Rhaid Mewnbynnu Rhif"
+402    lngarray$(13) = "GWALL - Ail Baramedr Ddim Yn Rif Addas"
+403    lngarray$(14) = "GWALL - Ffeil Allbwn Yn Bod Eisoes"
+404    lngarray$(15) = "GWALL - Enw Ffeil - Ffeil Allbwn"
+405    lngarray$(16) = "ERROR - Ffeil Allbwn Mewn Defnydd"
+406    lngarray$(17) = "Pasiad 1"
+407    lngarray$(18) = "Pasiad 2"
+408    lngarray$(19) = "Rhaglen Ar Ben"
+409    lngarray$(20) = "Pwyswch Unrhyw Fysell"
+410    lngarray$(21) = "GWALL ANGHEUOL - Enw Drwg "
+411    lngarray$(22) = "GWALL ANGHEUOL - File Heb Ei Chanfod "
+412    lngarray$(23) = "GWALL ANGHEUOL - FfeilMewn Defnydd "
+413    lngarray$(24) = "GWALL ANGHEUOL - Diwedd Y Ffeil Tra'n Chwilio Am \"
+414    lngarray$(25) = "FFEIL : "
+415    lngarray$(26) = "GWALL ANGHEUOL - Label"
+416    lngarray$(27) = " Rhy Hir"
+417    lngarray$(28) = "HIF LLINELL: "
+418    lngarray$(29) = " MEWN FFEIL: "
+419    lngarray$(30) = "GWALL ANGHEUOL - Gormod O Labeli"
+420    lngarray$(31) = "GWALL ANGHEUOL - DEFINE "
+421    lngarray$(32) = " Heb Ei Ganfod"
+422    lngarray$(33) = "GWALL ANGHEUOL - Gormod O DEFINE'au"
+423    lngarray$(34) = "GWALL ANGHEUOL - Diwedd Ffeil Cyn #ENDIF"
+424    lngarray$(35) = "GWALL ANGHEUOL - Label "
+425    lngarray$(36) = "Cynyddiad Rhifau Llinellau: (Rhagddodiad "
+426 END IF
+427 OPEN #3,"con_300x160a75x10_32"
+428 BORDER #3,2,4
+429 PAPER #3,0 : INK #3,7 :  CLS #3
+430 centre 3, lngarray$(1)
+431 INK #3,2
+432 centre 3, lngarray$(2)
+433 centre 3, lngarray$(3)
+434 PRINT #3
+435 INK #3,4
+436 IF d_work2$ = "" THEN d_work2$ = d_working$
+437 command$ = OPTION_CMD$
+438 command$ = trim$(command$)
+439 IF command$ = "" THEN
+440   REPEAT input_loop
+441     PRINT #3,lngarray$(4);d_in$;") "
+442     INK #3,7
+443     INPUT #3,file$
+444     IF file$ = "" THEN abort_out
+445     INK #3,2
+446     in_file$ = d_working$&file$&d_in$
+447     temp = FTEST(in_file$)
+448     IF temp = 0 THEN EXIT input_loop
+449     IF temp = -9 THEN
+450       BEEP 1000,10
+451         centre 3, lngarray$(5)
+452     END IF
+453     IF temp = -7 THEN
+454       BEEP 1000,10
+455       centre 3, lngarray$(6)
+456     END IF
+457     IF temp = -11 THEN
+458       BEEP 1000,10
+459       centre 3, lngarray$(7)
+460     END IF
+461   END REPEAT input_loop
+462   REPEAT output_loop
+463     INK #3,4
+464     PRINT #3,lngarray$(8); d_work2$ & file$ & d_out$; ") "
+465     INK #3,7
+466     INPUT #3,out_file$
+467     IF out_file$ = "" THEN
+468       out_file$ = d_work2$ & file$ & d_out$
+469     ELSE
+470       out_file$ = d_work2$ & out_file$ & d_out$
+471     END IF
+472       INK #3,2
+473     temp = FTEST(out_file$)
+474     IF temp = -7 THEN EXIT output_loop
+475     IF temp = -9 THEN
+476       BEEP 1000,10
+477       centre 3, lngarray$(5)
+478     END IF
+479     IF temp = -11 THEN
+480       BEEP 1000,10
+481       centre 3, lngarray$(7)
+482     END IF
+483     IF temp = 0 THEN
+484       BEEP 1000,10
+485       centre 3, lngarray$(9)
+486       centre 3, lngarray$(10)
+487       temp$ = INKEY$(#3,-1)
+488       IF temp$ == "Y" or temp$ == "S" THEN
+489         rec_saveold
+490         EXIT output_loop
+491         ELSE
+492           abort_out
+493       END IF
+494     END IF
+495   END REPEAT output_loop
+496   REPEAT start_loop
+497     IF t_start$ <> "" THEN
+498        line_num_d = t_start$
+499        EXIT start_loop
+500     END IF
+501     INK #3,4
+502     PRINT #3, lngarray$(11); d_start; ")"
+503     INK #3,7
+504     INPUT #3,line_num$
+505     INK #3,2
+506     IF line_num$ = "" THEN
+507       line_num_d = d_start
+508       EXIT start_loop
+509     ELSE
+510       IF isnum(line_num$) THEN
+511         line_num_d = line_num$
+512         EXIT start_loop
+513       END IF
+514       BEEP 1000,10
+515       PRINT #3,lngarray$(12)
+516     END IF
+517     INK #3,4
+518   END REPEAT start_loop
+519   REPEAT delta_loop
+520     IF t_delta$ <> "" THEN
+521        line_delta = t_delta$
+522        EXIT delta_loop
+523     END IF
+524     INK #3,4
+525     PRINT #3,lngarray$(36); " "; d_delta; ")"
+526     INK #3,7
+527     INPUT #3,line_delta$
+528     INK #3,2
+529     IF line_delta$ = "" THEN
+530       line_delta = d_delta
+531       EXIT delta_loop
+532     ELSE
+533       IF isnum(line_delta$) THEN
+534         line_delta = line_delta$
+535         EXIT delta_loop
+536       END IF
+537       BEEP 1000,10
+538       PRINT #3,lngarray$(12)
+539     END IF
+540     INK #3,4
+541   END REPEAT delta_loop
+542 ELSE
+543   command$ = Trim$(command$)
+544   x = " " INSTR command$
+545   IF x THEN
+546     argfile$ = command$(1 TO x-1)
+547     command$ = command$( x+1 TO )
+548     command$ = trim$(command$)
+549     IF isnum(command$) = 0 THEN
+550       INK #3,2
+551       BEEP 1000,10
+552       centre 3, lngarray$(13)
+553       abort_out
+554     END IF
+555     d_start = command$
+556   ELSE
+557     argfile$ = command$
+558   END IF
+559   in_file$ = d_working$ & argfile$ & d_in$
+560   out_file$ = d_work2$ & argfile$ & d_out$
+561   temp = FTEST(out_file$)
+562   IF temp = 0 THEN
+563     IF d_over$ == "Y" or d_over$ == "S" THEN
+564       rec_saveold
+565     ELSE
+566       BEEP 1000,10
+567       INK #3,2
+568       centre 3, lngarray$(14)
+569       abort_out
+570     END IF
+571   END IF
+572   IF temp = -11 THEN
+573     BEEP 1000,10
+574     INK #3,2
+575     centre 3, lngarray$(15)
+576     abort_out
+577   END IF
+578   IF temp = -9 THEN
+579     BEEP 1000,10
+580     INK #3,2
+581     centre 3, lngarray$(16)
+582     abort_out
+583   END IF
+584   line_delta = d_delta
+585   line_num_d = d_start
+586 END IF
+587 line_num = line_num_d
+588 INK #3,4
+589 centre 3, lngarray$(17)
+590 pass_one in_file$, file_num
+591 line_num = line_num_d
+592 PRINT #3
+593 centre 3, lngarray$(18)
+594 num_count = 0
+595 file_num = 5
+596 OPEN_NEW #4,out_file$
+597 rc_owned=1
+598 pass_two in_file$, file_num
+599 CLOSE #4
+600 rec_publish
+601 PRINT #3
+602 centre 3, lngarray$(19)
+603 PRINT #3,""
+604 IF OPTION_CMD$="" THEN
+605   INK #3,7
+606   centre 3, lngarray$(20)
+607   temp$ = INKEY$(#3,-1)
+608 END IF
+609 CLOSE #3
+610 STOP
+611 DEFine PROCedure pass_one(in_file$,file_num)
+612   rec_prepare in_file$
+613   file_num=5
+614   rec_source$=in_file$
+615   IF rc_enabled THEN rec_source$=rc_work$(2)
+616   rec_mapstart
+617   pass_one_file rec_source$,file_num
+618   rec_mapend
+619 END DEFine pass_one
+620 DEFine PROCedure pass_one_file (in_file$, file_num)
+621   errorx = FOP_IN(#file_num,in_file$)
+622   INK #3,2
+623   IF errorx = -12 THEN
+624     BEEP 1000,10
+625     PRINT #3,lngarray$(21);in_file$
+626     abort_out
+627   END IF
+628   IF errorx = -7 THEN
+629     BEEP 1000,10
+630     PRINT #3,lngarray$(22);in_file$
+631     abort_out
+632   END IF
+633   IF errorx = -9 THEN
+634     BEEP 1000,10
+635     PRINT #3,lngarray$(23);in_file$
+636     abort_out
+637   END IF
+638   INK #3,4
+639   REPeat pass_1
+640     num_count = num_count + 1
+641     IF (num_count MOD 10) = 0 THEN PRINT #3,CHR$(1);
+642     IF EOF(#file_num) THEN EXIT pass_1
+643     INPUT #file_num,in$
+644     rec_origin
+645     rec_range
+646     temp=first_char(in$)
+647     IF temp=0 THEN NEXT pass_1
+648     IF in$(temp TO temp+1)=CHR$(35)&CHR$(35) THEN NEXT pass_1
+649     IF in$(temp)="." THEN NEXT pass_1
+650     IF LEN(in$) >= 6 THEN
+651       IF in$(1 TO 6) = "#ENDIF" THEN NEXT pass_1
+652     END IF
+653     REPeat loop
+654       IF in$(LEN(in$)-1 TO)="\+" THEN
+655         IF EOF(#file_num) THEN
+656           BEEP 1000,10
+657           INK #3,2
+658           PRINT #3,lngarray$(24)
+659           PRINT #3,lngarray$(25);in_file$
+660           abort_out
+661         END IF
+662         INPUT #file_num,in2$
+663         temp = first_char(in2$)
+664         in$ = in$( TO LEN(in$)-2) & " " & in2$(temp TO)
+665       ELSE
+666         EXIT loop
+667       END IF
+668     END REPeat loop
+669     IF in$(1)=CHR$(64) THEN
+670       IF LEN(in$) > d_length+1 THEN
+671         BEEP 1000,10
+672         INK #3,2
+673         PRINT #3,lngarray$(26);in$;lngarray$(27)
+674         PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
+675         abort_out
+676       END IF
+677       IF label_var = d_labels THEN
+678         BEEP 1000,10
+679         INK #3,2
+680         PRINT #3,lngarray$(30)
+681         PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
+682         abort_out
+683       END IF
+684       label$(label_var) = in$
+685       label(label_var) = line_num
+686       label_var = label_var + 1
+687     ELSE
+688       IF upper$(in$(1 TO 8))="#INCLUDE" THEN
+689         pass_one_file d_working$&in$(10 to ), file_num+1
+690       ELSE
+691         IF upper$(in$(1 TO 7))="#DEFINE" THEN
+692           IF LEN(in$(9 TO)) > d_length THEN
+693             BEEP 1000,10
+694             INK #3,2
+695             PRINT #3,lngarray$(31);in$(9 TO);lngarray$(27)
+696             PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
+697             abort_out
+698           END IF
+699           IF define_var = d_labels THEN
+700             BEEP 1000,10
+701             INK #3,2
+702             PRINT #3,lngarray$(33)
+703             PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
+704             abort_out
+705           END IF
+706           defn$(define_var) = upper$(in$( 9 TO))
+707           define_var = define_var+1
+708         ELSE
+709           IF upper$(in$(1 TO 6))="#IFDEF" THEN
+710             temp = 0
+711             temp$ = upper$(in$(8 TO))
+712             FOR x = 1 TO define_var
+713               IF temp$ = defn$(x) THEN temp = 1
+714             END FOR X
+715             IF temp = 0 THEN
+716               REPEAT loop
+717                 IF EOF(#file_num) THEN
+718                   BEEP 1000,10
+719                   INK #3,2
+720                   PRINT #3,lngarray$(34)
+721                   PRINT #3,lngarray$(25);in_file$
+722                   abort_out
+723                 END IF
+724                 INPUT #file_num,in2$
+725                 IF LEN(in2$) < 6 THEN NEXT loop
+726                 IF upper$(in2$(1 TO 6))="#ENDIF" THEN EXIT loop
+727               END REPeat loop
+728             END IF
+729           ELSE
+730             line_num = line_num + line_delta
+731           rec_range
+732           END IF
+733         END IF
+734       END IF
+735     END IF
+736   END REPeat pass_1
+737   CLOSE #file_num
+738 END DEFine pass_one_file
+739 DEFine PROCedure rec_probe(source$)
+740   LOCal rc_def$(d_labels,d_length),rc_defn,rc_if(32),rc_ifn,rc_active
+741   rc_defn=0: rc_ifn=0: rc_active=1
+742   rc_work$(1)=rec_workname$("a"): rc_files=1
+743   IF FOP_NEW(#24,rc_work$(1))<0 THEN rec_fail "Cannot create active-source work file"
+744   rc_open40=1
+745   rec_select source$,5
+746   CLOSE #24: rc_open40=0
+747   IF rc_ifn THEN rec_fail "Missing #ENDIF"
+748   IF NOT rc_enabled THEN rec_cleanup
+749 END DEFine rec_probe
+750 DEFine PROCedure rec_select(source$,channel)
+751   LOCal text$(1000),next$(1000),raw$(1000),sourceLine,origin,i,j,key$(64),symbol$(100),savedif
+752   IF channel>23 THEN rec_fail "Include depth exceeds reserved input channels 5..23"
+753   IF FOP_IN(#channel,source$)<0 THEN rec_fail "Cannot open include/source: " & source$
+754   file_num=channel: sourceLine=0: savedif=rc_ifn
+755   REPeat rec_read_source
+756     IF EOF(#channel) THEN EXIT rec_read_source
+757     INPUT #channel,text$: sourceLine=sourceLine+1: origin=sourceLine
+758     text$=stripTab$(text$)
+759     REPeat rec_join_source
+760       IF LEN(text$)<2 THEN EXIT rec_join_source
+761       IF text$(LEN(text$)-1 TO)<>"\+" THEN EXIT rec_join_source
+762       IF EOF(#channel) THEN rec_fail "Continuation at end of file"
+763       INPUT #channel,next$: sourceLine=sourceLine+1
+764       text$=text$(TO LEN(text$)-2) & " " & rec_ltrim$(next$)
+765       IF LEN(text$)>1000 THEN rec_fail "Joined source sourceLine exceeds 1000 bytes"
+766     END REPeat rec_join_source
+767     rc_file$=source$: rc_line=origin
+768     raw$=rec_trim$(text$)
+769     IF raw$="" THEN
+770       IF rc_active AND d_ignore$<>"Y" THEN rec_spoolline text$
+771       NEXT rec_read_source
+772     END IF
+773     IF raw$(1)="." THEN NEXT rec_read_source
+774     IF raw$(1)="#" AND raw$(1 TO 2)<>"##" THEN
+775       i=" " INSTR raw$: IF NOT i THEN i=LEN(raw$)+1
+776       key$=rec_upper$(raw$(1 TO i-1)): symbol$=""
+777       IF i<LEN(raw$) THEN symbol$=rec_trim$(raw$(i+1 TO))
+778       IF key$="#ENDIF" THEN
+779         IF rc_ifn=savedif THEN rec_fail "#ENDIF without #IFDEF in this file"
+780         rc_active=rc_if(rc_ifn): rc_ifn=rc_ifn-1: NEXT rec_read_source
+781       END IF
+782       IF key$="#IFDEF" THEN
+783         IF rc_ifn=32 THEN rec_fail "Conditional nesting exceeds 32"
+784         rc_ifn=rc_ifn+1: rc_if(rc_ifn)=rc_active
+785         IF NOT rec_find(rec_upper$(symbol$),rc_def$,rc_defn) THEN rc_active=0
+786         NEXT rec_read_source
+787       END IF
+788       IF NOT rc_active THEN NEXT rec_read_source
+789       IF key$="#DEFINE" THEN
+790         IF rc_defn=d_labels THEN rec_fail "Too many #DEFINE symbols"
+791         IF LEN(symbol$)>d_length THEN rec_fail "#DEFINE symbol too long"
+792         rc_defn=rc_defn+1: rc_def$(rc_defn)=rec_upper$(symbol$): NEXT rec_read_source
+793       END IF
+794       IF key$="#INCLUDE" THEN rec_select d_working$ & symbol$,channel+1: NEXT rec_read_source
+795     END IF
+796     IF NOT rc_active THEN NEXT rec_read_source
+797     IF NOT rc_enabled THEN rec_discover text$
+798     rec_spoolline text$
+799   END REPeat rec_read_source
+800   IF rc_ifn<>savedif THEN rec_fail "#IFDEF crosses file boundary"
+801   CLOSE #channel: file_num=channel-1
+802 END DEFine rec_select
+803 DEFine PROCedure rec_spoolline(text$)
+804   PRINT #24,rc_file$: PRINT #24,rc_line: PRINT #24,text$
+805 END DEFine rec_spoolline
+806 DEFine PROCedure rec_analyse
+807   LOCal text$(1000),i,rk_len%(258),rk_s(258),rk_e(258),rk_kind(258),rk_n,rk_line$(1024)
+808   OPEN_IN #24,rc_work$(1): rc_open40=1
+809   REPeat rec_manifests
+810     IF EOF(#24) THEN EXIT rec_manifests
+811     INPUT #24,rc_file$: INPUT #24,rc_line: INPUT #24,text$
+812     rec_lex text$
+813     IF rec_upper$(rec_token$(1))="MANIFEST" THEN rec_collect text$
+814   END REPeat rec_manifests
+815   CLOSE #24: rc_open40=0
+816   OPEN_IN #24,rc_work$(1): rc_open40=1
+817   REPeat rec_declarations
+818     IF EOF(#24) THEN EXIT rec_declarations
+819     INPUT #24,rc_file$: INPUT #24,rc_line: INPUT #24,text$
+820     rec_collect text$
+821   END REPeat rec_declarations
+822   CLOSE #24: rc_open40=0
+823   rec_check
+824 END DEFine rec_analyse
+825 DEFine PROCedure rec_prepare(source$)
+826   rec_probe source$
+827   IF NOT rc_enabled THEN RETurn
+828   rec_tables: rec_analyse
+829   rec_walk 0
+830   rc_work$(2)=rec_workname$("b"): rc_files=2
+831   rc_work$(3)=rec_workname$("m"): rc_files=3
+832   IF FOP_NEW(#25,rc_work$(2))<0 THEN rec_fail "Cannot create expanded work file"
+833   rc_open41=1
+834   IF FOP_NEW(#26,rc_work$(3))<0 THEN rec_fail "Cannot create source map"
+835   rc_open42=1
+836   rec_walk 1
+837   CLOSE #25: CLOSE #26: rc_open41=0: rc_open42=0
+838   rc_final$=out_file$: rc_work$(4)=rec_outputname$: rc_files=4
+839   out_file$=rc_work$(4)
+840 END DEFine rec_prepare
+841 DEFine PROCedure rec_discover(text$)
+842   LOCal i,j,n,depth,previous$(1024),word$(1024),first$(1024),quote$(1024),c$(1024)
+843   i=1: n=0: depth=0: previous$="": quote$="": first$=""
+844   REPeat rec_discovery
+845     IF i>LEN(text$) THEN RETurn
+846     c$=text$(i)
+847     IF quote$<>"" THEN
+848       IF c$=quote$ THEN quote$=""
+849       i=i+1: NEXT rec_discovery
+850     END IF
+851     IF c$='"' OR c$="'" THEN quote$=c$: i=i+1: NEXT rec_discovery
+852     IF i<LEN(text$) THEN
+853       IF text$(i TO i+1)="##" OR text$(i TO i+1)="**" THEN RETurn
+854     END IF
+855     IF rec_letter(c$) THEN
+856       j=i
+857       REPeat rec_discovery_word
+858         IF j=LEN(text$) THEN EXIT rec_discovery_word
+859         IF NOT rec_namechar(text$(j+1)) THEN EXIT rec_discovery_word
+860         j=j+1
+861       END REPeat rec_discovery_word
+862       word$=rec_upper$(text$(i TO j)): n=n+1
+863       IF n=1 THEN
+864         first$=word$
+865         IF first$="TYPE" THEN rc_enabled=1: RETurn
+866         IF first$<>"DIM" AND first$<>"LOCAL" AND first$<>"DEF" AND first$<>"DEFINE" THEN RETurn
+867       ELSE
+868         IF word$="AS" AND n>2 AND previous$<>"" AND previous$<>"(" AND previous$<>"," THEN
+869           IF depth=0 AND (first$="DIM" OR first$="LOCAL") THEN rc_enabled=1: RETurn
+870           IF n>3 AND (first$="DEFINE" OR first$="DEF") THEN rc_enabled=1: RETurn
+871         END IF
+872         IF word$="VAL" AND n>3 AND (first$="DEFINE" OR first$="DEF") THEN rc_enabled=1: RETurn
+873       END IF
+874       previous$=word$: i=j+1
+875     ELSE
+876       IF c$="(" THEN depth=depth+1
+877       IF c$=")" THEN depth=depth-1
+878       IF c$<>" " AND c$<>CHR$(9) THEN previous$=c$
+879       i=i+1
+880     END IF
+881   END REPeat rec_discovery
+882 END DEFine rec_discover
+883 DEFine PROCedure rec_tables
+884   rc_cap=rec_setting("SSBRECITEMS",256,32,1024)
+885   rc_profile$=rec_upper$(GETENV$("SSBRECPROFILE"))
+886   IF rc_profile$="" THEN rc_profile$="TURBO509"
+887   IF rc_profile$<>"TURBO509" AND rc_profile$<>"SBASIC" THEN rec_fail "SSBRECPROFILE must be TURBO509 or SBASIC"
+888   rc_names=rc_cap*4
+889   DIM rt_name$(rc_cap,64),rt_defined(rc_cap),rt_busy(rc_cap)
+890   DIM rf_owner(rc_cap),rf_name$(rc_cap,64),rf_type(rc_cap),rf_shape$(rc_cap,120),rf_rank(rc_cap)
+891   DIM rl_owner(rc_cap),rl_path$(rc_cap,160),rl_shape$(rc_cap,120),rl_rank(rc_cap)
+892   DIM rv_name$(rc_cap,64),rv_type(rc_cap),rv_rank(rc_cap),rv_pool(rc_cap)
+893   DIM rr_name$(rc_cap,64),rr_first(rc_cap),rr_count(rc_cap),rr_fun(rc_cap),rr_temps(rc_cap),rr_simplelocals(rc_cap)
+894   DIM rt_file$(rc_cap,100),rt_line(rc_cap),rv_file$(rc_cap,100),rv_line(rc_cap)
+895   DIM ra_name$(rc_cap,64),ra_var(rc_cap),ra_val(rc_cap),ra_rank(rc_cap)
+896   DIM rn_name$(rc_names,160),rn_ordinary(rc_names),rn_array(rc_names),rn_assignment(rc_names),rg_name$(rc_names,160)
+897   DIM rm_name$(rc_cap,64),rm_value(rc_cap)
+898   DIM rc_lr(rc_cap),rc_lv(rc_cap),rc_loop$(64,32)
+899   rc_locals=0: rc_loop=0
+900   rt_n=0: rf_n=0: rl_n=0: rv_n=0: rr_n=0: ra_n=0: rn_n=0: rg_n=0: rm_n=0
+901   rc_type=0: rc_routine=0: rc_emit=0: rc_depth=0: rc_temp=0
+902   rc_maxdims=8: rc_maxname=160: rc_maxparams=64
+903 END DEFine rec_tables
+904 DEFine FuNction rec_setting(key$,value,low,high)
+905   LOCal s$(1024)
+906   s$=GETENV$(key$)
+907   IF s$<>"" THEN
+908     IF NOT isnum(s$) THEN rec_fail "Invalid " & key$
+909     value=s$
+910   END IF
+911   IF value<low OR value>high THEN rec_fail key$ & " outside supported range"
+912   RETurn value
+913 END DEFine rec_setting
+914 DEFine PROCedure rec_room(count,limit,what$)
+915   IF count>=limit THEN rec_fail what$ & " table full; increase SSBRECITEMS"
+916 END DEFine rec_room
+917 DEFine FuNction rec_typeid(name$)
+918   LOCal i
+919   IF LEN(name$)>64 THEN rec_fail "Type names are limited to 64 bytes"
+920   IF LEN(name$)>=4 THEN
+921     IF rec_upper$(name$(1 TO 4))="REC_" THEN rec_fail "Reserved type name: " & name$
+922   END IF
+923   i=rec_find(name$,rt_name$,rt_n)
+924   IF i THEN RETurn i
+925   rec_room rt_n,rc_cap,"Type"
+926   rt_n=rt_n+1: rt_name$(rt_n)=rec_upper$(name$)
+927   rt_file$(rt_n)=rc_file$: rt_line(rt_n)=rc_line
+928   RETurn rt_n
+929 END DEFine rec_typeid
+930 DEFine PROCedure rec_user(name$,ordinary)
+931   LOCal i
+932   IF LEN(name$)>rc_maxname THEN rec_fail "Name too long: " & name$
+933   IF LEN(name$)>=4 THEN
+934     IF rec_upper$(name$(1 TO 4))="REC_" THEN rec_fail "Reserved name: " & name$
+935   END IF
+936   i=rec_find(name$,rn_name$,rn_n)
+937   IF NOT i THEN
+938     rec_room rn_n,rc_names,"Name"
+939     rn_n=rn_n+1: i=rn_n: rn_name$(i)=rec_upper$(name$)
+940   END IF
+941   IF ordinary THEN rn_ordinary(i)=1
+942 END DEFine rec_user
+943 DEFine FuNction rec_variable(name$,typeid,rank)
+944   LOCal i
+945   IF NOT rec_letter(name$(1)) THEN rec_fail "Invalid record name: " & name$
+946   IF LEN(name$)>64 THEN rec_fail "Record names are limited to 64 bytes"
+947   IF name$(LEN(name$))="$" OR name$(LEN(name$))="%" THEN rec_fail "Record names cannot have a suffix"
+948   rec_user name$,0
+949   i=rec_find(name$,rv_name$,rv_n)
+950   IF i THEN
+951     IF rv_type(i)<>typeid OR rv_rank(i)<>rank THEN rec_fail "Conflicting record type/rank: " & name$
+952     RETurn i
+953   END IF
+954   rec_room rv_n,rc_cap,"Record"
+955   rv_n=rv_n+1: rv_name$(rv_n)=rec_upper$(name$): rv_type(rv_n)=typeid: rv_rank(rv_n)=rank
+956   rv_file$(rv_n)=rc_file$: rv_line(rv_n)=rc_line
+957   RETurn rv_n
+958 END DEFine rec_variable
+959 DEFine FuNction rec_bound$(a,b,stringcap)
+960   LOCal v,i,s$(1024)
+961   s$=rec_part$(a,b)
+962   IF a=b AND rk_kind(a)=2 AND isnum(s$) THEN
+963     v=s$
+964   ELSE
+965     i=rec_find(s$,rm_name$,rm_n)
+966     IF NOT i THEN rec_fail "Field bound needs an integer literal or numeric MANIFEST: " & s$
+967     v=rm_value(i)
+968   END IF
+969   IF v<0 OR v>32767 OR v<>INT(v) OR (stringcap AND v=0) THEN rec_fail "Invalid fixed field bound: " & s$
+970   RETurn rec_num$(v)
+971 END DEFine rec_bound$
+972 DEFine PROCedure rec_descriptor(a,b,formal)
+973   LOCal i,j,last,rs_b(64),rs_e(64),rs_n,asat
+974   rd_name$=rec_token$(a): rd_shape$="": rd_rank=0: rd_type=0: rd_val=0: rd_pool=0
+975   IF rec_upper$(rd_name$)="VAL" THEN
+976     rd_val=1: a=a+1: rd_name$=rec_token$(a)
+977   END IF
+978   IF rk_kind(a)<>1 THEN rec_fail "Expected a declared name"
+979   IF LEN(rd_name$)>64 THEN rec_fail "Declared names are limited to 64 bytes"
+980   i=a+1
+981   IF i<=b THEN
+982     IF rec_token$(i)="(" THEN
+983       j=rec_match(i,b): rd_shape$=rec_part$(i+1,j-1)
+984       IF formal THEN
+985         FOR last=i+1 TO j-1
+986           IF rec_token$(last)<>"," THEN rec_fail "Record array formals use empty dimensions"
+987         END FOR last
+988         rd_rank=1
+989         FOR last=i+1 TO j-1
+990           rd_rank=rd_rank+1
+991         END FOR last
+992       ELSE
+993         rec_split i+1,j-1: rd_rank=rs_n
+994         IF NOT rs_n THEN rec_fail "Record storage arrays need dimension bounds"
+995       END IF
+996       i=j+1
+997     END IF
+998   END IF
+999   IF i<=b THEN
+1000     IF rec_upper$(rec_token$(i))<>"AS" OR i+1>b THEN rec_fail "Expected AS recordType"
+1001     rd_type=rec_typeid(rec_token$(i+1)): i=i+2
+1002   END IF
+1003   IF i<=b THEN
+1004     IF rec_upper$(rec_token$(i))<>"POOL" OR i<>b THEN rec_fail "Unexpected text after record declaration"
+1005     rd_pool=1: i=i+1
+1006   END IF
+1007   IF rd_val AND (rd_type OR rd_rank) THEN rec_fail "VAL supports scalar numbers and strings only"
+1008   IF rd_pool AND (formal OR NOT rd_type OR rd_rank<>1) THEN rec_fail "POOL requires a global one-dimensional record array"
+1009 END DEFine rec_descriptor
+1010 DEFine PROCedure rec_collect(text$)
+1011   LOCal rk_len%(258),rk_s(258),rk_e(258),rk_kind(258),rk_n,rk_line$(1024)
+1012   LOCal rs_b(64),rs_e(64),rs_n,i,j,k,a,b,kind$(1024),name$(1024),n,v
+1013   LOCal rd_name$(64),rd_shape$(1024),rd_rank,rd_type,rd_val,rd_pool
+1014   rec_lex text$
+1015   IF rk_n=0 THEN RETurn
+1016   kind$=rec_upper$(rec_token$(1))
+1017   IF rk_kind(1)=5 OR kind$=CHR$(64) THEN RETurn
+1018   b=rk_n: IF rk_kind(b)=5 THEN b=b-1
+1019   IF kind$="TYPE" THEN
+1020     IF rc_type OR rc_routine OR b<>2 THEN rec_fail "TYPE must be a top-level declaration"
+1021     rc_type=rec_typeid(rec_token$(2))
+1022     IF rt_defined(rc_type) THEN rec_fail "Duplicate TYPE: " & rec_token$(2)
+1023     rt_defined(rc_type)=1: RETurn
+1024   END IF
+1025   IF kind$="END" AND rec_upper$(rec_token$(2))="TYPE" THEN
+1026     IF NOT rc_type THEN rec_fail "END TYPE without TYPE"
+1027     rc_type=0: RETurn
+1028   END IF
+1029   IF kind$="REFERENCE" AND NOT rc_type THEN
+1030     RETurn
+1031   END IF
+1032   IF rc_type THEN
+1033     rec_descriptor 1,b,0
+1034     IF rd_val OR rd_pool THEN rec_fail "Invalid TYPE field"
+1035     FOR i=1 TO rf_n
+1036       IF rf_owner(i)=rc_type AND rec_upper$(rf_name$(i))=rec_upper$(rd_name$) THEN rec_fail "Duplicate field: " & rd_name$
+1037     END FOR i
+1038     rec_room rf_n,rc_cap,"Field"
+1039     rf_n=rf_n+1: rf_owner(rf_n)=rc_type: rf_name$(rf_n)=rec_upper$(rd_name$): rf_type(rf_n)=rd_type
+1040     IF rd_type THEN
+1041       IF rd_rank THEN rec_fail "Arrays of embedded records are not supported"
+1042     ELSE
+1043       IF rd_name$(LEN(rd_name$))="$" AND NOT rd_rank THEN rec_fail "String fields require a capacity"
+1044       IF rd_rank THEN
+1045         rec_split 3,b-1: rd_shape$=""
+1046         FOR i=1 TO rs_n
+1047           v=rd_name$(LEN(rd_name$))="$" AND i=rs_n
+1048           rd_shape$=rec_join$(rd_shape$,rec_bound$(rs_b(i),rs_e(i),v))
+1049         END FOR i
+1050       END IF
+1051       rf_shape$(rf_n)=rd_shape$: rf_rank(rf_n)=rd_rank
+1052       IF rd_name$(LEN(rd_name$))="$" THEN rf_rank(rf_n)=rd_rank-1
+1053     END IF
+1054     RETurn
+1055   END IF
+1056   IF kind$="DEFINE" OR kind$="DEF" THEN
+1057     IF rc_routine THEN rec_fail "Nested routines are not supported by the record profile"
+1058     name$=rec_token$(3)
+1059     rec_user name$,0
+1060     IF rec_find(name$,rr_name$,rr_n) THEN rec_fail "Duplicate routine: " & name$
+1061     rec_room rr_n,rc_cap,"Routine"
+1062     rr_n=rr_n+1: rc_routine=rr_n: rr_name$(rr_n)=rec_upper$(name$): rr_first(rr_n)=ra_n+1
+1063     rr_fun(rr_n)=rec_upper$(rec_token$(2))="FUNCTION" OR rec_upper$(rec_token$(2))="FUN"
+1064     IF b>3 THEN
+1065       IF rec_token$(4)<>"(" THEN rec_fail "Routine result annotations are not supported; use an output record parameter"
+1066       j=rec_match(4,b)
+1067       IF j<>b THEN rec_fail "Functions cannot return records; use an output record parameter"
+1068       rec_split 5,j-1
+1069       FOR i=1 TO rs_n
+1070         rec_descriptor rs_b(i),rs_e(i),1
+1071         rec_room ra_n,rc_cap,"Parameter"
+1072         ra_n=ra_n+1: ra_name$(ra_n)=rec_upper$(rd_name$): ra_val(ra_n)=rd_val: ra_rank(ra_n)=rd_rank
+1073         IF rd_type THEN
+1074           ra_var(ra_n)=rec_variable(rd_name$,rd_type,rd_rank)
+1075         ELSE
+1076           rec_user rd_name$,1
+1077         END IF
+1078         rr_count(rr_n)=rr_count(rr_n)+1
+1079       END FOR i
+1080     END IF
+1081     RETurn
+1082   END IF
+1083   IF kind$="END" AND (rec_upper$(rec_token$(2))="DEFINE" OR rec_upper$(rec_token$(2))="DEF") THEN
+1084     rc_routine=0: RETurn
+1085   END IF
+1086   IF kind$="MANIFEST" THEN
+1087     i=2: IF rec_token$(i)=":" THEN i=i+1
+1088     IF b=i+2 AND rec_token$(i+1)="=" AND isnum(rec_token$(i+2)) THEN
+1089       v=rec_find(rec_token$(i),rm_name$,rm_n)
+1090       IF NOT v THEN
+1091         rec_room rm_n,rc_cap,"Manifest"
+1092         rm_n=rm_n+1: v=rm_n
+1093       END IF
+1094       rm_name$(v)=rec_upper$(rec_token$(i)): rm_value(v)=rec_token$(i+2)
+1095     END IF
+1096   END IF
+1097   IF kind$="FOR" AND b>3 THEN
+1098     IF rec_token$(3)="=" THEN rec_user rec_token$(2),1
+1099   END IF
+1100   IF kind$="IMPLICIT%" OR kind$="IMPLICIT$" THEN
+1101     FOR i=2 TO b
+1102       IF rk_kind(i)=1 THEN
+1103         rec_user rec_token$(i),1
+1104       ELSE
+1105         IF rec_token$(i)<>"," THEN rec_fail "Use an explicit IMPLICIT name list"
+1106       END IF
+1107     END FOR i
+1108     RETurn
+1109   END IF
+1110   IF kind$="DIM" OR kind$="LOCAL" THEN
+1111     rec_split 2,b
+1112     FOR i=1 TO rs_n
+1113       a=rs_b(i): n=0
+1114       FOR j=a TO rs_e(i)
+1115         IF rec_upper$(rec_token$(j))="AS" THEN n=1
+1116       END FOR j
+1117       IF n THEN
+1118         rec_descriptor a,rs_e(i),0
+1119         IF kind$="LOCAL" AND NOT rc_routine THEN rec_fail "LOCal record outside a routine"
+1120         v=rec_variable(rd_name$,rd_type,rd_rank)
+1121         IF kind$="LOCAL" THEN
+1122           n=0
+1123           FOR k=1 TO rc_locals
+1124             IF rc_lr(k)=rc_routine AND rc_lv(k)=v THEN n=1
+1125           END FOR k
+1126           IF NOT n THEN
+1127           rec_room rc_locals,rc_cap,"Local record"
+1128           rc_locals=rc_locals+1: rc_lr(rc_locals)=rc_routine: rc_lv(rc_locals)=v
+1129           END IF
+1130         END IF
+1131         IF rd_pool THEN
+1132           IF kind$<>"DIM" OR rc_routine THEN rec_fail "POOL must be global"
+1133           rv_pool(v)=1
+1134         END IF
+1135       ELSE
+1136         rec_user rec_token$(a),1
+1137         IF kind$="LOCAL" AND rc_routine THEN rr_simplelocals(rc_routine)=rr_simplelocals(rc_routine)+1
+1138         IF a<rs_e(i) THEN
+1139           IF rec_token$(a+1)="(" THEN rn_array(rec_find(rec_token$(a),rn_name$,rn_n))=1
+1140         END IF
+1141       END IF
+1142     END FOR i
+1143   END IF
+1144   FOR i=1 TO b
+1145     IF rk_kind(i)=1 THEN
+1146       n=1
+1147       IF i>1 THEN
+1148         IF rec_token$(i-1)="." OR rec_upper$(rec_token$(i-1))="AS" THEN n=0
+1149       END IF
+1150       IF n THEN rec_user rec_token$(i),0
+1151     END IF
+1152   END FOR i
+1153   IF b>1 AND rk_kind(1)=1 AND rec_token$(2)="=" THEN rn_assignment(rec_find(rec_token$(1),rn_name$,rn_n))=1
+1154 END DEFine rec_collect
+1155 DEFine PROCedure rec_layout(owner,root,prefix$)
+1156   LOCal i,j,path$(1024)
+1157   IF rt_busy(owner) THEN rec_fail "Recursive embedded TYPE: " & rt_name$(owner)
+1158   IF NOT rt_defined(owner) THEN rec_fail "Unknown TYPE: " & rt_name$(owner)
+1159   rt_busy(owner)=1: j=rl_n
+1160   FOR i=1 TO rf_n
+1161     IF rf_owner(i)=owner THEN
+1162       path$=prefix$ & rf_name$(i)
+1163       IF LEN(path$)>160 THEN rec_fail "Flattened field path exceeds 160 bytes"
+1164       IF rf_type(i) THEN
+1165         rec_layout rf_type(i),root,path$ & "_"
+1166       ELSE
+1167         rec_room rl_n,rc_cap,"Flattened field"
+1168         rl_n=rl_n+1: rl_owner(rl_n)=root: rl_path$(rl_n)=path$
+1169         rl_shape$(rl_n)=rf_shape$(i): rl_rank(rl_n)=rf_rank(i)
+1170       END IF
+1171     END IF
+1172   END FOR i
+1173   rt_busy(owner)=0
+1174   IF rl_n=j THEN rec_fail "Empty TYPE: " & rt_name$(owner)
+1175 END DEFine rec_layout
+1176 DEFine PROCedure rec_generated(name$)
+1177   LOCal i
+1178   IF LEN(name$)>rc_maxname THEN rec_fail "Generated name too long: " & name$
+1179   IF rec_find(name$,rn_name$,rn_n) THEN rec_fail "Generated name collides with source: " & name$
+1180   IF rec_find(name$,rg_name$,rg_n) THEN rec_fail "Generated paths collide: " & name$
+1181   rec_room rg_n,rc_names,"Generated name"
+1182   rg_n=rg_n+1: rg_name$(rg_n)=rec_upper$(name$)
+1183 END DEFine rec_generated
+1184 DEFine PROCedure rec_helper(name$)
+1185   LOCal i
+1186   i=rec_find(name$,rn_name$,rn_n)
+1187   IF i THEN
+1188     IF rn_ordinary(i) OR rn_assignment(i) THEN rec_fail "Pool helper collides with storage: " & name$
+1189   END IF
+1190   IF rec_find(name$,rr_name$,rr_n) THEN rec_fail "Pool helper collides with routine: " & name$
+1191   IF rec_find(name$,rg_name$,rg_n) THEN rec_fail "Generated paths collide: " & name$
+1192   rec_room rg_n,rc_names,"Generated name"
+1193   rg_n=rg_n+1: rg_name$(rg_n)=rec_upper$(name$)
+1194 END DEFine rec_helper
+1195 DEFine PROCedure rec_check
+1196   LOCal i,j,k
+1197   IF rc_type THEN rec_fail "Missing END TYPE"
+1198   IF rc_routine THEN rec_fail "Missing END DEFine"
+1199   FOR i=1 TO rt_n
+1200     rc_file$=rt_file$(i): rc_line=rt_line(i)
+1201     rec_layout i,i,""
+1202   END FOR i
+1203   FOR i=1 TO rv_n
+1204     rc_file$=rv_file$(i): rc_line=rv_line(i)
+1205     j=rec_find(rv_name$(i),rn_name$,rn_n)
+1206     IF rn_ordinary(j) THEN rec_fail "Record name also used for ordinary storage: " & rv_name$(i)
+1207     IF rec_find(rv_name$(i),rr_name$,rr_n) THEN rec_fail "Record name also used for a routine: " & rv_name$(i)
+1208     FOR k=1 TO rl_n
+1209       IF rl_owner(k)=rv_type(i) THEN
+1210         rec_generated rec_name$(i,k)
+1211         IF rv_rank(i)+rl_rank(k)+rec_isstring(rl_path$(k))>rc_maxdims THEN rec_fail "Generated array rank exceeds profile"
+1212       END IF
+1213     END FOR k
+1214     IF rv_pool(i) THEN
+1215       rec_helper rv_name$(i) & "_new%"
+1216       rec_helper rv_name$(i) & "_free"
+1217     END IF
+1218   END FOR i
+1219 END DEFine rec_check
+1220 DEFine PROCedure pass_two(in_file$,file_num)
+1221   rec_mapstart
+1222   pass_two_file rec_source$,file_num
+1223   rec_mapend
+1224 END DEFine pass_two
+1225 DEFine PROCedure pass_two_file (in_file$, file_num)
+1226   LOCal in3$(100), a$(100), space$(1), rem$(2)
+1227   LOCal comm$(2), at$(1), lab$(1), cont$(2)
+1228   rem$ = CHR$(42) & CHR$(42): REMark REMark flag.
+1229   comm$ = CHR$(35) & CHR$(35): REMark Comment flag, ignore these lines.
+1230   lab$ = CHR$(64): REMark Label flag. 
+1231   cont$ = "\+": REMark Continuation flag, join this to the next line(s).
+1232   OPEN_IN #file_num,in_file$
+1233   REPeat pass_2
+1234     num_count = num_count + 1
+1235     IF (num_count MOD 10) = 0 THEN PRINT #3,CHR$(1);
+1236     IF EOF(#file_num) THEN EXIT pass_2
+1237     INPUT #file_num,in$
+1238     rec_origin
+1239     rec_range
+1240     in$ = stripTab$(in$)  
+1241     temp=first_char(in$)
+1242     IF temp=0 THEN
+1243       IF d_ignore$ == "Y" THEN
+1244         NEXT pass_2
+1245       ELSE
+1246         print #4, line_num; " :"           
+1247         line_num = line_num + line_delta
+1248           rec_range
+1249         next pass_2
+1250       END IF
+1251     END IF
+1252     IF in$(1) = lab$ THEN NEXT pass_2: END IF
+1253     IF in$(temp TO temp + 1) = comm$ THEN NEXT pass_2: END IF
+1254     IF in$(temp) = "." THEN NEXT pass_2: END IF
+1255     IF in$(LEN(in$)-1 TO) = "\+" THEN
+1256       REMark Join lines until we have the complete line.
+1257       REMark ready for further processing.
+1258       in$ = joinLine$(in$)
+1259     END IF
+1260     IF comm$ INSTR in$ THEN
+1261       in$ = stripComment$(in$)
+1262     END IF
+1263     IF rem$ INSTR in$ THEN
+1264       in$ = doRemark$(in$)
+1265     END IF
+1266     IF upper$(in$(1 TO 7))="#DEFINE" THEN NEXT pass_2: END IF
+1267     IF LEN(in$) >= 6 THEN
+1268       IF in$(1 TO 6) = "#ENDIF" THEN NEXT pass_2: END IF
+1269     END IF
+1270     temp = lab$ INSTR in$
+1271     IF rc_enabled THEN temp=rec_labelref(in$)
+1272     IF temp<>0 THEN
+1273       a$ = in$(temp TO )
+1274       temp2 = 0
+1275       REPEAT loop2
+1276         temp2 = temp2 + 1
+1277         IF temp2 > d_labels THEN
+1278           BEEP 1000,10
+1279           INK #3,2
+1280           PRINT #3,lngarray$(35);a$;lngarray$(32)
+1281           PRINT #3,lngarray$(28);num_count;lngarray$(29);in_file$
+1282           abort_out
+1283         END IF
+1284         IF label$(temp2) == a$ THEN EXIT loop2
+1285       END REPEAT loop2
+1286       PRINT #4,line_num;" ";in$(1 TO temp-1);label(temp2)
+1287       line_num = line_num + line_delta
+1288           rec_range
+1289     ELSE
+1290       IF upper$(in$(1 to 8))="#INCLUDE" THEN
+1291         pass_two_file d_working$&in$(10 to), file_num+1
+1292       ELSE
+1293         IF upper$(in$(1 TO 6))="#IFDEF" THEN
+1294           temp = 0
+1295           temp$ = upper$(in$(8 TO))
+1296           FOR x = 1 TO define_var
+1297             IF temp$ = defn$((x),1 TO LEN(temp$)) THEN temp = x
+1298           END FOR X
+1299           IF temp = 0 THEN
+1300             REPEAT loop
+1301               INPUT #file_num,in2$
+1302               IF LEN(in2$) < 6 THEN NEXT loop
+1303               IF upper$(in2$(1 TO 6))="#ENDIF" THEN EXIT loop
+1304             END REPeat loop
+1305           END IF
+1306         ELSE
+1307           PRINT #4,line_num;" ";in$
+1308           line_num = line_num + line_delta
+1309           rec_range
+1310         END IF
+1311       END IF
+1312     END IF
+1313   END REPeat pass_2
+1314   CLOSE #file_num
+1315 END DEFine pass_two_file
+1316 DEFine PROCedure rec_walk(emitting)
+1317   LOCal text$(1000),rc_headerref$(1000),first
+1318   rc_headerref$=""
+1319   rc_emit=emitting: rc_type=0: rc_routine=0: rc_loop=0
+1320   OPEN_IN #24,rc_work$(1): rc_open40=1
+1321   REPeat rec_lower_stream
+1322     IF EOF(#24) THEN EXIT rec_lower_stream
+1323     INPUT #24,rc_file$: INPUT #24,rc_line: INPUT #24,text$
+1324     first=first_char(text$)
+1325     IF NOT rc_type AND first>0 THEN
+1326       IF LEN(text$)-first>=8 THEN
+1327         IF rec_upper$(text$(first TO first+8))="REFERENCE" THEN rec_pending_reference text$
+1328       END IF
+1329     END IF
+1330     rc_temp=0: rec_statement text$
+1331   END REPeat rec_lower_stream
+1332   CLOSE #24: rc_open40=0
+1333   rc_file$="generated pool helpers": rc_line=0: rec_pools
+1334 END DEFine rec_walk
+1335 DEFine PROCedure rec_pending_reference(text$)
+1336   LOCal rk_len%(258),rk_s(258),rk_e(258),rk_kind(258),rk_n,rk_line$(1024),last
+1337   rec_lex text$
+1338   IF rec_upper$(rec_token$(1))<>"REFERENCE" THEN RETurn
+1339   last=rk_n: IF rk_kind(last)=5 THEN last=last-1
+1340   rc_headerref$=rec_join$(rc_headerref$,rec_part$(2,last))
+1341 END DEFine rec_pending_reference
+1342 DEFine FuNction rec_labelref(text$)
+1343   LOCal rk_len%(258),rk_s(258),rk_e(258),rk_kind(258),rk_n,rk_line$(1024),i
+1344   IF NOT (CHR$(64) INSTR text$) THEN RETurn 0
+1345   rec_lex text$
+1346   FOR i=1 TO rk_n
+1347     IF rk_kind(i)=5 THEN RETurn 0
+1348     IF rec_token$(i)=CHR$(64) THEN RETurn rk_s(i)
+1349   END FOR i
+1350   RETurn 0
+1351 END DEFine rec_labelref
+1352 DEFine FuNction rec_temp$
+1353   rc_temp=rc_temp+1
+1354   IF rc_temp>64 THEN rec_fail "Too many simultaneously required temporaries"
+1355   IF rc_routine THEN
+1356     IF rc_temp>rr_temps(rc_routine) THEN rr_temps(rc_routine)=rc_temp
+1357   END IF
+1358   RETurn "rec_t" & rec_num$(rc_temp)
+1359 END DEFine rec_temp$
+1360 DEFine PROCedure rec_put(text$)
+1361   IF LEN(text$)>1000 THEN rec_fail "Expanded line exceeds SSB's 1000-byte input buffer"
+1362   IF rc_emit THEN
+1363     PRINT #25,text$
+1364     PRINT #26,rc_file$: PRINT #26,rc_line
+1365   END IF
+1366 END DEFine rec_put
+1367 DEFine PROCedure rec_view(a,b)
+1368   LOCal i,j,f,owner,path$(1024),rank,rs_b(64),rs_e(64),rs_n
+1369   vw_var=rec_find(rec_token$(a),rv_name$,rv_n): vw_end=a-1: vw_leaf=0
+1370   vw_sel$="": vw_prefix$="": vw_type=0: vw_rank=0
+1371   IF NOT vw_var THEN RETurn
+1372   vw_type=rv_type(vw_var): vw_rank=rv_rank(vw_var): i=a+1
+1373   IF i<=b AND rec_token$(i)="(" THEN
+1374     IF NOT vw_rank THEN rec_fail "A scalar record cannot be subscripted"
+1375     j=rec_match(i,b): rec_split i+1,j-1
+1376     IF rs_n<>vw_rank THEN rec_fail "Wrong record array rank: " & rv_name$(vw_var)
+1377     vw_sel$=rec_part$(i+1,j-1): vw_rank=0: i=j+1
+1378   END IF
+1379   REPeat rec_fields
+1380     IF i>b THEN EXIT rec_fields
+1381     IF rec_token$(i)<>"." THEN EXIT rec_fields
+1382     IF vw_rank THEN rec_fail "Subscript the record array before selecting a field"
+1383     IF i+1>b THEN rec_fail "Missing field name"
+1384     owner=vw_type: f=0
+1385     FOR j=1 TO rf_n
+1386       IF rf_owner(j)=owner AND rec_upper$(rf_name$(j))=rec_upper$(rec_token$(i+1)) THEN f=j
+1387     END FOR j
+1388     IF NOT f THEN rec_fail "Unknown field: " & rec_part$(a,i+1)
+1389     i=i+2
+1390     IF rf_type(f) THEN
+1391       vw_type=rf_type(f): vw_prefix$=vw_prefix$ & rf_name$(f) & "_"
+1392     ELSE
+1393       path$=vw_prefix$ & rf_name$(f)
+1394       FOR j=1 TO rl_n
+1395         IF rl_owner(j)=rv_type(vw_var) AND rec_upper$(rl_path$(j))=rec_upper$(path$) THEN vw_leaf=j
+1396       END FOR j
+1397       IF NOT vw_leaf THEN rec_fail "Internal field layout error"
+1398       IF i<=b AND rec_token$(i)="(" THEN
+1399         j=rec_match(i,b)
+1400         rec_split i+1,j-1
+1401         rank=rl_rank(vw_leaf)
+1402         IF rec_isstring(rf_name$(f)) THEN
+1403           IF rs_n<>rank AND rs_n<>rank+1 THEN rec_fail "Wrong string field rank"
+1404         ELSE
+1405           IF rs_n<>rank THEN rec_fail "Wrong field array rank"
+1406         END IF
+1407         vw_sel$=rec_join$(vw_sel$,rec_part$(i+1,j-1)): i=j+1
+1408       ELSE
+1409         IF rl_rank(vw_leaf)>0 AND vw_sel$<>"" THEN rec_fail "Numeric subarray references are unsupported; select all field indices"
+1410       END IF
+1411       vw_type=0: EXIT rec_fields
+1412     END IF
+1413   END REPeat rec_fields
+1414   vw_end=i-1
+1415 END DEFine rec_view
+1416 DEFine FuNction rec_leafname$(v,prefix$,leaf)
+1417   RETurn rv_name$(v) & "_" & prefix$ & rl_path$(leaf)
+1418 END DEFine rec_leafname$
+1419 DEFine FuNction rec_capture$(selectors$)
+1420   LOCal rk_len%(258),rk_s(258),rk_e(258),rk_kind(258),rk_n,rk_line$(1024)
+1421   LOCal rs_b(64),rs_e(64),rs_n,i,s$(1024),result$(1024),t$(1024)
+1422   IF selectors$="" THEN RETurn ""
+1423   rec_lex selectors$: rec_split 1,rk_n: result$=""
+1424   FOR i=1 TO rs_n
+1425     s$=rec_part$(rs_b(i),rs_e(i))
+1426     IF isnum(s$) OR rec_find(s$,rm_name$,rm_n) THEN
+1427       result$=rec_join$(result$,s$)
+1428     ELSE
+1429       t$=rec_temp$
+1430       rec_put t$ & " = " & rec_expr$(s$)
+1431       result$=rec_join$(result$,t$)
+1432     END IF
+1433   END FOR i
+1434   RETurn result$
+1435 END DEFine rec_capture$
+1436 DEFine FuNction rec_pure_builtin(name$)
+1437   RETurn ("|" & name$ & "|") INSTR "|ABS|ACOS|ACOT|ASIN|ATAN|CHR$|CODE|COS|COT|DEG|DIMN|EXP|FILL$|INT|LEN|LN|LOG10|PI|RAD|SIN|SQRT|TAN|"
+1438 END DEFine rec_pure_builtin
+1439 DEFine FuNction rec_effect(text$,except$)
+1440   LOCal rk_len%(258),rk_s(258),rk_e(258),rk_kind(258),rk_n,rk_line$(1024)
+1441   LOCal i,j,s$(1024),known,builtin
+1442   rec_lex text$
+1443   FOR i=1 TO rk_n
+1444     IF rk_kind(i)=1 THEN
+1445       s$=rec_upper$(rec_token$(i))
+1446       builtin=rec_pure_builtin(s$)
+1447       IF s$<>rec_upper$(except$) THEN
+1448         j=rec_find(s$,rr_name$,rr_n)
+1449         IF j THEN
+1450           IF rr_fun(j) THEN RETurn 1
+1451         END IF
+1452         IF i<rk_n AND rec_token$(i+1)="(" THEN
+1453           IF NOT builtin THEN
+1454             j=rec_find(s$,rn_name$,rn_n)
+1455             IF NOT j THEN RETurn 1
+1456             IF NOT rn_array(j) AND NOT rec_find(s$,rv_name$,rv_n) THEN RETurn 1
+1457           END IF
+1458         END IF
+1459         IF s$="RND" OR s$="RND%" OR s$="DATE" OR s$="INKEY$" OR s$="KEYROW" THEN RETurn 1
+1460         known=0
+1461         j=rec_find(s$,rn_name$,rn_n)
+1462         IF j THEN known=rn_ordinary(j) OR rn_array(j) OR rn_assignment(j)
+1463         IF rec_find(s$,rv_name$,rv_n) OR rec_find(s$,rm_name$,rm_n) THEN known=1
+1464         IF builtin THEN known=1
+1465         IF s$="TO" OR s$="AND" OR s$="OR" OR s$="XOR" OR s$="NOT" OR s$="DIV" OR s$="MOD" OR s$="PI" THEN known=1
+1466         IF i>1 THEN
+1467           IF rec_token$(i-1)="." THEN known=1
+1468         END IF
+1469         IF NOT known THEN RETurn 1
+1470       END IF
+1471     END IF
+1472   END FOR i
+1473   RETurn 0
+1474 END DEFine rec_effect
+1475 DEFine FuNction rec_arguments$(routine,text$,expression)
+1476   LOCal rk_len%(258),rk_s(258),rk_e(258),rk_kind(258),rk_n,rk_line$(1024)
+1477   LOCal rs_b(64),rs_e(64),rs_n,i,j,p,v,n,sel$(1024),prefix$(160),result$(1024),actual$(1024),needs,effect,before
+1478   LOCal vw_var,vw_type,vw_rank,vw_end,vw_leaf,vw_sel$(1024),vw_prefix$(160)
+1479   rec_lex text$: rec_split 1,rk_n
+1480   IF rs_n<>rr_count(routine) THEN rec_fail "Wrong argument count: " & rr_name$(routine)
+1481   needs=0
+1482   FOR i=1 TO rs_n
+1483     p=rr_first(routine)+i-1
+1484     IF ra_var(p) THEN
+1485       rec_view rs_b(i),rs_e(i)
+1486       IF NOT vw_var OR vw_leaf OR vw_end<>rs_e(i) THEN rec_fail "Record parameter requires declared record storage"
+1487       v=ra_var(p)
+1488       IF vw_type<>rv_type(v) OR vw_rank<>rv_rank(v) THEN rec_fail "Record parameter type/rank mismatch: " & ra_name$(p)
+1489       IF vw_sel$<>"" THEN needs=1
+1490     END IF
+1491   END FOR i
+1492   effect=rec_effect(text$,"")
+1493   IF needs AND effect THEN
+1494     IF expression OR rs_n<>1 THEN rec_fail "Split effectful record selectors/other arguments into explicit temporaries"
+1495   END IF
+1496   result$=""
+1497   FOR i=1 TO rs_n
+1498     p=rr_first(routine)+i-1: actual$=rec_part$(rs_b(i),rs_e(i))
+1499     IF ra_var(p) THEN
+1500       rec_view rs_b(i),rs_e(i)
+1501       v=vw_var: n=vw_type: prefix$=vw_prefix$
+1502       IF vw_sel$<>"" THEN
+1503         FOR j=1 TO rl_n
+1504           IF rl_owner(j)=n AND rl_rank(j)>0 THEN rec_fail "Cannot pass a record array element containing array fields; use a standalone work record and copy"
+1505         END FOR j
+1506         IF rc_profile$="TURBO509" THEN rec_fail "Turbo cannot pass record array elements by reference; use a standalone work record and copy, or SSBRECPROFILE=SBASIC for interpreted output"
+1507       END IF
+1508       sel$=rec_capture$(vw_sel$)
+1509       FOR j=1 TO rl_n
+1510         IF rl_owner(j)=n THEN
+1511           actual$=rec_leafname$(v,prefix$,j)
+1512           IF sel$<>"" THEN actual$=actual$ & "(" & sel$ & ")"
+1513           result$=rec_join$(result$,actual$)
+1514         END IF
+1515       END FOR j
+1516     ELSE
+1517       before=rc_temp
+1518       actual$=rec_expr$(actual$)
+1519       IF rc_temp<>before AND i>1 THEN
+1520         IF rec_effect(rec_part$(1,rs_b(i)-2),"") THEN rec_fail "Split earlier effectful arguments before a captured record selector"
+1521       END IF
+1522       IF ra_val(p) THEN actual$="(" & actual$ & ")"
+1523       result$=rec_join$(result$,actual$)
+1524     END IF
+1525   END FOR i
+1526   RETurn result$
+1527 END DEFine rec_arguments$
+1528 DEFine FuNction rec_expr$(text$)
+1529   LOCal rk_len%(258),rk_s(258),rk_e(258),rk_kind(258),rk_n,rk_line$(1024)
+1530   LOCal i,j,v,pos,result$(1024),s$(1024),before
+1531   LOCal vw_var,vw_type,vw_rank,vw_end,vw_leaf,vw_sel$(1024),vw_prefix$(160)
+1532   rec_lex text$: i=1: pos=1: result$=""
+1533   REPeat rec_expression
+1534     IF i>rk_n THEN EXIT rec_expression
+1535     IF rk_kind(i)=5 THEN EXIT rec_expression
+1536     s$="": j=i
+1537     IF rec_token$(i)="." THEN
+1538       IF i=rk_n THEN rec_fail "Field selection from a function result is unsupported"
+1539       IF rk_kind(i+1)<>2 THEN rec_fail "Field selection requires a declared record"
+1540     END IF
+1541     IF rk_kind(i)=1 THEN
+1542       v=rec_find(rec_token$(i),rr_name$,rr_n)
+1543       IF v AND i<rk_n AND rec_token$(i+1)="(" THEN
+1544         IF NOT rr_fun(v) THEN rec_fail "A procedure call is not an expression"
+1545         j=rec_match(i+1,rk_n): before=rc_temp
+1546         s$=rec_token$(i) & "(" & rec_arguments$(v,rec_part$(i+2,j-1),1) & ")"
+1547         IF rc_temp<>before AND (i<>1 OR j<>rk_n) THEN rec_fail "Split a record argument selector out of the surrounding expression"
+1548       ELSE
+1549         rec_view i,rk_n
+1550         IF vw_var THEN
+1551           IF NOT vw_leaf THEN rec_fail "Whole records are only valid in copies and record parameters"
+1552           before=rc_temp
+1553           s$=rec_access$(vw_var,vw_leaf,rec_expr$(vw_sel$)): j=vw_end
+1554           IF rc_temp<>before THEN rec_fail "Split captured record arguments out of field subscripts"
+1555         ELSE
+1556           IF i<rk_n AND rec_token$(i+1)="." THEN rec_fail "Unknown record: " & rec_token$(i)
+1557         END IF
+1558       END IF
+1559     END IF
+1560     IF s$<>"" THEN
+1561       IF rk_s(i)>pos THEN result$=result$ & text$(pos TO rk_s(i)-1)
+1562       result$=result$ & s$: pos=rk_e(j)+1: i=j
+1563     END IF
+1564     i=i+1
+1565   END REPeat rec_expression
+1566   IF pos<=LEN(text$) THEN result$=result$ & text$(pos TO)
+1567   RETurn result$
+1568 END DEFine rec_expr$
+1569 DEFine FuNction rec_loops$(shape$)
+1570   LOCal rk_len%(258),rk_s(258),rk_e(258),rk_kind(258),rk_n,rk_line$(1024)
+1571   LOCal rs_b(64),rs_e(64),rs_n,i,t$(1024),indices$(1024)
+1572   indices$=""
+1573   rec_lex shape$: rec_split 1,rk_n
+1574   FOR i=1 TO rs_n
+1575     t$=rec_temp$: rec_put "FOR " & t$ & " = 0 TO " & rec_part$(rs_b(i),rs_e(i))
+1576     indices$=rec_join$(indices$,t$)
+1577     rc_loop=rc_loop+1: rc_loop$(rc_loop)=t$
+1578   END FOR i
+1579   RETurn indices$
+1580 END DEFine rec_loops$
+1581 DEFine PROCedure rec_endloops(old)
+1582   REPeat rec_close_loops
+1583     IF rc_loop<=old THEN EXIT rec_close_loops
+1584     rec_put "END FOR " & rc_loop$(rc_loop): rc_loop=rc_loop-1
+1585   END REPeat rec_close_loops
+1586 END DEFine rec_endloops
+1587 DEFine PROCedure rec_copy(left$,right$)
+1588   LOCal rk_len%(258),rk_s(258),rk_e(258),rk_kind(258),rk_n,rk_line$(1024)
+1589   LOCal vw_var,vw_type,vw_rank,vw_end,vw_leaf,vw_sel$(1024),vw_prefix$(160)
+1590   LOCal dv,sv,typeid,dp$(160),sp$(160),ds$(1024),ss$(1024),di$(1024),si$(1024),shape$(120),j,old
+1591   rec_lex left$: rec_view 1,rk_n
+1592   IF NOT vw_var OR vw_leaf OR vw_end<>rk_n OR vw_rank THEN rec_fail "Copy destination must be one record"
+1593   dv=vw_var: typeid=vw_type: dp$=vw_prefix$: ds$=vw_sel$
+1594   rec_lex right$: rec_view 1,rk_n
+1595   IF NOT vw_var OR vw_leaf OR vw_end<>rk_n OR vw_rank THEN rec_fail "Functions cannot return records; use an output record procedure"
+1596   IF vw_type<>typeid THEN rec_fail "Record copy requires the same nominal TYPE"
+1597   sv=vw_var: sp$=vw_prefix$: ss$=vw_sel$
+1598   IF rec_effect(ds$,"") AND rec_effect(ss$,"") THEN rec_fail "Split effectful copy selectors into explicit temporaries"
+1599   ds$=rec_capture$(ds$): ss$=rec_capture$(ss$)
+1600   FOR j=1 TO rl_n
+1601     IF rl_owner(j)=typeid THEN
+1602       shape$=rec_logicalshape$(j): di$="": old=rc_loop
+1603       di$=rec_loops$(shape$)
+1604       si$=rec_join$(ss$,di$): di$=rec_join$(ds$,di$)
+1605       rec_put rec_selected$(dv,dp$,j,di$) & " = " & rec_selected$(sv,sp$,j,si$)
+1606       rec_endloops old
+1607     END IF
+1608   END FOR j
+1609 END DEFine rec_copy
+1610 DEFine FuNction rec_selected$(v,prefix$,leaf,indices$)
+1611   LOCal s$(1024)
+1612   s$=rec_leafname$(v,prefix$,leaf)
+1613   IF indices$<>"" THEN s$=s$ & "(" & indices$ & ")"
+1614   RETurn s$
+1615 END DEFine rec_selected$
+1616 DEFine FuNction rec_logicalshape$(leaf)
+1617   LOCal i,s$(1024)
+1618   s$=rl_shape$(leaf)
+1619   IF rec_isstring(rl_path$(leaf)) THEN
+1620     i=LEN(s$)
+1621     REPeat rec_last_axis
+1622       IF i=0 THEN RETurn ""
+1623       IF s$(i)="," THEN RETurn s$(TO i-1)
+1624       i=i-1
+1625     END REPeat rec_last_axis
+1626   END IF
+1627   RETurn s$
+1628 END DEFine rec_logicalshape$
+1629 DEFine FuNction rec_isstring(s$)
+1630   RETurn s$(LEN(s$))="$"
+1631 END DEFine rec_isstring
+1632 DEFine PROCedure rec_storage(v,shape$,pool)
+1633   LOCal rk_len%(258),rk_s(258),rk_e(258),rk_kind(258),rk_n,rk_line$(1024)
+1634   LOCal rs_b(64),rs_e(64),rs_n,i,j,s$(1024),t$(64),bounds$(1024),indices$(1024),old,value$(1024)
+1635   bounds$=""
+1636   rec_lex shape$: rec_split 1,rk_n
+1637   FOR i=1 TO rs_n
+1638     t$=rec_temp$: s$=rec_part$(rs_b(i),rs_e(i))
+1639     IF rec_effect(shape$,"") AND rs_n>1 THEN rec_fail "Split effectful dimensions into explicit temporaries"
+1640     rec_put t$ & " = " & rec_expr$(s$)
+1641     rec_put "IF " & t$ & " < " & rec_num$(pool) & " OR " & t$ & " > 32767 OR " & t$ & " <> INT(" & t$ & ') THEN PRINT "Invalid record bound: ' & rv_name$(v) & '": STOP'
+1642     bounds$=rec_join$(bounds$,t$)
+1643   END FOR i
+1644   FOR j=1 TO rl_n
+1645     IF rl_owner(j)=rv_type(v) THEN
+1646       s$=rec_join$(bounds$,rl_shape$(j))
+1647       IF s$<>"" THEN rec_put "DIM " & rec_name$(v,j) & "(" & s$ & ")"
+1648       indices$="": old=rc_loop
+1649       indices$=rec_loops$(rec_join$(bounds$,rec_logicalshape$(j)))
+1650       value$="0": IF rec_isstring(rl_path$(j)) THEN value$='""'
+1651       rec_put rec_access$(v,j,indices$) & " = " & value$
+1652       rec_endloops old
+1653     END IF
+1654   END FOR j
+1655   IF pool THEN rec_poolinit v,bounds$
+1656 END DEFine rec_storage
+1657 DEFine PROCedure rec_header(routine)
+1658   LOCal p,v,j,i,count,s$(1024),ref$(1024),name$(320),localcount
+1659   s$="": ref$="": count=0
+1660   localcount=rr_simplelocals(routine)+rr_temps(routine)
+1661   FOR p=rr_first(routine) TO rr_first(routine)+rr_count(routine)-1
+1662     v=ra_var(p)
+1663     IF v THEN
+1664       FOR j=1 TO rl_n
+1665         IF rl_owner(j)=rv_type(v) THEN
+1666           name$=rec_name$(v,j): s$=rec_join$(s$,name$): count=count+1
+1667           name$=name$ & rec_refdims$(v,j)
+1668           ref$=rec_join$(ref$,name$)
+1669         END IF
+1670       END FOR j
+1671     ELSE
+1672       s$=rec_join$(s$,ra_name$(p)): count=count+1
+1673     END IF
+1674   END FOR p
+1675   IF count>rc_maxparams THEN rec_fail "Expanded parameter count exceeds profile"
+1676   IF rc_headerref$<>"" THEN rec_reference "REFERENCE " & rc_headerref$
+1677   rc_headerref$=""
+1678   IF ref$<>"" THEN rec_put "REFERENCE " & ref$
+1679   name$="PROCedure ": IF rr_fun(routine) THEN name$="FuNction "
+1680   IF s$<>"" THEN s$="(" & s$ & ")"
+1681   rec_put "DEFine " & name$ & rr_name$(routine) & s$
+1682   FOR i=1 TO rr_temps(routine)
+1683     rec_put "LOCal rec_t" & rec_num$(i)
+1684   END FOR i
+1685   FOR i=1 TO rc_locals
+1686     IF rc_lr(i)=routine THEN
+1687       v=rc_lv(i)
+1688       FOR j=1 TO rl_n
+1689         IF rl_owner(j)=rv_type(v) THEN
+1690           name$=rec_name$(v,j)
+1691           count=rv_rank(v)+rl_rank(j)
+1692           IF count OR rec_isstring(rl_path$(j)) THEN
+1693             IF rec_isstring(rl_path$(j)) THEN
+1694               name$=name$ & "(" & rec_join$(rec_zeros$(count),"1") & ")"
+1695             ELSE
+1696               name$=name$ & rec_dims$(count)
+1697             END IF
+1698           END IF
+1699           localcount=localcount+1
+1700           rec_put "LOCal " & name$
+1701         END IF
+1702       END FOR j
+1703     END IF
+1704   END FOR i
+1705   IF localcount>64 THEN rec_fail "Expanded local count exceeds profile (64)"
+1706 END DEFine rec_header
+1707 DEFine FuNction rec_zeros$(rank)
+1708   LOCal i,result$(1024)
+1709   result$=""
+1710   FOR i=1 TO rank
+1711     result$=rec_join$(result$,"0")
+1712   END FOR i
+1713   RETurn result$
+1714 END DEFine rec_zeros$
+1715 DEFine FuNction rec_refdims$(variable,leaf)
+1716   LOCal rank
+1717   rank=rv_rank(variable)+rl_rank(leaf)
+1718   IF rank AND rec_isstring(rl_path$(leaf)) THEN rank=rank+1
+1719   RETurn rec_dims$(rank)
+1720 END DEFine rec_refdims$
+1721 DEFine PROCedure rec_statement(text$)
+1722   LOCal rk_len%(258),rk_s(258),rk_e(258),rk_kind(258),rk_n,rk_line$(1024)
+1723   LOCal rs_b(64),rs_e(64),rs_n,i,j,k,b,depth,cut,thenat,elseat,endat,kind$(64),s$(1024),v,before
+1724   LOCal rd_name$(64),rd_shape$(1024),rd_rank,rd_type,rd_val,rd_pool
+1725   LOCal vw_var,vw_type,vw_rank,vw_end,vw_leaf,vw_sel$(1024),vw_prefix$(160)
+1726   LOCal remaining$(1000)
+1727   remaining$=text$
+1728   rec_lex remaining$
+1729   IF rk_n=0 THEN
+1730     IF d_ignore$<>"Y" THEN rec_put ":"
+1731     RETurn
+1732   END IF
+1733   kind$=rec_upper$(rec_token$(1)): b=rk_n
+1734   IF kind$=CHR$(64) THEN rec_put remaining$: RETurn
+1735   IF kind$="TYPE" THEN rc_type=1: RETurn
+1736   IF kind$="END" AND rec_upper$(rec_token$(2))="TYPE" THEN rc_type=0: RETurn
+1737   IF rc_type THEN RETurn
+1738   IF rk_kind(1)=5 THEN
+1739     IF kind$="DATA" THEN rec_data remaining$
+1740     rec_put remaining$: RETurn
+1741   END IF
+1742   IF rk_kind(b)=5 THEN b=b-1
+1743   IF b=0 THEN rec_put remaining$: RETurn
+1744   IF kind$="DEFINE" OR kind$="DEF" THEN
+1745     rc_routine=rec_find(rec_token$(3),rr_name$,rr_n): rec_header rc_routine: RETurn
+1746   END IF
+1747   IF kind$="END" AND (rec_upper$(rec_token$(2))="DEFINE" OR rec_upper$(rec_token$(2))="DEF") THEN
+1748     rec_put remaining$: rc_routine=0: RETurn
+1749   END IF
+1750   IF kind$="REFERENCE" THEN RETurn
+1751   IF kind$="IF" THEN
+1752     depth=0: thenat=0: elseat=0: endat=0
+1753     FOR i=2 TO b
+1754       IF rec_token$(i)="(" THEN depth=depth+1
+1755       IF rec_token$(i)=")" THEN depth=depth-1
+1756       IF depth=0 THEN
+1757         IF rec_upper$(rec_token$(i))="THEN" AND NOT thenat THEN thenat=i
+1758         IF thenat AND rec_upper$(rec_token$(i))="IF" THEN
+1759           IF rec_upper$(rec_token$(i-1))<>"END" THEN rec_fail "Use multiline form for nested inline IF"
+1760         END IF
+1761         IF rec_upper$(rec_token$(i))="ELSE" THEN
+1762           IF elseat THEN rec_fail "Use multiline form for nested inline IF"
+1763           elseat=i
+1764         END IF
+1765         IF rec_upper$(rec_token$(i))="END" AND i<b THEN
+1766           IF rec_upper$(rec_token$(i+1))="IF" THEN endat=i
+1767         END IF
+1768       END IF
+1769     END FOR i
+1770     IF NOT thenat THEN rec_fail "Record profile requires THEN in IF statements"
+1771     IF thenat=b-1 AND rec_token$(b)=":" THEN rec_fail "Put THEN last on a multiline IF header"
+1772     rec_put "IF " & rec_expr$(rec_part$(2,thenat-1)) & " THEN"
+1773     IF thenat=b THEN RETurn
+1774     j=b: IF endat THEN j=endat-1
+1775     IF elseat THEN
+1776       rec_statement rec_part$(thenat+1,elseat-1): rec_put "ELSE"
+1777       rec_statement rec_part$(elseat+1,j)
+1778     ELSE
+1779       rec_statement rec_part$(thenat+1,j)
+1780     END IF
+1781     rec_put "END IF": RETurn
+1782   END IF
+1783   depth=0: cut=0
+1784   FOR i=1 TO b
+1785     IF rec_token$(i)="(" THEN depth=depth+1
+1786     IF rec_token$(i)=")" THEN depth=depth-1
+1787     IF rec_token$(i)=":" AND depth=0 THEN cut=i: EXIT i
+1788   END FOR i
+1789   IF cut THEN
+1790     IF kind$="=" THEN
+1791       before=rc_temp: s$=rec_expr$(rec_part$(1,cut-1))
+1792       IF rc_temp<>before THEN rec_fail "Split record argument captures out of SELECT case values"
+1793       rec_put s$ & ":": remaining$=rec_part$(cut+1,rk_n): GO TO 1728
+1794     END IF
+1795     IF kind$="FOR" OR kind$="REPEAT" OR kind$="REP" THEN
+1796       FOR j=cut+1 TO b-1
+1797         IF rec_upper$(rec_token$(j))="END" THEN
+1798           IF rec_upper$(rec_token$(j+1))=kind$ THEN rec_fail "Use multiline form for explicitly closed inline loops"
+1799         END IF
+1800       END FOR j
+1801       rec_statement rec_part$(1,cut-1)
+1802       rec_statement rec_part$(cut+1,rk_n)
+1803       rec_put "END " & rec_token$(1) & " " & rec_expr$(rec_token$(2)): RETurn
+1804     END IF
+1805     IF cut>1 THEN rec_statement rec_part$(1,cut-1)
+1806     IF cut<rk_n THEN remaining$=rec_part$(cut+1,rk_n): GO TO 1728
+1807     RETurn
+1808   END IF
+1809   IF kind$="DIM" OR kind$="LOCAL" THEN
+1810     rec_split 2,b
+1811     FOR i=1 TO rs_n
+1812       k=0
+1813       FOR j=rs_b(i) TO rs_e(i)
+1814         IF rec_upper$(rec_token$(j))="AS" THEN k=1
+1815       END FOR j
+1816       IF k THEN
+1817         rec_descriptor rs_b(i),rs_e(i),0
+1818         v=rec_find(rd_name$,rv_name$,rv_n)
+1819         rec_storage v,rd_shape$,rd_pool
+1820       ELSE
+1821         s$=rec_part$(rs_b(i),rs_e(i))
+1822         IF rec_find(rec_token$(rs_b(i)),rv_name$,rv_n) THEN rec_fail "Cannot independently dimension record storage"
+1823         rec_put rec_token$(1) & " " & rec_expr$(s$)
+1824       END IF
+1825     END FOR i
+1826     RETurn
+1827   END IF
+1828   rec_view 1,b
+1829   IF vw_var AND NOT vw_leaf THEN
+1830     i=vw_end+1
+1831     IF i>b OR rec_token$(i)<>"=" THEN rec_fail "Whole record requires an assignment or typed parameter"
+1832     rec_copy rec_part$(1,vw_end),rec_part$(i+1,b): RETurn
+1833   END IF
+1834   v=rec_find(rec_token$(1),rr_name$,rr_n)
+1835   IF v AND NOT rr_fun(v) THEN
+1836     i=2: j=b
+1837     IF i<=b AND rec_token$(i)="(" THEN j=rec_match(i,b)-1: i=i+1
+1838     s$=rec_arguments$(v,rec_part$(i,j),0)
+1839     IF s$<>"" THEN s$=" " & s$
+1840     rec_put rec_token$(1) & s$: RETurn
+1841   END IF
+1842   IF kind$="FOR" THEN
+1843     rec_view 2,b
+1844     IF vw_var AND (NOT vw_leaf OR vw_sel$<>"") THEN rec_fail "FOR counter must be a simple scalar field"
+1845     IF vw_leaf THEN
+1846       IF rl_rank(vw_leaf)<>0 OR rec_isstring(rl_path$(vw_leaf)) THEN rec_fail "FOR counter must be a numeric scalar field"
+1847     END IF
+1848   END IF
+1849   IF kind$="PRINT" OR kind$="RETURN" OR kind$="RET" THEN
+1850     before=rc_temp: s$=rec_expr$(rec_part$(2,rk_n))
+1851     rec_put rec_token$(1) & " " & s$: RETurn
+1852   END IF
+1853   IF b>2 AND rk_kind(1)=1 AND rec_token$(2)="=" THEN
+1854     rec_put rec_token$(1) & " = " & rec_expr$(rec_part$(3,rk_n)): RETurn
+1855   END IF
+1856   rec_put rec_expr$(remaining$)
+1857 END DEFine rec_statement
+1858 DEFine PROCedure rec_data(text$)
+1859   LOCal i,q$(1024),c$(1024)
+1860   q$=""
+1861   FOR i=1 TO LEN(text$)
+1862     c$=text$(i)
+1863     IF q$<>"" THEN
+1864       IF c$=q$ THEN q$=""
+1865     ELSE
+1866       IF c$='"' OR c$="'" THEN
+1867         q$=c$
+1868       ELSE
+1869         IF c$=":" THEN rec_fail "Put DATA on a separate line; quote colons in DATA strings"
+1870       END IF
+1871     END IF
+1872   END FOR i
+1873 END DEFine rec_data
+1874 DEFine PROCedure rec_reference(text$)
+1875   LOCal rk_len%(258),rk_s(258),rk_e(258),rk_kind(258),rk_n,rk_line$(1024)
+1876   LOCal rs_b(64),rs_e(64),rs_n,i,j,p,v,s$(1024),entry$(160)
+1877   rec_lex text$: rec_split 2,rk_n: s$=""
+1878   FOR i=1 TO rs_n
+1879     entry$=rec_token$(rs_b(i))
+1880     FOR p=rr_first(rc_routine) TO rr_first(rc_routine)+rr_count(rc_routine)-1
+1881       IF rec_upper$(ra_name$(p))=rec_upper$(entry$) AND ra_val(p) THEN rec_fail "REFERENCE conflicts with VAL: " & entry$
+1882     END FOR p
+1883     v=rec_find(entry$,rv_name$,rv_n)
+1884     IF v THEN
+1885       FOR j=1 TO rl_n
+1886         IF rl_owner(j)=rv_type(v) THEN s$=rec_join$(s$,rec_name$(v,j) & rec_refdims$(v,j))
+1887       END FOR j
+1888     ELSE
+1889       s$=rec_join$(s$,rec_part$(rs_b(i),rs_e(i)))
+1890     END IF
+1891   END FOR i
+1892   rec_put "REFERENCE " & s$
+1893 END DEFine rec_reference
+1894 DEFine PROCedure rec_poolinit(v,bound$)
+1895   LOCal s$(1024),t$(1024)
+1896   s$="rec_p" & rec_num$(v): t$=rec_temp$
+1897   rec_put s$ & "_size = " & bound$
+1898   rec_put "DIM " & s$ & "_next%(" & bound$ & ")"
+1899   rec_put "FOR " & t$ & " = 1 TO " & bound$ & " - 1"
+1900   rec_put s$ & "_next%(" & t$ & ") = " & t$ & " + 1"
+1901   rec_put "END FOR " & t$
+1902   rec_put s$ & "_next%(" & bound$ & ") = 0"
+1903   rec_put s$ & "_head% = 1"
+1904 END DEFine rec_poolinit
+1905 DEFine PROCedure rec_pools
+1906   LOCal v,j,s$(1024),name$(1024),indices$(1000),old,value$(1024),shape$(1024)
+1907   FOR v=1 TO rv_n
+1908     IF rv_pool(v) THEN
+1909       s$="rec_p" & rec_num$(v): name$=rv_name$(v)
+1910       rec_put "DEFine FuNction " & name$ & "_new%"
+1911       rec_put "LOCal rec_slot%,rec_t1,rec_t2,rec_t3,rec_t4,rec_t5,rec_t6,rec_t7,rec_t8"
+1912       rec_put "rec_slot% = " & s$ & "_head%"
+1913       rec_put 'IF rec_slot% = 0 THEN PRINT "Pool exhausted: ' & name$ & '": STOP'
+1914       rec_put s$ & "_head% = " & s$ & "_next%(rec_slot%)"
+1915       rec_put s$ & "_next%(rec_slot%) = -1"
+1916       FOR j=1 TO rl_n
+1917         IF rl_owner(j)=rv_type(v) THEN
+1918           indices$="": old=rc_loop: rc_temp=0
+1919           indices$=rec_loops$(rec_logicalshape$(j))
+1920           indices$=rec_join$("rec_slot%",indices$)
+1921           value$="0": IF rec_isstring(rl_path$(j)) THEN value$='""'
+1922           rec_put rec_access$(v,j,indices$) & " = " & value$
+1923           rec_endloops old
+1924         END IF
+1925       END FOR j
+1926       rec_put "RETurn rec_slot%": rec_put "END DEFine"
+1927       rec_put "DEFine PROCedure " & name$ & "_free(rec_handle)"
+1928       rec_put "IF rec_handle = 0 THEN RETurn"
+1929       rec_put "IF rec_handle < 1 OR rec_handle > " & s$ & '_size OR rec_handle <> INT(rec_handle) THEN PRINT "Invalid pool handle: ' & name$ & '": STOP'
+1930       rec_put "IF " & s$ & '_next%(rec_handle) <> -1 THEN PRINT "Double free: ' & name$ & '": STOP'
+1931       rec_put s$ & "_next%(rec_handle) = " & s$ & "_head%"
+1932       rec_put s$ & "_head% = rec_handle": rec_put "END DEFine"
+1933     END IF
+1934   END FOR v
+1935 END DEFine rec_pools
+1936 DEFine FuNction Trim$(text$)
+1937     IF text$ <> "" THEN
+1938         RETurn RTrim$(LTrim$(text$))
+1939     ELSE
+1940         RETurn ""
+1941     END IF
+1942 END DEFine LTrim$
+1943 :
+1944 :
+1945 DEFine FuNction LTrim$(text$)
+1946     LOCal x, ret$
+1947     :
+1948     IF text$ = "" THEN RETurn "": END IF
+1949     :
+1950     FOR x = 1 to LEN(text$)
+1951         if text$(x) <> " " THEN EXIT x: END IF
+1952     END FOR x
+1953     ret$ = text$(x TO)
+1954     if ret$ = " " then ret$ = "": end if
+1955     return ret$
+1956 END DEFine LTrim$
+1957 :
+1958 :
+1959 DEFine FuNction RTrim$(text$)
+1960     LOCal x, ret$
+1961     :
+1962     IF text$ = "" THEN RETurn "": END IF
+1963     :
+1964     FOR x = LEN(text$) TO 1 STEP -1
+1965         if text$(x) <> " " THEN EXIT x: END IF
+1966     END FOR x
+1967     ret$ = text$(TO x)
+1968     if ret$ = " " then ret$ = "": end if
+1969     return ret$
+1970 END DEFine RTrim$
+1971 DEFine PROCedure centre(ch, text$)
+1972     LOCal size, winSize
+1973     :
+1974     winSize = (300-2-2)/6
+1975     size = len(text$)
+1976     print #ch, to (winSize-size)/2; text$
+1977 END DEF centre
+1978 :
+1979 :
+1980 DEFine FuNction inString% (in$, stopHere)
+1981   local x, Double%, Single%,quote$(1)
+1982   Double% = 0: Single% = 0
+1983   FOR x = 1 to stopHere
+1984     REMark Check for double quotes.
+1985     if in$(x) = '"' THEN
+1986       if Double% = 1 then
+1987         Double% = 0
+1988       else
+1989         Double% = 1
+1990       end if
+1991     else
+1992       REMark Try single quotes.
+1993       if in$(x) = "'" then
+1994         if Single% = 1 then
+1995           Single% = 0
+1996         else
+1997           Single% = 1
+1998         end if
+1999       end if
+2000     end if
+2001   END FOR x
+2002 :
+2003   REMark If Double% or Single% = 1 then
+2004   REMark we opened a string before the
+2005   REMark marker characters for REMark or
+2006   REMark invisible REMark, so we return
+2007   REMark true, else false.
+2008   IF Double% + Single% = 0 THEN RETurn 0: END IF
+2009   REMark Now look for the terminating quote
+2010   IF Double% THEN 
+2011     quote$ = '"'
+2012   ELSE 
+2013     quote$ = "'"
+2014   END IF
+2015   FOR x = stopHere TO LEN(in$)
+2016     IF in$(x) = quote$ THEN RETurn x: END IF
+2017   END FOR x
+2018 END DEFine inString%
+2019 DEFine FuNction stripTab$ (a$)
+2020   LOCal x, loop
+2021   IF a$ = "" THEN return a$: END IF
+2022   REPeat loop
+2023     x = CHR$(9) INSTR a$
+2024     IF x = 0 THEN EXIT loop: END IF
+2025     IF x = 1 THEN
+2026        REMark SMSQ Bug workaround. See ssbpass2_ssb for details.
+2027        a$ = " " & a$(2 TO)
+2028        NEXT loop
+2029     END IF
+2030     a$ = a$(TO x-1) & " " & a$(x + 1 TO)
+2031   END REPeat loop
+2032   RETurn a$
+2033 END DEFine stripTab$
+2034 DEFine FuNction joinLine$(a$)
+2035   LOCal in$(2048),out$(2048), joinLoop, temp
+2036   :
+2037   out$ = a$ 
+2038   REPeat joinloop
+2039     IF NOT out$(LEN(out$)-1 TO) = "\+" THEN EXIT joinLoop: END IF
+2040     INPUT #file_num,in$
+2041     temp = first_char(in$)
+2042     out$ = rtrim$(out$(TO (LEN(out$)-2))) & " " & in$(temp TO)
+2043   END REPeat joinloop
+2044   RETurn out$
+2045 END DEFine joinLine$
+2046 DEFine FuNction stripComment$(a$)
+2047   LOCal in$, out$, stripLoop, temp, whereQuote
+2048   :
+2049   in$ = a$
+2050   out$ = ""  
+2051   REMark Quick test for start of line.
+2052   IF comm$ INSTR in$ = 1 THEN 
+2053     RETURN out$
+2054   END IF
+2055   REPeat stripLoop
+2056     temp = comm$ INSTR in$
+2057     IF temp = 0 THEN
+2058       out$ = out$ & in$
+2059       EXIT stripLoop
+2060     END IF
+2061     REMark If not in a string, strip to the end.
+2062     whereQuote = inString%(in$, temp)
+2063     IF NOT whereQuote THEN
+2064       out$ = out$ & in$(1 TO temp - 1)
+2065       EXIT stripLoop
+2066     END IF
+2067     REMark Must be in a string, so extend out$ and try again.
+2068     out$ = in$(1 to whereQuote)
+2069     in$ = in$(whereQuote + 1 TO)
+2070   END REPeat stripLoop
+2071   RETurn out$
+2072 END DEFine stripComment$
+2073 DEFine FuNction doRemark$(a$)
+2074   LOCal in$(2048), out$(2048), remarkLoop, temp
+2075   :
+2076   in$ = a$
+2077   out$ = ""
+2078   REMark Quick test for start of line.
+2079   IF rem$ INSTR in$ = 1 THEN 
+2080     RETURN "REMark" & in$(3 TO)
+2081   END IF
+2082   REPeat remarkLoop
+2083     temp = rem$ INSTR in$
+2084     IF temp = 0 THEN
+2085       out$ = out$ & in$
+2086       EXIT remarkLoop
+2087     END IF
+2088     REMark If not in a string, replace it & exit as 
+2089     REMark anything after it is part of the REMark.
+2090     whereQuote = inString%(in$, temp)
+2091     IF NOT whereQuote THEN
+2092       out$ = out$ & in$(TO temp - 1) & "REMark" & in$(temp + 2 TO)
+2093       EXIT remarkLoop
+2094     END IF
+2095     REMark Must be in a string, so extend out$ and try again.
+2096     out$ = out$ & in$(1 to whereQuote)
+2097     in$ = in$(whereQuote + 1 TO)
+2098   END REPeat remarkLoop
+2099   RETurn out$
+2100 END DEFine doRemark$
+2101 DEFine PROCedure rec_lex(text$)
+2102   LOCal i,j,c$(160),q$(1),depth
+2103   rk_line$=text$: rk_n=0: i=1
+2104   REPeat rec_scan
+2105     IF i>LEN(text$) THEN EXIT rec_scan
+2106     c$=text$(i)
+2107     IF c$=" " OR c$=CHR$(9) THEN i=i+1: NEXT rec_scan
+2108     IF rk_n=256 THEN rec_fail "Too many tokens on one line"
+2109     rk_n=rk_n+1: rk_s(rk_n)=i: rk_kind(rk_n)=4
+2110     j=i
+2111     IF c$='"' OR c$="'" THEN
+2112       rk_kind(rk_n)=3: q$=c$: j=i+1
+2113       REPeat rec_quote
+2114         IF j>LEN(text$) THEN rec_fail "Unterminated quoted string"
+2115         IF text$(j)=q$ THEN EXIT rec_quote
+2116         j=j+1
+2117       END REPeat rec_quote
+2118     ELSE
+2119       IF rec_letter(c$) THEN
+2120         rk_kind(rk_n)=1
+2121         REPeat rec_ident
+2122           IF j=LEN(text$) THEN EXIT rec_ident
+2123           IF NOT rec_namechar(text$(j+1)) THEN EXIT rec_ident
+2124           j=j+1
+2125         END REPeat rec_ident
+2126         IF j<LEN(text$) THEN
+2127           IF text$(j+1)="$" OR text$(j+1)="%" THEN j=j+1
+2128         END IF
+2129       ELSE
+2130         IF rec_digit(c$) OR c$="$" OR c$="%" THEN
+2131           rk_kind(rk_n)=2
+2132           REPeat rec_number
+2133             IF j=LEN(text$) THEN EXIT rec_number
+2134             c$=rec_upper$(text$(j+1))
+2135             IF NOT rec_namechar(c$) AND c$<>"." THEN EXIT rec_number
+2136             j=j+1
+2137             IF c$="E" AND j<LEN(text$) THEN
+2138               IF text$(j+1)="+" OR text$(j+1)="-" THEN j=j+1
+2139             END IF
+2140           END REPeat rec_number
+2141         END IF
+2142       END IF
+2143     END IF
+2144     rk_e(rk_n)=j
+2145     IF rk_kind(rk_n)=3 THEN
+2146       rk_len%(rk_n)=1
+2147     ELSE
+2148       IF j-i>159 THEN rec_fail "Identifier/number token exceeds 160 bytes"
+2149       rk_len%(rk_n)=j-i+1
+2150     END IF
+2151     c$=rec_upper$(rec_token$(rk_n))
+2152     IF c$="REMARK" OR c$="REM" OR c$="DATA" THEN
+2153       rk_e(rk_n)=LEN(text$): rk_len%(rk_n)=LEN(c$): rk_kind(rk_n)=5
+2154       EXIT rec_scan
+2155     END IF
+2156     IF j<LEN(text$) THEN
+2157       c$=text$(j TO j+1)
+2158       IF c$="##" OR c$="**" THEN
+2159         rk_e(rk_n)=LEN(text$): rk_len%(rk_n)=LEN(c$): rk_kind(rk_n)=5
+2160         EXIT rec_scan
+2161       END IF
+2162     END IF
+2163     i=j+1
+2164   END REPeat rec_scan
+2165 END DEFine rec_lex
+2166 DEFine FuNction rec_token$(tokenIndex)
+2167   LOCal first,last
+2168   IF tokenIndex<1 OR tokenIndex>rk_n THEN RETurn ""
+2169   first=rk_s(tokenIndex): last=first+rk_len%(tokenIndex)-1
+2170   IF rk_kind(tokenIndex)=5 THEN RETurn rec_upper$(rk_line$(first TO last))
+2171   RETurn rk_line$(first TO last)
+2172 END DEFine rec_token$
+2173 DEFine FuNction rec_letter(c$)
+2174   LOCal k
+2175   IF c$="" THEN RETurn 0
+2176   k=CODE(rec_upper$(c$))
+2177   RETurn k>=65 AND k<=90
+2178 END DEFine rec_letter
+2179 DEFine FuNction rec_digit(c$)
+2180   IF c$="" THEN RETurn 0
+2181   RETurn CODE(c$)>=48 AND CODE(c$)<=57
+2182 END DEFine rec_digit
+2183 DEFine FuNction rec_namechar(c$)
+2184   RETurn rec_letter(c$) OR rec_digit(c$) OR c$="_"
+2185 END DEFine rec_namechar
+2186 DEFine FuNction rec_part$(a,b)
+2187   IF b<a THEN RETurn ""
+2188   RETurn rk_line$(rk_s(a) TO rk_e(b))
+2189 END DEFine rec_part$
+2190 DEFine FuNction rec_match(a,last)
+2191   LOCal i,depth
+2192   depth=0
+2193   FOR i=a TO last
+2194     IF rec_token$(i)="(" THEN depth=depth+1
+2195     IF rec_token$(i)=")" THEN
+2196       depth=depth-1
+2197       IF depth=0 THEN RETurn i
+2198     END IF
+2199   END FOR i
+2200   rec_fail "Unbalanced parentheses"
+2201 END DEFine rec_match
+2202 DEFine PROCedure rec_split(a,b)
+2203   LOCal i,depth,start
+2204   rs_n=0: start=a: depth=0
+2205   IF b<a THEN RETurn
+2206   FOR i=a TO b
+2207     IF rec_token$(i)="(" THEN depth=depth+1
+2208     IF rec_token$(i)=")" THEN depth=depth-1
+2209     IF depth<0 THEN rec_fail "Unbalanced parentheses"
+2210     IF rec_token$(i)="," AND depth=0 THEN
+2211       IF rs_n=64 THEN rec_fail "Too many list items"
+2212       rs_n=rs_n+1: rs_b(rs_n)=start: rs_e(rs_n)=i-1: start=i+1
+2213     END IF
+2214   END FOR i
+2215   IF depth<>0 THEN rec_fail "Unbalanced parentheses"
+2216   IF rs_n=64 THEN rec_fail "Too many list items"
+2217   rs_n=rs_n+1: rs_b(rs_n)=start: rs_e(rs_n)=b
+2218 END DEFine rec_split
+2219 REFERENCE names$(0,0)
+2220 DEFine FuNction rec_find(name$,names$,count)
+2221   LOCal i,key$(160)
+2222   key$=rec_upper$(name$)
+2223   FOR i=1 TO count
+2224     IF key$=names$(i) THEN RETurn i
+2225   END FOR i
+2226   RETurn 0
+2227 END DEFine rec_find
+2228 DEFine FuNction rec_num$(value)
+2229   RETurn rec_trim$(value & "")
+2230 END DEFine rec_num$
+2231 DEFine FuNction rec_join$(a$,b$)
+2232   IF a$="" THEN RETurn b$
+2233   IF b$="" THEN RETurn a$
+2234   RETurn a$ & "," & b$
+2235 END DEFine rec_join$
+2236 DEFine FuNction rec_dims$(rank)
+2237   LOCal i,s$(1024)
+2238   s$=""
+2239   FOR i=1 TO rank
+2240     s$=rec_join$(s$,"0")
+2241   END FOR i
+2242   IF rank=0 THEN RETurn ""
+2243   RETurn "(" & s$ & ")"
+2244 END DEFine rec_dims$
+2245 DEFine FuNction rec_name$(variable,leaf)
+2246   RETurn rv_name$(variable) & "_" & rl_path$(leaf)
+2247 END DEFine rec_name$
+2248 DEFine FuNction rec_access$(variable,leaf,indices$)
+2249   LOCal s$(1024)
+2250   s$=rec_name$(variable,leaf)
+2251   IF indices$<>"" THEN s$=s$ & "(" & indices$ & ")"
+2252   RETurn s$
+2253 END DEFine rec_access$
+2254 DEFine FuNction rec_upper$(source$)
+2255   LOCal result$(1024),offset,codevalue
+2256   result$=""
+2257   FOR offset=1 TO LEN(source$)
+2258     codevalue=CODE(source$(offset))
+2259     IF codevalue>=97 AND codevalue<=122 THEN codevalue=codevalue-32
+2260     result$=result$ & CHR$(codevalue)
+2261   END FOR offset
+2262   RETurn result$
+2263 END DEFine rec_upper$
+2264 DEFine FuNction rec_trim$(source$)
+2265   LOCal first,last,i,result$(1024)
+2266   first=1: last=LEN(source$): result$=""
+2267   REPeat rec_trim_left
+2268     IF first>last THEN RETurn ""
+2269     IF source$(first)<>" " AND source$(first)<>CHR$(9) THEN EXIT rec_trim_left
+2270     first=first+1
+2271   END REPeat rec_trim_left
+2272   REPeat rec_trim_right
+2273     IF source$(last)<>" " AND source$(last)<>CHR$(9) THEN EXIT rec_trim_right
+2274     last=last-1
+2275   END REPeat rec_trim_right
+2276   FOR i=first TO last
+2277     result$=result$ & source$(i)
+2278   END FOR i
+2279   RETurn result$
+2280 END DEFine rec_trim$
+2281 DEFine FuNction rec_ltrim$(source$)
+2282   LOCal first,i,result$(1024)
+2283   first=1: result$=""
+2284   REPeat rec_trim_leading
+2285     IF first>LEN(source$) THEN RETurn ""
+2286     IF source$(first)<>" " AND source$(first)<>CHR$(9) THEN EXIT rec_trim_leading
+2287     first=first+1
+2288   END REPeat rec_trim_leading
+2289   FOR i=first TO LEN(source$)
+2290     result$=result$ & source$(i)
+2291   END FOR i
+2292   RETurn result$
+2293 END DEFine rec_ltrim$
+2294 DEFine FuNction first_char (a$)
+2295    LOCal count
+2296    count=0
+2297    count=count+1
+2298    IF count > LEN(a$) THEN RETurn 0
+2299    IF a$(count)=" " THEN GO TO 2297
+2300    RETurn count
+2301 END DEFine first_char
+2302 DEF FuNction upper$(up$)
+2303     LOCal x, temp
+2304     IF rc_enabled THEN RETurn rec_upper$(up$)
+2305     FOR x = 1 TO LEN(up$)
+2306        temp = CODE(up$(x))
+2307        IF temp > 96 AND temp < 123 THEN up$(x)=CHR$(temp-32)
+2308     END FOR x
+2309     RETURN up$
+2310 END DEFine
+2311 DEFine FuNCtion isnum (var$)
+2312    LOCal x,y
+2313    FOR x = 1 TO LEN(var$)
+2314       y = CODE(var$(x))
+2315       IF y < 48 OR y > 57 THEN RETURN 0
+2316    END FOR x
+2317    RETURN 1
+2318 END DEFine isnum
+2319 DEF PROCedure abort_out
+2320 CLOSE #4
+2321 IF rc_owned AND out_file$<>"" THEN DELETE out_file$
+2322 rec_cleanup
+2323 IF file_num = 5 THEN
+2324     CLOSE #5
+2325 ELSE
+2326     FOR x = 5 TO file_num
+2327        CLOSE #x
+2328     END FOR X
+2329 END IF
+2330 IF OPTION_CMD$="" THEN
+2331     PRINT #3,""
+2332     INK #3,7
+2333     centre 3, lngarray$(20)
+2334     temp$ = INKEY$(#3,-1)
+2335 END IF
+2336     CLOSE #3
+2337     STOP
+2338 END DEFine abort_out
+2339 DEFine PROCedure rec_setup
+2340   DIM rc_work$(5,100),rc_backup$(100),rc_final$(100),rc_file$(100),rec_source$(100)
+2341   rc_enabled=0: rc_owned=0: rc_files=0: rc_open40=0: rc_open41=0: rc_open42=0
+2342   rc_mapopen=0: rc_line=0: rc_backup$="": rc_file$="": rc_final$=""
+2343   rc_logging=0: rc_logopen=0
+2344 END DEFine rec_setup
+2345 DEFine FuNction rec_workname$(suffix$)
+2346   LOCal prefix$(1024),i,s$(1024)
+2347   prefix$=GETENV$("SSBRECWORK"): IF prefix$="" THEN prefix$="ram1_"
+2348   FOR i=1 TO 999
+2349     s$=prefix$ & "rec_" & rec_num$(i) & suffix$
+2350     IF LEN(s$)>100 THEN rec_fail "SSBRECWORK prefix too long"
+2351     IF FTEST(s$)=-7 THEN RETurn s$
+2352   END FOR i
+2353   rec_fail "No unused record work filename"
+2354 END DEFine rec_workname$
+2355 DEFine FuNction rec_outputname$
+2356   LOCal i,s$(1024)
+2357   FOR i=1 TO 999
+2358     s$=rc_final$ & "_rec" & rec_num$(i)
+2359     IF LEN(s$)>100 THEN rec_fail "Staged output name exceeds 100 bytes"
+2360     IF FTEST(s$)=-7 THEN RETurn s$
+2361   END FOR i
+2362   rec_fail "No unused staged output filename"
+2363 END DEFine rec_outputname$
+2364 DEFine PROCedure rec_saveold
+2365   LOCal i,s$(1024)
+2366   FOR i=1 TO 999
+2367     s$=out_file$ & "_bak" & rec_num$(i)
+2368     IF LEN(s$)>100 THEN rec_fail "Output backup name too long"
+2369     IF FTEST(s$)=-7 THEN
+2370       RENAME out_file$,s$
+2371       IF FTEST(s$)<>0 OR FTEST(out_file$)<>-7 THEN rec_fail "Cannot preserve old output"
+2372       rc_backup$=s$: PRINT #3,"Old output: ";s$
+2373       RETurn
+2374     END IF
+2375   END FOR i
+2376   rec_fail "No unused output backup name"
+2377 END DEFine rec_saveold
+2378 DEFine PROCedure rec_fail(message$)
+2379   rec_log "RECORD ERROR: " & message$
+2380   PRINT #3,"RECORD ERROR: ";message$
+2381   IF rc_file$<>"" THEN PRINT #3,rc_file$;":";rc_line
+2382   IF rc_backup$<>"" THEN PRINT #3,"Old output retained: ";rc_backup$
+2383   rec_cleanup
+2384   abort_out
+2385 END DEFine rec_fail
+2386 DEFine PROCedure rec_log(message$)
+2387   LOCal logfile$(100),status
+2388   IF rc_logging THEN RETurn
+2389   rc_logging=1: logfile$=GETENV$("SSBRECLOG")
+2390   IF logfile$="" THEN rc_logging=0: RETurn
+2391   status=FOP_NEW(#28,logfile$)
+2392   IF status>=0 THEN
+2393     rc_logopen=1
+2394     PRINT #28,message$
+2395     PRINT #28,rc_file$;":";rc_line
+2396     IF rc_backup$<>"" THEN PRINT #28,"Old output retained: ";rc_backup$
+2397     CLOSE #28: rc_logopen=0
+2398   END IF
+2399   rc_logging=0
+2400 END DEFine rec_log
+2401 DEFine PROCedure rec_cleanup
+2402   LOCal i
+2403   IF rc_open40 THEN CLOSE #24: rc_open40=0
+2404   IF rc_open41 THEN CLOSE #25: rc_open41=0
+2405   IF rc_open42 THEN CLOSE #26: rc_open42=0
+2406   IF rc_mapopen THEN CLOSE #27: rc_mapopen=0
+2407   IF rc_logopen THEN CLOSE #28: rc_logopen=0
+2408   FOR i=1 TO rc_files
+2409     IF rc_work$(i)<>"" THEN
+2410       IF FTEST(rc_work$(i))=0 THEN DELETE rc_work$(i)
+2411     END IF
+2412   END FOR i
+2413 END DEFine rec_cleanup
+2414 DEFine PROCedure rec_mapstart
+2415   IF rc_enabled THEN OPEN_IN #27,rc_work$(3): rc_mapopen=1
+2416 END DEFine rec_mapstart
+2417 DEFine PROCedure rec_origin
+2418   IF rc_enabled THEN INPUT #27,rc_file$: INPUT #27,rc_line
+2419 END DEFine rec_origin
+2420 DEFine PROCedure rec_mapend
+2421   IF rc_mapopen THEN CLOSE #27: rc_mapopen=0
+2422 END DEFine rec_mapend
+2423 DEFine PROCedure rec_range
+2424   IF rc_enabled THEN
+2425     IF line_num<1 OR line_num>32767 OR line_delta<1 THEN rec_fail "Expanded BASIC line range exceeds 1..32767; reduce SSBSTART/SSBINC"
+2426   END IF
+2427 END DEFine rec_range
+2428 DEFine PROCedure rec_publish
+2429   IF rc_enabled THEN
+2430     IF FTEST(rc_final$)<>-7 THEN rec_fail "Output appeared during translation; refusing to overwrite it"
+2431     RENAME out_file$,rc_final$
+2432     IF FTEST(rc_final$)<>0 THEN rec_fail "Cannot publish final BASIC output"
+2433     out_file$=rc_final$
+2434   END IF
+2435   rc_owned=0: rec_cleanup
+2436 END DEFine rec_publish

@@ -1,0 +1,22 @@
+## Output record parameters, bounded strings and whole-record copies.
+TYPE point
+  x
+  y
+END TYPE
+
+TYPE person
+  name$(30)
+  home AS point
+END TYPE
+
+DIM alice AS person, copiedPerson AS person
+alice.name$ = "Alice"
+makePoint alice.home, 3, 4
+copiedPerson = alice
+PRINT copiedPerson.name$; " lives at "; copiedPerson.home.x; ","; copiedPerson.home.y
+STOP
+
+DEFine PROCedure makePoint(pointOut AS point, VAL makeX, VAL makeY)
+  pointOut.x = makeX
+  pointOut.y = makeY
+END DEFine

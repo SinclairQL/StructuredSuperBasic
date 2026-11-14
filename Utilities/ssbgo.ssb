@@ -2,7 +2,7 @@
 ## Author:   Timothy Swenson
 ## Date Created: 20 Aug 1998
 ## Date Revised: 20 Mar 2016
-## Version 1.2 for SSB 2.7
+## Version 1.3 records development; separate executable
 ##
 ## This program will take an arguement of a SSB program
 ## run it through SSB, load it in to SuperBasic,
@@ -33,9 +33,9 @@
 ##   ssb exec directory 20 char
 
 ## TURBO Defines
-TURBO_taskn "ssbgo"
-TURBO_objfil "ram1_ssbgo_exe"
-TURBO_windo 0
+TURBO_taskn "ssbgo records dev"
+TURBO_objfil "ram1_ssbgorecdev_exe"
+TURBO_windo 1
 TURBO_repfil "ram1_err"
 TURBO_objdat 400
 TURBO_buffersz 400
@@ -45,7 +45,8 @@ TURBO_locstr 1
 TURBO_struct 0
 
 DIM compiler$(1), qlib_arg$(20), inputext$(4)
-DIM output$(4), execdir$(20)
+DIM outputext$(100), execdir$(100), filter$(100)
+DIM work$(100),work2$(100),basfile$(100),backup$(100),candidate$(1024)
 
 
 ## Get command line
@@ -74,25 +75,51 @@ temp$ = GETENV$("SSBQLIBARG")
 IF temp$ <> "" THEN qlib_arg$ = temp$
 temp$ = GETENV$("SSBINPUTEXT")
 IF temp$ <> "" THEN inputext$ = temp$
+IF GETENV$("SSBINPUT")="" THEN SETENV "SSBINPUT=" & inputext$
 temp$ = GETENV$("SSBOUTPUTEXT")
 IF temp$ <> "" THEN outputext$ = temp$
+temp$=GETENV$("SSBOUTPUT")
+IF temp$<>"" THEN outputext$=temp$
+IF GETENV$("SSBOUTPUT")="" THEN SETENV "SSBOUTPUT=" & outputext$
 temp$ = GETENV$("SSBEXEC")
 IF temp$ <> "" THEN execdir$ = temp$
 
 
-## Delete filename_bas to so that SSB will
-## run.
+## Match the filter's actual output path, including working-directory overrides.
+filter$=GETENV$("SSBFILTER"): IF filter$="" THEN filter$="ssb"
+work$=GETENV$("SSBWORK"): work2$=GETENV$("SSBWORK2")
+IF work2$="" THEN work2$=work$
+candidate$=work2$ & filename$ & outputext$
+IF LEN(candidate$)>100 THEN PRINT "SSBGO: output path exceeds 100 bytes": STOP
+basfile$=candidate$
+status=FTEST(basfile$)
+IF status<>0 AND status<>-7 THEN PRINT "SSBGO: cannot access output ";status: STOP
+IF status=0 THEN
+  temp$=GETENV$("SSBOVER")
+  IF NOT (temp$=="Y" OR temp$=="S") THEN
+    PRINT "SSBGO: existing output; set SSBOVER=Y to authorize replacement"
+    STOP
+  END IF
+  backup$=""
+  FOR backupnum=1 TO 999
+    candidate$=basfile$ & "_go" & backupnum
+    IF LEN(candidate$)>100 THEN PRINT "SSBGO: backup name too long": STOP
+    IF FTEST(candidate$)=-7 THEN backup$=candidate$: EXIT backupnum
+  END FOR backupnum
+  IF backup$="" THEN PRINT "SSBGO: no unused backup name": STOP
+  RENAME basfile$,backup$
+  IF FTEST(basfile$)<>-7 OR FTEST(backup$)<>0 THEN PRINT "SSBGO: cannot preserve output": STOP
+  PRINT "SSBGO: previous output retained as ";backup$
+END IF
 
-DELETE filename$&outputext$
-
-EXEC_W execdir$&"ssb";filename$
+EXEC_W execdir$ & filter$;filename$
 
 ## Check to make sure that SSB finished without any
 ## errors.  We do this my making sure that the
 ##  _bas file exists.
 ##
 
-IF FTEST(filename$&outputext$) = -7 THEN
+IF FTEST(basfile$) <> 0 THEN
    BEEP 1000,10
    STOP
 ENDIF
@@ -103,19 +130,19 @@ ENDIF
 
 COMMAND_LINE
 
-cmd$ = "LOAD "&filename$&outputext$&CHR$(10)
+cmd$ = "LOAD "&basfile$&CHR$(10)
 TYPE_IN cmd$
 
 ## Save the program so we can check for MISTakes
 ## Key is CTRL-SHIFT-A
 
-cmd$="SAVE_O "&filename$&outputext$&CHR$(10)
+cmd$="SAVE_O "&basfile$&CHR$(10)
 TYPE_IN cmd$
 
 DELETE "ram1_ssbgo_out"
 
 ## Use grep to look for any lines with MISTake
-EW execdir$&"grep";"MISTake "&filename$&outputext$&" > ram1_ssbgo_out"
+EW execdir$&"grep";"MISTake "&basfile$&" > ram1_ssbgo_out"
 
 ## Make sure grep did not find anything
 IF FLEN(\"ram1_ssbgo_out") <> 0 THEN
@@ -129,7 +156,7 @@ DELETE ram1_ssbgo_out
 ## Execute Qliberator or TURBO in command line mode
 
 IF compiler$ = "Q" THEN
-   cmd$ = "liberate "&filename$&"_bas,'-OBJ" \
+   cmd$ = "liberate "&basfile$&",'-OBJ" \+
     &filename$&" "&qlib_arg$&"'"&CHR$(10)
    TYPE_IN cmd$
 END IF

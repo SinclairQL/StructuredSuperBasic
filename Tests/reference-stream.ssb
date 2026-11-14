@@ -1,0 +1,25 @@
+## Several REFERENCE groups, a routine without a group, and a long colon line.
+TYPE point
+ x
+END TYPE
+DIM p AS point, numbers(1), words$(1,20)
+initialize numbers,words$
+bump numbers
+answer=twice(numbers(0))
+p.x=1:p.x=2:p.x=3:p.x=4:p.x=5:p.x=6:p.x=7:p.x=8:p.x=9:p.x=10:p.x=11:p.x=12:p.x=13:p.x=14:p.x=15:p.x=16
+OPEN_NEW #9,"win1_result":PRINT #9,numbers(0);",";words$(0);",";p.x;",";answer:CLOSE #9
+OPEN_NEW #9,"win1_done":PRINT #9,"OK":CLOSE #9
+STOP
+REFERENCE numbersIn(0)
+REFERENCE wordsIn$(0,0)
+DEFine PROCedure initialize(numbersIn,wordsIn$)
+ numbersIn(0)=7
+ wordsIn$(0)="hello"
+END DEFine
+DEFine FuNction twice(VAL n)
+ RETurn n*2
+END DEFine
+REFERENCE numbersMore(0)
+DEFine PROCedure bump(numbersMore)
+ numbersMore(0)=numbersMore(0)+2
+END DEFine

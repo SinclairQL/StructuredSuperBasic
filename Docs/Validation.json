@@ -1,0 +1,319 @@
+{
+  "date": "2026-11-13",
+  "target": "SMSQ/E 3.43, SMSQmulator 3.03 68000 CPU; native checks 4 MiB RAM, bootstrap/interpreter checks 8 MiB RAM",
+  "compiler": "Turbo parser 5.09, code generator F5.37, SMS Turbo toolkit",
+  "interpreter_tests": [
+    {
+      "name": "arrays-pools",
+      "passed": true
+    },
+    {
+      "name": "bounds-labels",
+      "passed": true
+    },
+    {
+      "name": "combined_local_limit",
+      "passed": true
+    },
+    {
+      "name": "core",
+      "passed": true
+    },
+    {
+      "name": "cycle",
+      "passed": true
+    },
+    {
+      "name": "element-reference",
+      "passed": true
+    },
+    {
+      "name": "field_collision",
+      "passed": true
+    },
+    {
+      "name": "float_implicit",
+      "passed": true
+    },
+    {
+      "name": "limits",
+      "passed": true
+    },
+    {
+      "name": "local_limit",
+      "passed": true
+    },
+    {
+      "name": "parameter_limit",
+      "passed": true
+    },
+    {
+      "name": "pool_helper_collision",
+      "passed": true
+    },
+    {
+      "name": "pure-builtins",
+      "passed": true
+    },
+    {
+      "name": "pure-element-selectors",
+      "passed": true
+    },
+    {
+      "name": "rank_limit",
+      "passed": true
+    },
+    {
+      "name": "record_array_copy",
+      "passed": true
+    },
+    {
+      "name": "record_return",
+      "passed": true
+    },
+    {
+      "name": "reference-stream",
+      "passed": true
+    },
+    {
+      "name": "reserved_name",
+      "passed": true
+    },
+    {
+      "name": "scalar_record_conflict",
+      "passed": true
+    },
+    {
+      "name": "scope_rank",
+      "passed": true
+    },
+    {
+      "name": "storage_collision",
+      "passed": true
+    },
+    {
+      "name": "strings",
+      "passed": true
+    },
+    {
+      "name": "subarray_argument",
+      "passed": true
+    },
+    {
+      "name": "turbo-element-rejected",
+      "passed": true
+    },
+    {
+      "name": "unknown_field",
+      "passed": true
+    },
+    {
+      "name": "unknown_type",
+      "passed": true
+    },
+    {
+      "name": "unsafe_arguments",
+      "passed": true
+    },
+    {
+      "name": "unsafe_builtin_prefix",
+      "passed": true
+    },
+    {
+      "name": "unsafe_expression_selector",
+      "passed": true
+    },
+    {
+      "name": "unsafe_nested_builtin_argument",
+      "passed": true
+    },
+    {
+      "name": "unsafe_nested_rnd",
+      "passed": true
+    },
+    {
+      "name": "unsafe_shadowed_builtin",
+      "passed": true
+    },
+    {
+      "name": "value-only",
+      "passed": true
+    },
+    {
+      "name": "value_record",
+      "passed": true
+    },
+    {
+      "name": "value_reference_conflict",
+      "passed": true
+    }
+  ],
+  "compiled_filter_and_compiled_program_tests": [
+    {
+      "name": "core",
+      "passed": true,
+      "ram_mib": 4,
+      "actual": "4,3\n4,3\n5"
+    },
+    {
+      "name": "arrays-pools",
+      "passed": true,
+      "ram_mib": 4,
+      "actual": "Lau,22\n91,clinical\n3,4\n2,11,12\n1,2,1,0\n6\n5,6"
+    },
+    {
+      "name": "bounds-labels",
+      "passed": true,
+      "ram_mib": 4,
+      "actual": "0,0,0\n3,0\n7\n1,1,0\nmail@example: TYPE AS VAL ## untouched\n132\n11,42,1,0"
+    },
+    {
+      "name": "value-only",
+      "passed": true,
+      "ram_mib": 4,
+      "actual": "9"
+    },
+    {
+      "name": "limits",
+      "passed": true,
+      "ram_mib": 4,
+      "actual": "1,64"
+    },
+    {
+      "name": "strings",
+      "passed": true,
+      "ram_mib": 4,
+      "actual": "180,z\n137.5"
+    },
+    {
+      "name": "reference-stream",
+      "passed": true,
+      "ram_mib": 4,
+      "actual": "9,hello,16,18"
+    },
+    {
+      "name": "pure-builtins",
+      "passed": true,
+      "ram_mib": 4,
+      "actual": "506"
+    }
+  ],
+  "memory": {
+    "previous_dataspace_bytes": 2097152,
+    "dataspace_bytes": 1048576,
+    "reduction_percent": 50,
+    "default_table_capacity": 256,
+    "token_text_matrices_removed": true,
+    "reference_directives_streamed": true,
+    "colon_statement_tail_processed": true,
+    "tested_runtime_ram_mib": 4,
+    "limitation": "The 2 MiB SMSQ/E test environment reported insufficient memory while launching the filter; 2 MiB runtime support is not claimed."
+  },
+  "bootstrap": {
+    "passed": true,
+    "old_output_bytes": 93886,
+    "new_output_bytes": 93886,
+    "numbered_sha256": "c1763aa7ee74af9c7beff937c1db04d8bf4d84bc7237b89ce7072ff95ab4bb4c",
+    "built_from_ssb_output": true,
+    "preprocessor": "SSB 2.7.2g"
+  },
+  "legacy_bootstrap_compatibility": {
+    "version": "2.7.2g",
+    "compiler_source_uses_records": false,
+    "old_and_new_output_identical": true,
+    "user_program_output_identical": true,
+    "fixtures": [
+      {
+        "name": "arrays-pools",
+        "passed": true,
+        "before_bytes": 8694,
+        "after_bytes": 8694,
+        "sha256": "20e2b5c00e69fc65f029ac1b92a07db04494c6732f67a01f69433cbc554dfb89"
+      },
+      {
+        "name": "bounds-labels",
+        "passed": true,
+        "before_bytes": 5247,
+        "after_bytes": 5247,
+        "sha256": "1691061a71163cc73d42e08eb2eaa83d22158083de32c5eb01e69e0ab24c4c91"
+      },
+      {
+        "name": "core",
+        "passed": true,
+        "before_bytes": 1978,
+        "after_bytes": 1978,
+        "sha256": "ffd043ee65db5efba4276a9286adcbcd91905d0bb129a138551a705df6404f9c"
+      },
+      {
+        "name": "limits",
+        "passed": true,
+        "before_bytes": 7155,
+        "after_bytes": 7155,
+        "sha256": "6e5d2a400842b88fef9efca20ef6fad69106b757b4a5978fc951ac4e0ec9163c"
+      },
+      {
+        "name": "reference-stream",
+        "passed": true,
+        "before_bytes": 905,
+        "after_bytes": 905,
+        "sha256": "c6b5152b9b6ecc472fe72a204db8c6aee91f27c15e659a4ec933d0c73d5a6866"
+      },
+      {
+        "name": "strings",
+        "passed": true,
+        "before_bytes": 2673,
+        "after_bytes": 2673,
+        "sha256": "33d76dbb860adb943208ee3a280030eaebaa5a1c887c633deae2769a756621e8"
+      },
+      {
+        "name": "value-only",
+        "passed": true,
+        "before_bytes": 374,
+        "after_bytes": 374,
+        "sha256": "663595f028cf840571f0f8e6fb26b63a629c6517b8c1049c395c3a7bebc45bd3"
+      }
+    ]
+  },
+  "compiler_result": {
+    "errors": 0,
+    "warnings": 83,
+    "note": "Legacy assumed string dimensions and dynamic LOCAL declarations; this is not a warning-free build."
+  },
+  "output_safety": {
+    "refused_preserved": true,
+    "failed_output_absent": true,
+    "backup_preserved": true,
+    "diagnostic": true,
+    "recovered": true,
+    "no_recovery_error": true,
+    "cleaned_scratch": true
+  },
+  "ssbgo_failure_test": {
+    "compiled": true,
+    "failed_final_absent": true,
+    "previous_output_preserved": true
+  },
+  "source_sha256": {
+    "commands.ssb": "447d1acf1e34bfc3da21b13795bd31c7ce8b5e083a478fd12bdd70fa34f09918",
+    "functions.ssb": "8ee31519ff4997fe15fce3b6f06af42ea35b67c034e5edda796edd5d9ef63f0e",
+    "ssb272.ssb": "56ec7b03ff34746b3cb08f9a500a1a97e8f1ff1453bfaa1ae49d861f22805075",
+    "ssblang.ssb": "1e526384e57068228009b29638ca453bff835dc0ab163279b6d5bf04133ad2a4",
+    "ssbpass1.ssb": "919e46bc3896cc7dfbfecd2ce877839f9ca03312a5ab87363cbcb9c5ea0a0e96",
+    "ssbpass2.ssb": "87c4bb3fd2bc4a358a271b1c30e44fe55e9f28e938e0a54af2a1e65fdbb5b3b7"
+  },
+  "validated_executable_sha256": "1e227c6148877ae104c01ffb3f5201d13c6c2fdb739d83ec5a68a93f8fb611de",
+  "distribution_sha256": {
+    "Source.zip": "334a7b55168a1ae52772498b17c11bf3665d7d70984ae6af1d2e5c90a657ae89",
+    "ssb-records-dev.zip": "718afe00b7479f0ee1a715511653f5d23107f1ac33aa13316dd45f1fbfef2577",
+    "ssbgorecdev_exe": "8fd0f4505a6e9a59893d3ac79c3d0ed6249dc970953965be7be92d76bbd12d4c",
+    "ssbrecdev_bas": "c1763aa7ee74af9c7beff937c1db04d8bf4d84bc7237b89ce7072ff95ab4bb4c",
+    "ssbrecdev_exe": "1e227c6148877ae104c01ffb3f5201d13c6c2fdb739d83ec5a68a93f8fb611de"
+  },
+  "limitations": [
+    "Turbo rejects individual record-array-element reference arguments; standalone work records and whole-array references are supported.",
+    "SBASIC-only reference forms were tested in the interpreter, not compiled.",
+    "Classic QL ROMs, a 128 KiB machine, QLiberator and the full editor/grep SSBGO workflow were not certified.",
+    "New record diagnostics use English. The existing Quill release manual was preserved.",
+    "Publication/backup tests ran on the QL RAM filesystem because Windows NFA rename in this emulator reports files in use."
+  ]
+}

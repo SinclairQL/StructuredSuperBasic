@@ -1,0 +1,18 @@
+TYPE point
+ x
+ y
+END TYPE
+DIM samples(3)
+DIM points(3) AS point
+points(1).x=11:points(1).y=12
+OPEN_NEW #9,"win1_result"
+fromSin=readPoint(points(INT(SIN(0))+1))
+fromFill=readPoint(points(LEN(FILL$("x",2))-1))
+fromDimn=readPoint(points(DIMN(samples,1)-2))
+PRINT #9,fromSin;",";fromFill;",";fromDimn
+CLOSE #9
+OPEN_NEW #9,"win1_done":PRINT #9,"OK":CLOSE #9
+STOP
+DEFine FuNction readPoint(pointIn AS point)
+ RETurn pointIn.x
+END DEFine

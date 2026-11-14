@@ -3,7 +3,8 @@
 ## Date Created: 16 Oct 1990
 ## Date Revised: 4 Oct 2021
 ##             : 2 Aug 2024 Norman Dunbar
-## Version:      2.7.2g
+##             : 13 Nov 2026 Hugh Cumper
+## Version:      2.8.0 - adds records to 2.7.2g
 ##
 ##   This program takes in SSB code and outputs a file
 ##     that is runnable in SuperBasic
@@ -27,21 +28,23 @@
 ##
 ##   Channels :
 ##               3 - Screen
-##               4 - Input File
-##               5 - Output File
+##               4 - Output file
+##               5..23 - Input/include files
+##               24..28 - Record work files, source map and log
 ##
 
 ## TURBO Defines
 
 ## ONLY CHANGE THIS LINE WHEN AMENDING THE SOURCE 
 ## FOR A NEW VERSION. 
-TURBO_taskn "ssb 2.7.2g"
+TURBO_taskn "ssb records dev"
 
-## DO NOT CHANGE THE OBJFIL NAME.
-TURBO_objfil "dev7_ssb272_exe"
+## Isolated development name; do not overwrite a released SSB executable.
+TURBO_objfil "ram1_ssbrecdev_exe"
 TURBO_windo 0
-TURBO_repfil "dev7_ssb272_err"
-TURBO_objdat 400
+TURBO_repfil "ram1_ssbrecdev_err"
+TURBO_objdat 1024
+TURBO_model ">"
 TURBO_buffersz 400
 TURBO_optim 0
 TURBO_diags 2
@@ -50,7 +53,7 @@ TURBO_struct 0
 
 IMPLICIT% d_labels, d_length, d_start, d_delta, label_var, define_var
 IMPLICIT% num_count, file_num, x, y, temp, line_num_d, line_delta
-IMPLICIT% line_num
+## Wide line counter: validate extended output before a 16-bit wrap.
 
 
 ## Default Values
@@ -78,6 +81,15 @@ define_var = 1
 num_count = 0
 file_num = 5
 out_file$ = ""
+rec_setup
+
+WHEN ERRor
+  rec_log "SSB runtime error " & ERNUM% & " at compiler line " & ERLIN%
+  PRINT #3,"SSB runtime/I/O error; translation stopped"
+  IF rc_enabled THEN PRINT #3,rc_file$;":";rc_line
+  IF rc_backup$<>"" THEN PRINT #3,"Old output retained: ";rc_backup$
+  abort_out
+END WHEN
 
 
 ##  This section adds support for the environment
@@ -159,10 +171,12 @@ file_num = 5
 ## No error checking is necessary here as we have
 ## done it earlier.
 OPEN_NEW #4,out_file$
+rc_owned=1
 
 pass_two in_file$, file_num
 
 CLOSE #4
+rec_publish
 PRINT #3
 ## Program Done
 centre 3, lngarray$(19)
@@ -177,7 +191,7 @@ CLOSE #3
 STOP
 
 
-## The code for both pass1 and pass1 procedures have been
+## The code for both pass1 and pass2 procedures has been
 ## broken out into two different files to make it easier
 ## to read and to maintain the code.
 
@@ -209,6 +223,7 @@ END DEFine first_char
 ##   same string in all upper case letters.
 DEF FuNction upper$(up$)
     LOCal x, temp
+    IF rc_enabled THEN RETurn rec_upper$(up$)
 
     FOR x = 1 TO LEN(up$)
        temp = CODE(up$(x))
@@ -249,7 +264,8 @@ CLOSE #4
 ## for SSBGO so it knows when SSB has failed with
 ## an error
 
-IF OPTION_CMD$<>"" AND out_file$<>"" THEN DELETE out_file$
+IF rc_owned AND out_file$<>"" THEN DELETE out_file$
+rec_cleanup
 
 ## Close out all open files
 
@@ -262,7 +278,7 @@ ELSE
 END IF
 
 ## If interactive, then pause for user input.
-IF OPTION_CMD$<>"" THEN
+IF OPTION_CMD$="" THEN
     PRINT #3,""
     INK #3,7
     ## Hit Any Key
@@ -273,3 +289,118 @@ END IF
     STOP
 
 END DEFine abort_out
+
+## Main runtime helpers begin
+## Driver-owned work files, diagnostics, origin mapping and publication.
+## The two passes share these helpers; neither publishes partial output.
+DEFine PROCedure rec_setup
+  DIM rc_work$(5,100),rc_backup$(100),rc_final$(100),rc_file$(100),rec_source$(100)
+  rc_enabled=0: rc_owned=0: rc_files=0: rc_open40=0: rc_open41=0: rc_open42=0
+  rc_mapopen=0: rc_line=0: rc_backup$="": rc_file$="": rc_final$=""
+  rc_logging=0: rc_logopen=0
+END DEFine rec_setup
+
+DEFine FuNction rec_workname$(suffix$)
+  LOCal prefix$(1024),i,s$(1024)
+  prefix$=GETENV$("SSBRECWORK"): IF prefix$="" THEN prefix$="ram1_"
+  FOR i=1 TO 999
+    s$=prefix$ & "rec_" & rec_num$(i) & suffix$
+    IF LEN(s$)>100 THEN rec_fail "SSBRECWORK prefix too long"
+    IF FTEST(s$)=-7 THEN RETurn s$
+  END FOR i
+  rec_fail "No unused record work filename"
+END DEFine rec_workname$
+
+DEFine FuNction rec_outputname$
+  LOCal i,s$(1024)
+  FOR i=1 TO 999
+    s$=rc_final$ & "_rec" & rec_num$(i)
+    IF LEN(s$)>100 THEN rec_fail "Staged output name exceeds 100 bytes"
+    IF FTEST(s$)=-7 THEN RETurn s$
+  END FOR i
+  rec_fail "No unused staged output filename"
+END DEFine rec_outputname$
+
+DEFine PROCedure rec_saveold
+  LOCal i,s$(1024)
+  FOR i=1 TO 999
+    s$=out_file$ & "_bak" & rec_num$(i)
+    IF LEN(s$)>100 THEN rec_fail "Output backup name too long"
+    IF FTEST(s$)=-7 THEN
+      RENAME out_file$,s$
+      IF FTEST(s$)<>0 OR FTEST(out_file$)<>-7 THEN rec_fail "Cannot preserve old output"
+      rc_backup$=s$: PRINT #3,"Old output: ";s$
+      RETurn
+    END IF
+  END FOR i
+  rec_fail "No unused output backup name"
+END DEFine rec_saveold
+
+DEFine PROCedure rec_fail(message$)
+  rec_log "RECORD ERROR: " & message$
+  PRINT #3,"RECORD ERROR: ";message$
+  IF rc_file$<>"" THEN PRINT #3,rc_file$;":";rc_line
+  IF rc_backup$<>"" THEN PRINT #3,"Old output retained: ";rc_backup$
+  rec_cleanup
+  abort_out
+END DEFine rec_fail
+
+DEFine PROCedure rec_log(message$)
+  LOCal logfile$(100),status
+  IF rc_logging THEN RETurn
+  rc_logging=1: logfile$=GETENV$("SSBRECLOG")
+  IF logfile$="" THEN rc_logging=0: RETurn
+  status=FOP_NEW(#28,logfile$)
+  IF status>=0 THEN
+    rc_logopen=1
+    PRINT #28,message$
+    PRINT #28,rc_file$;":";rc_line
+    IF rc_backup$<>"" THEN PRINT #28,"Old output retained: ";rc_backup$
+    CLOSE #28: rc_logopen=0
+  END IF
+  rc_logging=0
+END DEFine rec_log
+
+DEFine PROCedure rec_cleanup
+  LOCal i
+  IF rc_open40 THEN CLOSE #24: rc_open40=0
+  IF rc_open41 THEN CLOSE #25: rc_open41=0
+  IF rc_open42 THEN CLOSE #26: rc_open42=0
+  IF rc_mapopen THEN CLOSE #27: rc_mapopen=0
+  IF rc_logopen THEN CLOSE #28: rc_logopen=0
+  FOR i=1 TO rc_files
+    IF rc_work$(i)<>"" THEN
+      IF FTEST(rc_work$(i))=0 THEN DELETE rc_work$(i)
+    END IF
+  END FOR i
+END DEFine rec_cleanup
+
+DEFine PROCedure rec_mapstart
+  IF rc_enabled THEN OPEN_IN #27,rc_work$(3): rc_mapopen=1
+END DEFine rec_mapstart
+
+DEFine PROCedure rec_origin
+  IF rc_enabled THEN INPUT #27,rc_file$: INPUT #27,rc_line
+END DEFine rec_origin
+
+DEFine PROCedure rec_mapend
+  IF rc_mapopen THEN CLOSE #27: rc_mapopen=0
+END DEFine rec_mapend
+
+DEFine PROCedure rec_range
+  IF rc_enabled THEN
+    IF line_num<1 OR line_num>32767 OR line_delta<1 THEN rec_fail "Expanded BASIC line range exceeds 1..32767; reduce SSBSTART/SSBINC"
+  END IF
+END DEFine rec_range
+
+DEFine PROCedure rec_publish
+  IF rc_enabled THEN
+    IF FTEST(rc_final$)<>-7 THEN rec_fail "Output appeared during translation; refusing to overwrite it"
+    RENAME out_file$,rc_final$
+    IF FTEST(rc_final$)<>0 THEN rec_fail "Cannot publish final BASIC output"
+    out_file$=rc_final$
+  END IF
+  rc_owned=0: rec_cleanup
+END DEFine rec_publish
+
+## Main runtime helpers end

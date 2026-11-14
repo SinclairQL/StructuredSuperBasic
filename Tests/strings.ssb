@@ -1,0 +1,23 @@
+TYPE detail
+ labelabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx$(180)
+END TYPE
+TYPE middle
+ addressabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx AS detail
+END TYPE
+TYPE outer
+ nested AS middle
+END TYPE
+DIM item AS outer, duplicate AS outer
+initializeLong item
+duplicate=item
+OPEN_NEW #9,"win1_result"
+PRINT #9,LEN(duplicate.nested.addressabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx.labelabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx$);",";duplicate.nested.addressabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx.labelabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx$(180)
+PRINT #9,.5+1.25E2+$A+%10
+CLOSE #9
+OPEN_NEW #9,"win1_done":PRINT #9,"OK":CLOSE #9
+STOP
+DEFine PROCedure initializeLong(dest AS outer)
+ LOCal work AS outer
+ work.nested.addressabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx.labelabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx$=FILL$("z",180)
+ dest=work
+END DEFine

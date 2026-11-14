@@ -1,0 +1,59 @@
+#DEFINE ENABLED
+#IFDEF MISSING
+#INCLUDE missing_ssb
+TYPE inactive
+  bad AS inactive
+END TYPE
+#ENDIF
+#IFDEF ENABLED
+#INCLUDE types_ssb
+#ENDIF
+DIM positions(2) AS point
+positions(1).x = 99
+DIM positions(2) AS point
+positions(2).y = 88
+DIM positions(3) AS point
+DIM high AS highrank
+high.grid(0,0,0,0,0,0,0,0) = 7
+DIM origin AS point
+origin.x = 11
+partial origin
+partialX = origin.x : partialY = origin.y
+DIM sized(sizeBound%) AS point
+selectorCalls% = 0
+IF 0 THEN origin = positions(nextIndex%)
+GO TO @skip
+origin.x = 99
+@skip
+IF origin.x = 0 THEN origin = positions(1) ELSE origin = positions(2)
+REPeat countLoop : origin.x=origin.x+1 : IF origin.x=3 THEN EXIT countLoop
+DIM oneNode(1) AS point POOL
+h% = oneNode_new%
+oneNode(h%).x = 17
+DIM oneNode(1) AS point POOL
+j% = oneNode_new%
+OPEN_NEW #9,"win1_result"
+PRINT #9,positions(1).x;",";positions(2).y;",";positions(3).x
+PRINT #9,origin.x;",";origin.y
+PRINT #9,high.grid(0,0,0,0,0,0,0,0)
+PRINT #9,h%;",";j%;",";oneNode(j%).x
+PRINT #9,"mail@example: TYPE AS VAL ## untouched"
+PRINT #9,CODE("")
+PRINT #9,partialX;",";partialY;",";boundCalls%;",";selectorCalls%
+CLOSE #9
+OPEN_NEW #9,"win1_done":PRINT #9,"OK":CLOSE #9
+STOP
+DEFine PROCedure partial(resultOut AS point)
+  resultOut.y = 42
+END DEFine
+DEFine FuNction sizeBound%
+  boundCalls% = boundCalls% + 1
+  RETurn 2
+END DEFine
+DEFine FuNction nextIndex%
+  selectorCalls% = selectorCalls% + 1
+  RETurn 1
+END DEFine
+DEFine PROCedure touch(touched AS point)
+  touched.x = 77
+END DEFine

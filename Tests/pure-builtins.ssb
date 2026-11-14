@@ -1,0 +1,57 @@
+TYPE point
+ x
+ y
+END TYPE
+DIM samples(3)
+DIM points(3) AS point, destinations(3) AS point
+points(1).x=11:points(1).y=12
+total=0
+destinations(INT(SIN(0))+1) = points(INT(ABS(ABS(-1)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(ACOS(1)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(ACOT(1)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(ASIN(0)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(ATAN(0)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(CODE(CHR$(65))))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(CODE("A")))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(COS(0)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(COT(1)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(DEG(0)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(DIMN(samples,1)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(EXP(0)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(LEN(FILL$("x",2))))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(INT(1.5)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(LEN("abc")))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(LN(1)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(LOG10(1)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(PI))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(RAD(0)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(SIN(0)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(SQRT(4)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+destinations(INT(SIN(0))+1) = points(INT(ABS(TAN(0)))*0+1)
+total=total+destinations(1).x+destinations(1).y
+OPEN_NEW #9,"win1_result"
+PRINT #9,total
+CLOSE #9
+OPEN_NEW #9,"win1_done":PRINT #9,"OK":CLOSE #9
+STOP

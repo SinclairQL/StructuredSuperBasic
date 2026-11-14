@@ -1,0 +1,10 @@
+input% = 9
+changeValue input%
+OPEN_NEW #9,"win1_result"
+PRINT #9,input%
+CLOSE #9
+OPEN_NEW #9,"win1_done":PRINT #9,"OK":CLOSE #9
+STOP
+DEFine PROCedure changeValue(VAL arg%)
+  arg% = 88
+END DEFine

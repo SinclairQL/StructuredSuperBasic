@@ -1,0 +1,36 @@
+TYPE point
+  x
+  y
+END TYPE
+DIM origin AS point, otherPoint AS point
+makePoint origin, 3, 4
+flipPoint origin, origin
+otherPoint = origin
+DIM points(3) AS point
+points(1) = otherPoint
+points(2) = points(1)
+IF origin.x = 4 THEN points(3) = points(2) ELSE points(3) = origin
+SELect ON origin.x
+ =4: points(3) = otherPoint
+ =REMAINDER: points(3) = origin
+END SELect
+OPEN_NEW #9,"win1_result"
+PRINT #9,origin.x;",";origin.y
+PRINT #9,points(3).x;",";points(3).y
+PRINT #9,magnitude(origin)
+CLOSE #9
+OPEN_NEW #9,"win1_done": PRINT #9,"OK": CLOSE #9
+STOP
+DEFine PROCedure makePoint(pointOut AS point, VAL makeX, VAL makeY)
+  pointOut.x = makeX
+  pointOut.y = makeY
+END DEFine
+DEFine PROCedure flipPoint(flipOut AS point, flipIn AS point)
+  LOCal flipWork AS point
+  flipWork.x = flipIn.y
+  flipWork.y = flipIn.x
+  flipOut = flipWork
+END DEFine
+DEFine FuNction magnitude(measurePoint AS point)
+  RETurn SQRT(measurePoint.x^2 + measurePoint.y^2)
+END DEFine

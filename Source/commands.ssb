@@ -80,7 +80,7 @@ IF command$ = "" THEN
       temp$ = INKEY$(#3,-1)
       ##
       IF temp$ == "Y" or temp$ == "S" THEN
-        DELETE out_file$
+        rec_saveold
         EXIT output_loop
         ELSE
           abort_out
@@ -186,7 +186,7 @@ ELSE
   temp = FTEST(out_file$)
   IF temp = 0 THEN
     IF d_over$ == "Y" or d_over$ == "S" THEN
-      DELETE out_file$
+      rec_saveold
     ELSE
       BEEP 1000,10
       INK #3,2
