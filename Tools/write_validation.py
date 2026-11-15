@@ -23,7 +23,7 @@ if manual_proof:
     assert manual_proof['native_quill_saved'] and manual_proof['native_quill_reloaded']
 assert interpreted['sources'] == bootstrap['sources'] == compiled['sources'] == sources
 assert all(test['passed'] for test in interpreted['tests'])
-assert len(native) == 10 and all(test['passed'] and test['ram_mib']==4 for test in native)
+assert len(native) == 11 and all(test['passed'] and test['ram_mib']==4 for test in native)
 assert bootstrap['passed'] and safety['passed'] and compiled['self_host']
 legacy_basic=(Path(bootstrap['folder'])/'old_output_bas').read_bytes().replace(b'ram1_ssbrecdev_err',b'nfa1_report')
 assert hashlib.sha256(legacy_basic).hexdigest()==compiled['numbered_sha256'], 'The final executable must be built from 2.7.2g output'
@@ -44,7 +44,7 @@ report = (build / 'compiled-app' / 'report').read_text(encoding='latin1')
 summary = re.search(r'(\d+) errors and (\d+) warnings', report)
 assert summary and summary[1] == '0'
 result = dict(
-    date='2026-11-14',
+    date='2026-11-15',
     target='SMSQ/E 3.43, SMSQmulator 3.03 68000 CPU; native checks 4 MiB RAM, bootstrap/interpreter checks 8 MiB RAM',
     compiler='Turbo parser 5.09, code generator F5.37, SMS Turbo toolkit',
     interpreter_tests=[dict(name=t['name'], passed=t['passed']) for t in sorted(interpreted['tests'], key=lambda t: t['name'])],

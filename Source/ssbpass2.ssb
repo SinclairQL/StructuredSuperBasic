@@ -70,18 +70,18 @@ DEFine PROCedure pass_two_file (in_file$, file_num)
 
 ######################################################
 
-    ## A \ at the end of a line meaning to add the next line.
-    ## ND: THIS IS BROKEN! 
-    ## If there is a statement like "PRINT "Hello"\\ then we
-    ## get the following line concatenated to the PRINT line. MISTake!
+    ## A trailing \+ joins the next source line.
+    ## ND-272F extracted joining to a separate function.
+    ## ND-272G changed the marker from \ to \+ so PRINT separators stay intact.
     ##
-    ## ND-272F - extracted to separate function.
-    ## ND-272G - amended to "\+" instead of "\" for PRINT separators.
-    ##
-    IF in$(LEN(in$)-1 TO) = "\+" THEN
-      ** Join lines until we have the complete line.
-      ** ready for further processing.
-      in$ = joinLine$(in$)
+    ## Fix inherited from 2.7.2g: single-character lines have no two-byte suffix.
+    ## Guard the slice before evaluating it, as in pass one.
+    IF LEN(in$)>=2 THEN
+      IF in$(LEN(in$)-1 TO) = "\+" THEN
+        ** Join lines until we have the complete line.
+        ** ready for further processing.
+        in$ = joinLine$(in$)
+      END IF
     END IF
 
     ## Process ## comments.

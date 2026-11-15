@@ -77,8 +77,11 @@ DEFine PROCedure pass_one_file (in_file$, file_num)
       IF in$(1 TO 6) = "#ENDIF" THEN NEXT pass_1
     END IF
 
-    ## A \ is at the end of a line meaning to add the next line
+    ## A trailing \+ joins the next source line.
+    ## Fix inherited from 2.7.2g: a single ":" must not slice from index zero.
+    ## Check length before reading the two-character continuation suffix.
     REPeat loop
+      IF LEN(in$)<2 THEN EXIT loop
       IF in$(LEN(in$)-1 TO)="\+" THEN
         IF EOF(#file_num) THEN
           BEEP 1000,10

@@ -46,6 +46,7 @@ cases.append(dict(name='review-regressions',source=(ROOT/'Tests'/'review-regress
 cases.append(dict(name='reference-stream',source=(ROOT/'Tests'/'reference-stream.ssb').read_text(encoding='utf-8'),expected='9,hello,16,18'))
 cases.append(dict(name='element-reference',source=element,expected='2,11,0',profile='SBASIC'))
 cases.append(dict(name='turbo-element-rejected',source=element,error='Turbo cannot pass record array elements'))
+cases.append(dict(name='standalone-colon',source=(ROOT/'Tests'/'standalone-colon.ssb').read_text(encoding='ascii'),expected='2'))
 if len(sys.argv)>1:cases=[c for c in cases if c['name'] in sys.argv[1:]]
 results=[]
 with cf.ThreadPoolExecutor(max_workers=3) as pool:

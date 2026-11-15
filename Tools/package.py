@@ -109,6 +109,9 @@ Preparation uses internal analysis/planning walks, not just two file reads.
 The comment scanner retains repeated quoted markers and respects mixed quotes.
 Parenthesized first arguments, inline field loop counters and final line 32767
 are covered by the 14 November 2026 correctness fixes.
+Standalone colon lines now pass both numbering readers. Length guards fix
+an index-zero continuation slice inherited from 2.7.2g; regression tests cover
+colons at file boundaries, labels and routine bodies.
 The compiler itself uses ordinary SSB 2.7.2g syntax, with parallel tables.
 Records are supported in user programs; the compiler does not use them
 internally and needs no separate record-capable bootstrap.

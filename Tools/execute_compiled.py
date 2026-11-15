@@ -53,4 +53,5 @@ expected['reference-stream']='9,hello,16,18'
 expected['pure-builtins']='506'
 expected['legacy-comments']='## one|## two|## three\nHe said " ## here\nIt\'s ## here\nHe said " ** here\nIt\'s ** here'
 expected['review-regressions']='## one|## two|## three\nHe said " ## here\nIt\'s ## here\nHe said " ** here\nIt\'s ** here\n3,9'
+expected['standalone-colon']='2'
 sys.exit(0 if p.returncode==0 and r['done']=='OK' and not r['error'] and r['result'].strip()==expected[name] else 1)

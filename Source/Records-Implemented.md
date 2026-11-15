@@ -387,3 +387,16 @@ other arguments and retains the full record-field counter when expanding an
 inline FOR. Numbering accepts a final line at 32767 without validating an unused
 next number. Five compiled-filter boundary checks cover valid terminal numbers,
 trailing non-statements, real overflow and an invalid zero increment.
+
+### Standalone colon fix on 15 November 2026
+
+The interpreted legacy reader inherited an unsafe continuation test from SSB
+2.7.2g: a one-character source line made LEN(in$)-1 equal zero. Both numbering
+passes now check the length before reading the two-character suffix. Source
+comments explain the inheritance. The original Source/ssb272.bas is preserved.
+
+Tests/standalone-colon.ssb starts and ends with a colon line and includes colons
+between statements and inside a procedure. Its label skips an assignment and
+the program produces 2 in both interpreted and Turbo-compiled tests. This
+exercises both numbering passes without enabling records. The regression is registered in both the interpreter and compiled test suites.
+Rebuild the executable from the updated source to use this fix.
