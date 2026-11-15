@@ -2,17 +2,30 @@
 ## Author: Timothy Swenson
 ## Date Created:  16 Aug 2004
 ## Date Revised:  20 Nov 2015
-## Version:       2.7.1
+##                13 Nov 2026 Hugh Cumper
+## Version:       2.8.0
 ##
-## Pass_one is strictly designed to count line numbers
-## and to find all labels.  This allows goto labels to
+## Pass_one prepares active source, validates record declarations and
+## expansion, then counts line numbers and finds labels. Labels can
 ## refer to code that the filter has not yet seen
 ## (as compared to a single pass filter).
 ##
 ## This code was originally in the main ssb code file, but
 ## was broken out to make it easier to read and maintain.
 
-DEFine PROCedure pass_one (in_file$, file_num)
+## Public first pass. Prepare once; include recursion uses pass_one_file.
+## Internal analysis/planning walks are necessary before label positions are known.
+DEFine PROCedure pass_one(in_file$,file_num)
+  rec_prepare in_file$
+  file_num=5
+  rec_source$=in_file$
+  IF rc_enabled THEN rec_source$=rc_work$(2)
+  rec_mapstart
+  pass_one_file rec_source$,file_num
+  rec_mapend
+END DEFine pass_one
+
+DEFine PROCedure pass_one_file (in_file$, file_num)
 
 ## Need Error Checking here as this procedure
 ## can be called from doing an #INCLUDE.
@@ -45,12 +58,21 @@ DEFine PROCedure pass_one (in_file$, file_num)
     IF (num_count MOD 10) = 0 THEN PRINT #3,CHR$(1);
     IF EOF(#file_num) THEN EXIT pass_1
     INPUT #file_num,in$
+    rec_origin
+    ## Fix inherited from 2.7.2g: classify tabs exactly as pass two does.
+    in$=stripTab$(in$)
 
     ## Get first non-space character
     temp=first_char(in$)
 
-    ## Check for Blank Lines
-    IF temp=0 THEN NEXT pass_1
+    ## Fix inherited from 2.7.2g: preserved blanks also occupy line numbers.
+    ## Count them here exactly as pass two emits them, keeping labels aligned.
+    IF temp=0 THEN
+      IF d_ignore$ == "Y" THEN NEXT pass_1
+      rec_range
+      line_num=line_num+line_delta
+      NEXT pass_1
+    END IF
 
     ## If the ## comment line then don't count as a line
     IF in$(temp TO temp+1)=CHR$(35)&CHR$(35) THEN NEXT pass_1
@@ -63,8 +85,11 @@ DEFine PROCedure pass_one (in_file$, file_num)
       IF in$(1 TO 6) = "#ENDIF" THEN NEXT pass_1
     END IF
 
-    ## A \ is at the end of a line meaning to add the next line
+    ## A trailing \+ joins the next source line.
+    ## Fix inherited from 2.7.2g: a single ":" must not slice from index zero.
+    ## Check length before reading the two-character continuation suffix.
     REPeat loop
+      IF LEN(in$)<2 THEN EXIT loop
       IF in$(LEN(in$)-1 TO)="\+" THEN
         IF EOF(#file_num) THEN
           BEEP 1000,10
@@ -108,12 +133,12 @@ DEFine PROCedure pass_one (in_file$, file_num)
       label_var = label_var + 1
     ELSE
 
-      ## If it's the include statement then call pass_one again
+      ## If it's the include statement then call pass_one_file again
       IF upper$(in$(1 TO 8))="#INCLUDE" THEN
         ## Need to add a way if file checking here or at
-        ## the beginning of pass_one.
+        ## the beginning of pass_one_file.
 
-        pass_one d_working$&in$(10 to ), file_num+1
+        pass_one_file d_working$&in$(10 to ), file_num+1
       ELSE
 
         ## Look for a #DEFINE
@@ -165,6 +190,8 @@ DEFine PROCedure pass_one (in_file$, file_num)
               END REPeat loop
             END IF
           ELSE
+            ## Check the number of this statement, not an unused next line.
+            rec_range
             line_num = line_num + line_delta
           END IF
         END IF
@@ -174,4 +201,510 @@ DEFine PROCedure pass_one (in_file$, file_num)
   END REPeat pass_1
 
   CLOSE #file_num
-END DEFine pass_one
+END DEFine pass_one_file
+
+## Record preparation: frozen includes/conditionals and source origins.
+DEFine PROCedure rec_probe(source$)
+  LOCal rc_def$(d_labels,d_length),rc_defn,rc_if(32),rc_ifn,rc_active
+  rc_defn=0: rc_ifn=0: rc_active=1
+  rc_work$(1)=rec_workname$("a"): rc_files=1
+  IF FOP_NEW(#24,rc_work$(1))<0 THEN rec_fail "Cannot create active-source work file"
+  rc_open40=1
+  rec_select source$,5
+  CLOSE #24: rc_open40=0
+  IF rc_ifn THEN rec_fail "Missing #ENDIF"
+  IF NOT rc_enabled THEN rec_cleanup
+END DEFine rec_probe
+
+DEFine PROCedure rec_select(source$,channel)
+  LOCal text$(1000),next$(1000),raw$(1000),sourceLine,origin,i,j,key$(64),symbol$(100),savedif
+  IF channel>23 THEN rec_fail "Include depth exceeds reserved input channels 5..23"
+  IF FOP_IN(#channel,source$)<0 THEN rec_fail "Cannot open include/source: " & source$
+  file_num=channel: sourceLine=0: savedif=rc_ifn
+  REPeat rec_read_source
+    IF EOF(#channel) THEN EXIT rec_read_source
+    INPUT #channel,text$: sourceLine=sourceLine+1: origin=sourceLine
+    text$=stripTab$(text$)
+    REPeat rec_join_source
+      IF LEN(text$)<2 THEN EXIT rec_join_source
+      IF text$(LEN(text$)-1 TO)<>"\+" THEN EXIT rec_join_source
+      IF EOF(#channel) THEN rec_fail "Continuation at end of file"
+      INPUT #channel,next$: sourceLine=sourceLine+1
+      text$=text$(TO LEN(text$)-2) & " " & rec_ltrim$(next$)
+      IF LEN(text$)>1000 THEN rec_fail "Joined source sourceLine exceeds 1000 bytes"
+    END REPeat rec_join_source
+    rc_file$=source$: rc_line=origin
+    raw$=rec_trim$(text$)
+    IF raw$="" THEN
+      IF rc_active AND d_ignore$<>"Y" THEN rec_spoolline text$
+      NEXT rec_read_source
+    END IF
+    IF raw$(1)="." THEN NEXT rec_read_source
+    IF raw$(1)="#" AND raw$(1 TO 2)<>"##" THEN
+      i=" " INSTR raw$: IF NOT i THEN i=LEN(raw$)+1
+      key$=rec_upper$(raw$(1 TO i-1)): symbol$=""
+      IF i<LEN(raw$) THEN symbol$=rec_trim$(raw$(i+1 TO))
+      IF key$="#ENDIF" THEN
+        IF rc_ifn=savedif THEN rec_fail "#ENDIF without #IFDEF in this file"
+        rc_active=rc_if(rc_ifn): rc_ifn=rc_ifn-1: NEXT rec_read_source
+      END IF
+      IF key$="#IFDEF" THEN
+        IF rc_ifn=32 THEN rec_fail "Conditional nesting exceeds 32"
+        rc_ifn=rc_ifn+1: rc_if(rc_ifn)=rc_active
+        IF NOT rec_find(rec_upper$(symbol$),rc_def$,rc_defn) THEN rc_active=0
+        NEXT rec_read_source
+      END IF
+      IF NOT rc_active THEN NEXT rec_read_source
+      IF key$="#DEFINE" THEN
+        IF rc_defn=d_labels THEN rec_fail "Too many #DEFINE symbols"
+        IF LEN(symbol$)>d_length THEN rec_fail "#DEFINE symbol too long"
+        rc_defn=rc_defn+1: rc_def$(rc_defn)=rec_upper$(symbol$): NEXT rec_read_source
+      END IF
+      IF key$="#INCLUDE" THEN rec_select d_working$ & symbol$,channel+1: NEXT rec_read_source
+    END IF
+    IF NOT rc_active THEN NEXT rec_read_source
+    IF NOT rc_enabled THEN rec_discover text$
+    rec_spoolline text$
+  END REPeat rec_read_source
+  IF rc_ifn<>savedif THEN rec_fail "#IFDEF crosses file boundary"
+  CLOSE #channel: file_num=channel-1
+END DEFine rec_select
+
+DEFine PROCedure rec_spoolline(text$)
+  PRINT #24,rc_file$: PRINT #24,rc_line: PRINT #24,text$
+END DEFine rec_spoolline
+
+DEFine PROCedure rec_analyse
+  LOCal text$(1000),i,rk_len%(258),rk_s(258),rk_e(258),rk_kind(258),rk_n,rk_line$(1024)
+  ## First collect manifests, allowing forward references in field bounds.
+  OPEN_IN #24,rc_work$(1): rc_open40=1
+  REPeat rec_manifests
+    IF EOF(#24) THEN EXIT rec_manifests
+    INPUT #24,rc_file$: INPUT #24,rc_line: INPUT #24,text$
+    rec_lex text$
+    IF rec_upper$(rec_token$(1))="MANIFEST" THEN rec_collect text$
+  END REPeat rec_manifests
+  CLOSE #24: rc_open40=0
+  OPEN_IN #24,rc_work$(1): rc_open40=1
+  REPeat rec_declarations
+    IF EOF(#24) THEN EXIT rec_declarations
+    INPUT #24,rc_file$: INPUT #24,rc_line: INPUT #24,text$
+    rec_collect text$
+  END REPeat rec_declarations
+  CLOSE #24: rc_open40=0
+  rec_check
+END DEFine rec_analyse
+
+DEFine PROCedure rec_prepare(source$)
+  rec_probe source$
+  IF NOT rc_enabled THEN RETurn
+  rec_tables: rec_analyse
+  rec_walk 0
+  rc_work$(2)=rec_workname$("b"): rc_files=2
+  rc_work$(3)=rec_workname$("m"): rc_files=3
+  IF FOP_NEW(#25,rc_work$(2))<0 THEN rec_fail "Cannot create expanded work file"
+  rc_open41=1
+  IF FOP_NEW(#26,rc_work$(3))<0 THEN rec_fail "Cannot create source map"
+  rc_open42=1
+  rec_walk 1
+  CLOSE #25: CLOSE #26: rc_open41=0: rc_open42=0
+  rc_final$=out_file$: rc_work$(4)=rec_outputname$: rc_files=4
+  out_file$=rc_work$(4)
+END DEFine rec_prepare
+
+DEFine PROCedure rec_discover(text$)
+  LOCal i,j,n,depth,previous$(1024),word$(1024),first$(1024),quote$(1024),c$(1024)
+  i=1: n=0: depth=0: previous$="": quote$="": first$=""
+  REPeat rec_discovery
+    IF i>LEN(text$) THEN RETurn
+    c$=text$(i)
+    IF quote$<>"" THEN
+      IF c$=quote$ THEN quote$=""
+      i=i+1: NEXT rec_discovery
+    END IF
+    IF c$='"' OR c$="'" THEN quote$=c$: i=i+1: NEXT rec_discovery
+    IF i<LEN(text$) THEN
+      IF text$(i TO i+1)="##" OR text$(i TO i+1)="**" THEN RETurn
+    END IF
+    IF rec_letter(c$) THEN
+      j=i
+      REPeat rec_discovery_word
+        IF j=LEN(text$) THEN EXIT rec_discovery_word
+        IF NOT rec_namechar(text$(j+1)) THEN EXIT rec_discovery_word
+        j=j+1
+      END REPeat rec_discovery_word
+      word$=rec_upper$(text$(i TO j)): n=n+1
+      IF n=1 THEN
+        first$=word$
+        IF first$="TYPE" THEN rc_enabled=1: RETurn
+        IF first$<>"DIM" AND first$<>"LOCAL" AND first$<>"DEF" AND first$<>"DEFINE" THEN RETurn
+      ELSE
+        IF word$="AS" AND n>2 AND previous$<>"" AND previous$<>"(" AND previous$<>"," THEN
+          IF depth=0 AND (first$="DIM" OR first$="LOCAL") THEN rc_enabled=1: RETurn
+          IF n>3 AND (first$="DEFINE" OR first$="DEF") THEN rc_enabled=1: RETurn
+        END IF
+        IF word$="VAL" AND n>3 AND (first$="DEFINE" OR first$="DEF") THEN rc_enabled=1: RETurn
+      END IF
+      previous$=word$: i=j+1
+    ELSE
+      IF c$="(" THEN depth=depth+1
+      IF c$=")" THEN depth=depth-1
+      IF c$<>" " AND c$<>CHR$(9) THEN previous$=c$
+      i=i+1
+    END IF
+  END REPeat rec_discovery
+END DEFine rec_discover
+
+## Type, declaration and routine tables; flattened layouts and validation.
+## Fixed-capacity declarations. No record syntax is used in SSB itself.
+DEFine PROCedure rec_tables
+  rc_cap=rec_setting("SSBRECITEMS",256,32,1024)
+  rc_profile$=rec_upper$(GETENV$("SSBRECPROFILE"))
+  IF rc_profile$="" THEN rc_profile$="TURBO509"
+  IF rc_profile$<>"TURBO509" AND rc_profile$<>"SBASIC" THEN rec_fail "SSBRECPROFILE must be TURBO509 or SBASIC"
+  rc_names=rc_cap*4
+  DIM rt_name$(rc_cap,64),rt_defined(rc_cap),rt_busy(rc_cap)
+  DIM rf_owner(rc_cap),rf_name$(rc_cap,64),rf_type(rc_cap),rf_shape$(rc_cap,120),rf_rank(rc_cap)
+  DIM rl_owner(rc_cap),rl_path$(rc_cap,160),rl_shape$(rc_cap,120),rl_rank(rc_cap)
+  DIM rv_name$(rc_cap,64),rv_type(rc_cap),rv_rank(rc_cap),rv_pool(rc_cap)
+  DIM rr_name$(rc_cap,64),rr_first(rc_cap),rr_count(rc_cap),rr_fun(rc_cap),rr_temps(rc_cap),rr_simplelocals(rc_cap)
+  DIM rt_file$(rc_cap,100),rt_line(rc_cap),rv_file$(rc_cap,100),rv_line(rc_cap)
+  DIM ra_name$(rc_cap,64),ra_var(rc_cap),ra_val(rc_cap),ra_rank(rc_cap)
+  DIM rn_name$(rc_names,160),rn_ordinary(rc_names),rn_array(rc_names),rn_assignment(rc_names),rg_name$(rc_names,160)
+  DIM rm_name$(rc_cap,64),rm_value(rc_cap)
+  DIM rc_lr(rc_cap),rc_lv(rc_cap),rc_loop$(64,32)
+  rc_locals=0: rc_loop=0
+  rt_n=0: rf_n=0: rl_n=0: rv_n=0: rr_n=0: ra_n=0: rn_n=0: rg_n=0: rm_n=0
+  rc_type=0: rc_routine=0: rc_emit=0: rc_depth=0: rc_temp=0
+  rc_maxdims=8: rc_maxname=160: rc_maxparams=64
+END DEFine rec_tables
+
+DEFine FuNction rec_setting(key$,value,low,high)
+  LOCal s$(1024)
+  s$=GETENV$(key$)
+  IF s$<>"" THEN
+    IF NOT isnum(s$) THEN rec_fail "Invalid " & key$
+    value=s$
+  END IF
+  IF value<low OR value>high THEN rec_fail key$ & " outside supported range"
+  RETurn value
+END DEFine rec_setting
+
+DEFine PROCedure rec_room(count,limit,what$)
+  IF count>=limit THEN rec_fail what$ & " table full; increase SSBRECITEMS"
+END DEFine rec_room
+
+DEFine FuNction rec_typeid(name$)
+  LOCal i
+  IF LEN(name$)>64 THEN rec_fail "Type names are limited to 64 bytes"
+  IF LEN(name$)>=4 THEN
+    IF rec_upper$(name$(1 TO 4))="REC_" THEN rec_fail "Reserved type name: " & name$
+  END IF
+  i=rec_find(name$,rt_name$,rt_n)
+  IF i THEN RETurn i
+  rec_room rt_n,rc_cap,"Type"
+  rt_n=rt_n+1: rt_name$(rt_n)=rec_upper$(name$)
+  rt_file$(rt_n)=rc_file$: rt_line(rt_n)=rc_line
+  RETurn rt_n
+END DEFine rec_typeid
+
+DEFine PROCedure rec_user(name$,ordinary)
+  LOCal i
+  IF LEN(name$)>rc_maxname THEN rec_fail "Name too long: " & name$
+  IF LEN(name$)>=4 THEN
+    IF rec_upper$(name$(1 TO 4))="REC_" THEN rec_fail "Reserved name: " & name$
+  END IF
+  i=rec_find(name$,rn_name$,rn_n)
+  IF NOT i THEN
+    rec_room rn_n,rc_names,"Name"
+    rn_n=rn_n+1: i=rn_n: rn_name$(i)=rec_upper$(name$)
+  END IF
+  IF ordinary THEN rn_ordinary(i)=1
+END DEFine rec_user
+
+DEFine FuNction rec_variable(name$,typeid,rank)
+  LOCal i
+  IF NOT rec_letter(name$(1)) THEN rec_fail "Invalid record name: " & name$
+  IF LEN(name$)>64 THEN rec_fail "Record names are limited to 64 bytes"
+  IF name$(LEN(name$))="$" OR name$(LEN(name$))="%" THEN rec_fail "Record names cannot have a suffix"
+  rec_user name$,0
+  i=rec_find(name$,rv_name$,rv_n)
+  IF i THEN
+    IF rv_type(i)<>typeid OR rv_rank(i)<>rank THEN rec_fail "Conflicting record type/rank: " & name$
+    RETurn i
+  END IF
+  rec_room rv_n,rc_cap,"Record"
+  rv_n=rv_n+1: rv_name$(rv_n)=rec_upper$(name$): rv_type(rv_n)=typeid: rv_rank(rv_n)=rank
+  rv_file$(rv_n)=rc_file$: rv_line(rv_n)=rc_line
+  RETurn rv_n
+END DEFine rec_variable
+
+DEFine FuNction rec_bound$(a,b,stringcap)
+  LOCal v,i,s$(1024)
+  s$=rec_part$(a,b)
+  IF a=b AND rk_kind(a)=2 AND isnum(s$) THEN
+    v=s$
+  ELSE
+    i=rec_find(s$,rm_name$,rm_n)
+    IF NOT i THEN rec_fail "Field bound needs an integer literal or numeric MANIFEST: " & s$
+    v=rm_value(i)
+  END IF
+  IF v<0 OR v>32767 OR v<>INT(v) OR (stringcap AND v=0) THEN rec_fail "Invalid fixed field bound: " & s$
+  RETurn rec_num$(v)
+END DEFine rec_bound$
+
+## Descriptor starts at a, ends at b. Results go in rd_* in caller scope.
+DEFine PROCedure rec_descriptor(a,b,formal)
+  LOCal i,j,last,rs_b(64),rs_e(64),rs_n,asat
+  rd_name$=rec_token$(a): rd_shape$="": rd_rank=0: rd_type=0: rd_val=0: rd_pool=0
+  IF rec_upper$(rd_name$)="VAL" THEN
+    rd_val=1: a=a+1: rd_name$=rec_token$(a)
+  END IF
+  IF rk_kind(a)<>1 THEN rec_fail "Expected a declared name"
+  IF LEN(rd_name$)>64 THEN rec_fail "Declared names are limited to 64 bytes"
+  i=a+1
+  IF i<=b THEN
+    IF rec_token$(i)="(" THEN
+      j=rec_match(i,b): rd_shape$=rec_part$(i+1,j-1)
+      IF formal THEN
+        FOR last=i+1 TO j-1
+          IF rec_token$(last)<>"," THEN rec_fail "Record array formals use empty dimensions"
+        END FOR last
+        rd_rank=1
+        FOR last=i+1 TO j-1
+          rd_rank=rd_rank+1
+        END FOR last
+      ELSE
+        rec_split i+1,j-1: rd_rank=rs_n
+        IF NOT rs_n THEN rec_fail "Record storage arrays need dimension bounds"
+      END IF
+      i=j+1
+    END IF
+  END IF
+  IF i<=b THEN
+    IF rec_upper$(rec_token$(i))<>"AS" OR i+1>b THEN rec_fail "Expected AS recordType"
+    rd_type=rec_typeid(rec_token$(i+1)): i=i+2
+  END IF
+  IF i<=b THEN
+    IF rec_upper$(rec_token$(i))<>"POOL" OR i<>b THEN rec_fail "Unexpected text after record declaration"
+    rd_pool=1: i=i+1
+  END IF
+  IF rd_val AND (rd_type OR rd_rank) THEN rec_fail "VAL supports scalar numbers and strings only"
+  IF rd_pool AND (formal OR NOT rd_type OR rd_rank<>1) THEN rec_fail "POOL requires a global one-dimensional record array"
+END DEFine rec_descriptor
+
+DEFine PROCedure rec_collect(text$)
+  LOCal rk_len%(258),rk_s(258),rk_e(258),rk_kind(258),rk_n,rk_line$(1024)
+  LOCal rs_b(64),rs_e(64),rs_n,i,j,k,a,b,kind$(1024),name$(1024),n,v
+  LOCal rd_name$(64),rd_shape$(1024),rd_rank,rd_type,rd_val,rd_pool
+  rec_lex text$
+  IF rk_n=0 THEN RETurn
+  kind$=rec_upper$(rec_token$(1))
+  IF rk_kind(1)=5 OR kind$=CHR$(64) THEN RETurn
+  b=rk_n: IF rk_kind(b)=5 THEN b=b-1
+  IF kind$="TYPE" THEN
+    IF rc_type OR rc_routine OR b<>2 THEN rec_fail "TYPE must be a top-level declaration"
+    rc_type=rec_typeid(rec_token$(2))
+    IF rt_defined(rc_type) THEN rec_fail "Duplicate TYPE: " & rec_token$(2)
+    rt_defined(rc_type)=1: RETurn
+  END IF
+  IF kind$="END" AND rec_upper$(rec_token$(2))="TYPE" THEN
+    IF NOT rc_type THEN rec_fail "END TYPE without TYPE"
+    rc_type=0: RETurn
+  END IF
+  IF kind$="REFERENCE" AND NOT rc_type THEN
+    ## REFERENCE text is consumed in source order by rec_walk.
+    RETurn
+  END IF
+  IF rc_type THEN
+    rec_descriptor 1,b,0
+    IF rd_val OR rd_pool THEN rec_fail "Invalid TYPE field"
+    FOR i=1 TO rf_n
+      IF rf_owner(i)=rc_type AND rec_upper$(rf_name$(i))=rec_upper$(rd_name$) THEN rec_fail "Duplicate field: " & rd_name$
+    END FOR i
+    rec_room rf_n,rc_cap,"Field"
+    rf_n=rf_n+1: rf_owner(rf_n)=rc_type: rf_name$(rf_n)=rec_upper$(rd_name$): rf_type(rf_n)=rd_type
+    IF rd_type THEN
+      IF rd_rank THEN rec_fail "Arrays of embedded records are not supported"
+    ELSE
+      IF rd_name$(LEN(rd_name$))="$" AND NOT rd_rank THEN rec_fail "String fields require a capacity"
+      IF rd_rank THEN
+        rec_split 3,b-1: rd_shape$=""
+        FOR i=1 TO rs_n
+          v=rd_name$(LEN(rd_name$))="$" AND i=rs_n
+          rd_shape$=rec_join$(rd_shape$,rec_bound$(rs_b(i),rs_e(i),v))
+        END FOR i
+      END IF
+      rf_shape$(rf_n)=rd_shape$: rf_rank(rf_n)=rd_rank
+      IF rd_name$(LEN(rd_name$))="$" THEN rf_rank(rf_n)=rd_rank-1
+    END IF
+    RETurn
+  END IF
+  IF kind$="DEFINE" OR kind$="DEF" THEN
+    IF rc_routine THEN rec_fail "Nested routines are not supported by the record profile"
+    name$=rec_token$(3)
+    rec_user name$,0
+    IF rec_find(name$,rr_name$,rr_n) THEN rec_fail "Duplicate routine: " & name$
+    rec_room rr_n,rc_cap,"Routine"
+    rr_n=rr_n+1: rc_routine=rr_n: rr_name$(rr_n)=rec_upper$(name$): rr_first(rr_n)=ra_n+1
+    rr_fun(rr_n)=rec_upper$(rec_token$(2))="FUNCTION" OR rec_upper$(rec_token$(2))="FUN"
+    IF b>3 THEN
+      IF rec_token$(4)<>"(" THEN rec_fail "Routine result annotations are not supported; use an output record parameter"
+      j=rec_match(4,b)
+      IF j<>b THEN rec_fail "Functions cannot return records; use an output record parameter"
+      rec_split 5,j-1
+      FOR i=1 TO rs_n
+        rec_descriptor rs_b(i),rs_e(i),1
+        rec_room ra_n,rc_cap,"Parameter"
+        ra_n=ra_n+1: ra_name$(ra_n)=rec_upper$(rd_name$): ra_val(ra_n)=rd_val: ra_rank(ra_n)=rd_rank
+        IF rd_type THEN
+          ra_var(ra_n)=rec_variable(rd_name$,rd_type,rd_rank)
+        ELSE
+          rec_user rd_name$,1
+        END IF
+        rr_count(rr_n)=rr_count(rr_n)+1
+      END FOR i
+    END IF
+    RETurn
+  END IF
+  IF kind$="END" AND (rec_upper$(rec_token$(2))="DEFINE" OR rec_upper$(rec_token$(2))="DEF") THEN
+    rc_routine=0: RETurn
+  END IF
+  IF kind$="MANIFEST" THEN
+    i=2: IF rec_token$(i)=":" THEN i=i+1
+    IF b=i+2 AND rec_token$(i+1)="=" AND isnum(rec_token$(i+2)) THEN
+      v=rec_find(rec_token$(i),rm_name$,rm_n)
+      IF NOT v THEN
+        rec_room rm_n,rc_cap,"Manifest"
+        rm_n=rm_n+1: v=rm_n
+      END IF
+      rm_name$(v)=rec_upper$(rec_token$(i)): rm_value(v)=rec_token$(i+2)
+    END IF
+  END IF
+  IF kind$="FOR" AND b>3 THEN
+    IF rec_token$(3)="=" THEN rec_user rec_token$(2),1
+  END IF
+  IF kind$="IMPLICIT%" OR kind$="IMPLICIT$" THEN
+    FOR i=2 TO b
+      IF rk_kind(i)=1 THEN
+        rec_user rec_token$(i),1
+      ELSE
+        IF rec_token$(i)<>"," THEN rec_fail "Use an explicit IMPLICIT name list"
+      END IF
+    END FOR i
+    RETurn
+  END IF
+  IF kind$="DIM" OR kind$="LOCAL" THEN
+    rec_split 2,b
+    FOR i=1 TO rs_n
+      a=rs_b(i): n=0
+      FOR j=a TO rs_e(i)
+        IF rec_upper$(rec_token$(j))="AS" THEN n=1
+      END FOR j
+      IF n THEN
+        rec_descriptor a,rs_e(i),0
+        IF kind$="LOCAL" AND NOT rc_routine THEN rec_fail "LOCal record outside a routine"
+        v=rec_variable(rd_name$,rd_type,rd_rank)
+        IF kind$="LOCAL" THEN
+          n=0
+          FOR k=1 TO rc_locals
+            IF rc_lr(k)=rc_routine AND rc_lv(k)=v THEN n=1
+          END FOR k
+          IF NOT n THEN
+          rec_room rc_locals,rc_cap,"Local record"
+          rc_locals=rc_locals+1: rc_lr(rc_locals)=rc_routine: rc_lv(rc_locals)=v
+          END IF
+        END IF
+        IF rd_pool THEN
+          IF kind$<>"DIM" OR rc_routine THEN rec_fail "POOL must be global"
+          rv_pool(v)=1
+        END IF
+      ELSE
+        rec_user rec_token$(a),1
+        IF kind$="LOCAL" AND rc_routine THEN rr_simplelocals(rc_routine)=rr_simplelocals(rc_routine)+1
+        IF a<rs_e(i) THEN
+          IF rec_token$(a+1)="(" THEN rn_array(rec_find(rec_token$(a),rn_name$,rn_n))=1
+        END IF
+      END IF
+    END FOR i
+  END IF
+  FOR i=1 TO b
+    IF rk_kind(i)=1 THEN
+      n=1
+      IF i>1 THEN
+        IF rec_token$(i-1)="." OR rec_upper$(rec_token$(i-1))="AS" THEN n=0
+      END IF
+      IF n THEN rec_user rec_token$(i),0
+    END IF
+  END FOR i
+  IF b>1 AND rk_kind(1)=1 AND rec_token$(2)="=" THEN rn_assignment(rec_find(rec_token$(1),rn_name$,rn_n))=1
+END DEFine rec_collect
+
+DEFine PROCedure rec_layout(owner,root,prefix$)
+  LOCal i,j,path$(1024)
+  IF rt_busy(owner) THEN rec_fail "Recursive embedded TYPE: " & rt_name$(owner)
+  IF NOT rt_defined(owner) THEN rec_fail "Unknown TYPE: " & rt_name$(owner)
+  rt_busy(owner)=1: j=rl_n
+  FOR i=1 TO rf_n
+    IF rf_owner(i)=owner THEN
+      path$=prefix$ & rf_name$(i)
+      IF LEN(path$)>160 THEN rec_fail "Flattened field path exceeds 160 bytes"
+      IF rf_type(i) THEN
+        rec_layout rf_type(i),root,path$ & "_"
+      ELSE
+        rec_room rl_n,rc_cap,"Flattened field"
+        rl_n=rl_n+1: rl_owner(rl_n)=root: rl_path$(rl_n)=path$
+        rl_shape$(rl_n)=rf_shape$(i): rl_rank(rl_n)=rf_rank(i)
+      END IF
+    END IF
+  END FOR i
+  rt_busy(owner)=0
+  IF rl_n=j THEN rec_fail "Empty TYPE: " & rt_name$(owner)
+END DEFine rec_layout
+
+DEFine PROCedure rec_generated(name$)
+  LOCal i
+  IF LEN(name$)>rc_maxname THEN rec_fail "Generated name too long: " & name$
+  IF rec_find(name$,rn_name$,rn_n) THEN rec_fail "Generated name collides with source: " & name$
+  IF rec_find(name$,rg_name$,rg_n) THEN rec_fail "Generated paths collide: " & name$
+  rec_room rg_n,rc_names,"Generated name"
+  rg_n=rg_n+1: rg_name$(rg_n)=rec_upper$(name$)
+END DEFine rec_generated
+
+DEFine PROCedure rec_helper(name$)
+  LOCal i
+  i=rec_find(name$,rn_name$,rn_n)
+  IF i THEN
+    IF rn_ordinary(i) OR rn_assignment(i) THEN rec_fail "Pool helper collides with storage: " & name$
+  END IF
+  IF rec_find(name$,rr_name$,rr_n) THEN rec_fail "Pool helper collides with routine: " & name$
+  IF rec_find(name$,rg_name$,rg_n) THEN rec_fail "Generated paths collide: " & name$
+  rec_room rg_n,rc_names,"Generated name"
+  rg_n=rg_n+1: rg_name$(rg_n)=rec_upper$(name$)
+END DEFine rec_helper
+
+DEFine PROCedure rec_check
+  LOCal i,j,k
+  IF rc_type THEN rec_fail "Missing END TYPE"
+  IF rc_routine THEN rec_fail "Missing END DEFine"
+  FOR i=1 TO rt_n
+    rc_file$=rt_file$(i): rc_line=rt_line(i)
+    rec_layout i,i,""
+  END FOR i
+  FOR i=1 TO rv_n
+    rc_file$=rv_file$(i): rc_line=rv_line(i)
+    j=rec_find(rv_name$(i),rn_name$,rn_n)
+    IF rn_ordinary(j) THEN rec_fail "Record name also used for ordinary storage: " & rv_name$(i)
+    IF rec_find(rv_name$(i),rr_name$,rr_n) THEN rec_fail "Record name also used for a routine: " & rv_name$(i)
+    FOR k=1 TO rl_n
+      IF rl_owner(k)=rv_type(i) THEN
+        rec_generated rec_name$(i,k)
+        IF rv_rank(i)+rl_rank(k)+rec_isstring(rl_path$(k))>rc_maxdims THEN rec_fail "Generated array rank exceeds profile"
+      END IF
+    END FOR k
+    IF rv_pool(i) THEN
+      rec_helper rv_name$(i) & "_new%"
+      rec_helper rv_name$(i) & "_free"
+    END IF
+  END FOR i
+END DEFine rec_check

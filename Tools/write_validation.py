@@ -1,0 +1,96 @@
+"""Save a compact validation record after the QL tests and package build."""
+import hashlib
+import json
+import re
+import struct
+from pathlib import Path
+from bootstrap import ROOT
+
+build = ROOT / 'build'
+read = lambda name: json.loads((build / name).read_text(encoding='utf-8'))
+interpreted = read('results.json')
+native = read('native-validation.json')
+bootstrap = read('self-host-result.json')
+safety = read('output-safety-result.json')
+compiled = read('compiled-app/build.json')
+compatibility = read('output-compatibility.json')
+line_ranges = read('line-range-result.json')
+sources = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT / 'Source').glob('*.ssb')}
+manual_proof_path = ROOT/'Docs'/'Quill-Manual-Validation.json'
+manual_proof = json.loads(manual_proof_path.read_text(encoding='utf-8')) if manual_proof_path.exists() else None
+if manual_proof:
+    assert hashlib.sha256((ROOT/manual_proof['manual']).read_bytes()).hexdigest()==manual_proof['manual_sha256']
+    # Either Quill reloaded its own save, or that save was shown byte-identical in content.
+    assert manual_proof['native_quill_loaded'] and manual_proof['native_quill_saved']
+    assert manual_proof['native_quill_reloaded'] or manual_proof.get('quill_saved_copy_identical_content')
+assert interpreted['sources'] == bootstrap['sources'] == compiled['sources'] == sources
+assert all(test['passed'] for test in interpreted['tests'])
+assert len(native) == 16 and all(test['passed'] and test['ram_mib']==4 for test in native)
+assert bootstrap['passed'] and safety['passed'] and compiled['self_host']
+legacy_basic=(Path(bootstrap['folder'])/'old_output_bas').read_bytes().replace(b'ram1_ssb280_err',b'nfa1_report')
+assert hashlib.sha256(legacy_basic).hexdigest()==compiled['numbered_sha256'], 'The final executable must be built from 2.7.2g output'
+assert compatibility['passed']
+assert len(line_ranges) == 5 and all(t['passed'] for t in line_ranges)
+assert all(hashlib.sha256((Path(t['folder'])/'ssb280_exe').read_bytes()).hexdigest()==hashlib.sha256((build/'compiled-app'/'ssb280_exe').read_bytes()).hexdigest() for t in line_ranges)
+executable_hash=hashlib.sha256((build/'compiled-app'/'ssb280_exe').read_bytes()).hexdigest()
+executable=(build/'compiled-app'/'ssb280_exe').read_bytes()
+assert executable.startswith(b']!QDOS File Header')
+assert struct.unpack_from('>I',executable,22)[0]==1024*1024
+# The earlier 2 MiB development build is recorded below as a historical figure;
+# it is no longer rebuilt, so a fresh build directory has no copy to inspect.
+assert all(hashlib.sha256((Path(test['folder'])/'ssb280_exe').read_bytes()).hexdigest()==executable_hash for test in native)
+assert hashlib.sha256((Path(safety['folder'])/'ssb280_exe').read_bytes()).hexdigest()==executable_hash
+wrapper = build / 'compiled-wrapper'
+assert (wrapper / 'failed_status').read_text().strip() == '-7'
+assert (wrapper / 'backup_bas').read_bytes() == (wrapper / 'old_bas').read_bytes()
+report = (build / 'compiled-app' / 'report').read_text(encoding='latin1')
+summary = re.search(r'(\d+) errors and (\d+) warnings', report)
+assert summary and summary[1] == '0'
+warnings = re.findall(r'^\+\+\+\+ Warning at \d+: (.*)$', report, re.M)
+capacity_warnings = [w for w in warnings if w.startswith(('DIM ', 'LOCal ')) and 'assumed' in w]
+local_notices = [w for w in warnings if 'only exists as a LOCAL' in w]
+assert not capacity_warnings, 'String-capacity assumptions must not return'
+assert len(local_notices) == len(warnings) == int(summary[2])
+long_lines = json.loads((ROOT/'Tests'/'long-lines.json').read_text(encoding='utf-8'))
+interpreted_by_name = {t['name']: t for t in interpreted['tests']}
+native_by_name = {t['name']: t for t in native}
+for fixture in long_lines:
+    assert interpreted_by_name[fixture['name']]['result'].strip() == fixture['expected']
+    assert native_by_name[fixture['name']]['result'].strip() == fixture['expected']
+    physical = (ROOT/'Tests'/(fixture['name']+'.ssb')).read_bytes().splitlines()
+    assert max(map(len, physical)) <= 1000
+    for case in fixture.get('cases', []):
+        first = case['source_line']-1
+        assert [len(line) for line in physical[first:first+len(case['physical_bytes'])]] == case['physical_bytes']
+        assert case['logical_bytes'] <= 1000
+
+result = dict(
+    date='2026-11-15',
+    target='SMSQ/E 3.43, SMSQmulator 3.03 68000 CPU; native checks 4 MiB RAM, bootstrap/interpreter checks 8 MiB RAM',
+    compiler='Turbo parser 5.09, code generator F5.37, SMS Turbo toolkit',
+    interpreter_tests=[dict(name=t['name'], passed=t['passed']) for t in sorted(interpreted['tests'], key=lambda t: t['name'])],
+    compiled_filter_and_compiled_program_tests=[dict(name=t['name'], passed=t['passed'], ram_mib=t['ram_mib'], actual=t['result'].strip()) for t in native],
+    line_number_boundary_tests=[dict(name=t['name'], passed=t['passed']) for t in line_ranges],
+    memory=dict(previous_dataspace_bytes=2*1024*1024, dataspace_bytes=1024*1024, reduction_percent=50,
+        default_table_capacity=256, token_text_matrices_removed=True, reference_directives_streamed=True,
+        colon_statement_tail_processed=True, tested_runtime_ram_mib=4,
+        limitation='The 2 MiB SMSQ/E test environment reported insufficient memory while launching the filter; 2 MiB runtime support is not claimed.'),
+    bootstrap=dict(passed=True, old_output_bytes=bootstrap['old_bytes'], new_output_bytes=bootstrap['new_bytes'], numbered_sha256=bootstrap['sha256'], built_from_ssb_output=True, preprocessor='SSB 2.7.2g'),
+    legacy_bootstrap_compatibility=dict(version='2.7.2g', compiler_source_uses_records=False, old_and_new_output_identical=True, user_program_output_identical=True, fixtures=compatibility['checks']),
+    compiler_result=dict(errors=int(summary[1]), warnings=int(summary[2]), string_capacity_warnings=len(capacity_warnings), local_only_notices=len(local_notices), note='String capacities are explicit. Remaining notices identify strings used only as locals or parameters.'),
+    long_source_lines=dict(maximum_bytes=1000, cases=long_lines, interpreter_and_compiled_checks_passed=True),
+    output_safety=safety['checks'],
+    ssbgo_failure_test=dict(compiled=True, failed_final_absent=True, previous_output_preserved=True),
+    source_sha256=sources,
+    quill_manual=manual_proof,
+    validated_executable_sha256=executable_hash,
+    distribution_sha256={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT/'Distribution').iterdir() if p.is_file()},
+    limitations=[
+        'Turbo rejects individual record-array-element reference arguments; standalone work records and whole-array references are supported.',
+        'SBASIC-only reference forms were tested in the interpreter, not compiled.',
+        'Classic QL ROMs, a 128 KiB machine, QLiberator and the full editor/grep SSBGO workflow were not certified.',
+        'New record diagnostics use English. The updated Quill manual documents records and current configuration names.',
+        'Publication/backup tests ran on the QL RAM filesystem because Windows NFA rename in this emulator reports files in use.'
+    ])
+(ROOT / 'Docs' / 'Validation.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
+print('Recorded', len(interpreted['tests']), 'interpreter checks and', len(native), 'compiled-program checks')

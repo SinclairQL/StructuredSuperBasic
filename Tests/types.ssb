@@ -1,0 +1,7 @@
+TYPE point
+  x
+  y
+END TYPE
+TYPE highrank
+  grid(0,0,0,0,0,0,0,0)
+END TYPE

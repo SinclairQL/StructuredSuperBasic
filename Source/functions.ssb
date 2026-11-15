@@ -5,12 +5,14 @@ DEFine FuNction Trim$(text$)
     ELSE
         RETurn ""
     END IF
-END DEFine LTrim$
+## Fix inherited from 2.7.2g: close Trim$ with its own name.
+END DEFine Trim$
 :
 :
 ## A function to trim leading spaces from a string.
 DEFine FuNction LTrim$(text$)
-    LOCal x, ret$
+    ## Fix inherited from 2.7.2g: retain up to a complete 1000-byte source line.
+    LOCal x, ret$(1000)
     :
     ## Empty strings are easy!
     IF text$ = "" THEN RETurn "": END IF
@@ -29,7 +31,8 @@ END DEFine LTrim$
 :
 ## A function to trim trailing spaces from a string.
 DEFine FuNction RTrim$(text$)
-    LOCal x, ret$
+    ## Fix inherited from 2.7.2g: retain up to a complete 1000-byte source line.
+    LOCal x, ret$(1000)
     :
     ## Empty strings are easy!
     IF text$ = "" THEN RETurn "": END IF
@@ -71,45 +74,23 @@ END DEF centre
 ##   if in a string, or zero if not.
 
 DEFine FuNction inString% (in$, stopHere)
-  local x, Double%, Single%,quote$(1)
-  Double% = 0: Single% = 0
-  FOR x = 1 to stopHere
-    ** Check for double quotes.
-    if in$(x) = '"' THEN
-      if Double% = 1 then
-        Double% = 0
-      else
-        Double% = 1
-      end if
-    else
-      ** Try single quotes.
-      if in$(x) = "'" then
-        if Single% = 1 then
-          Single% = 0
-        else
-          Single% = 1
-        end if
-      end if
-    end if
+  LOCal x,quote$(1)
+  ## Fix inherited from 2.7.2g: only the active delimiter closes a string.
+  ## The other quote character is literal content, not a second opener.
+  quote$ = ""
+  FOR x = 1 TO stopHere
+    IF quote$ <> "" THEN
+      IF in$(x) = quote$ THEN quote$ = ""
+    ELSE
+      IF in$(x) = '"' OR in$(x) = "'" THEN quote$ = in$(x)
+    END IF
   END FOR x
-:
-  ** If Double% or Single% = 1 then
-  ** we opened a string before the
-  ** marker characters for REMark or
-  ** invisible REMark, so we return
-  ** true, else false.
-  IF Double% + Single% = 0 THEN RETurn 0: END IF
-
-  ** Now look for the terminating quote
-  IF Double% THEN 
-    quote$ = '"'
-  ELSE 
-    quote$ = "'"
-  END IF
-
-  FOR x = stopHere TO LEN(in$)
-    IF in$(x) = quote$ THEN RETurn x: END IF
+  IF quote$ = "" THEN RETurn 0
+  FOR x = stopHere + 1 TO LEN(in$)
+    IF in$(x) = quote$ THEN RETurn x
   END FOR x
+  ## An unmatched quote must not fall through without a function result.
+  RETurn 0
 END DEFine inString%
 
 
@@ -167,7 +148,8 @@ END DEFine joinLine$
 ##   the first ## is stripped off.
 ##   ND-272F.
 DEFine FuNction stripComment$(a$)
-  LOCal in$, out$, stripLoop, temp, whereQuote
+  ## Fix inherited from 2.7.2g: Turbo's default 100-byte locals lose long lines.
+  LOCal in$(1000), out$(1000), stripLoop, temp, whereQuote
   :
   in$ = a$
   out$ = ""  
@@ -192,7 +174,8 @@ DEFine FuNction stripComment$(a$)
     END IF
 
     ** Must be in a string, so extend out$ and try again.
-    out$ = in$(1 to whereQuote)
+    ## Fix inherited from 2.7.2g: retain earlier quoted comment markers.
+    out$ = out$ & in$(1 to whereQuote)
     in$ = in$(whereQuote + 1 TO)
   END REPeat stripLoop
 
@@ -238,3 +221,223 @@ DEFine FuNction doRemark$(a$)
 
   RETurn out$
 END DEFine doRemark$
+
+## Shared record lexical, name, dimension and source-slice helpers.
+## Record extension: byte-preserving lexical utilities. ASCII syntax only.
+## rk_* token spans belong to the caller (QL dynamic scope).
+## Keep text only in rk_line$: a 258 by 160 string matrix costs over 40 KiB
+## at every recursive parsing level. Token lengths need only 16-bit integers.
+DEFine PROCedure rec_lex(text$)
+  LOCal i,j,c$(160),q$(1),depth
+  rk_line$=text$: rk_n=0: i=1
+  REPeat rec_scan
+    IF i>LEN(text$) THEN EXIT rec_scan
+    c$=text$(i)
+    IF c$=" " OR c$=CHR$(9) THEN i=i+1: NEXT rec_scan
+    IF rk_n=256 THEN rec_fail "Too many tokens on one line"
+    rk_n=rk_n+1: rk_s(rk_n)=i: rk_kind(rk_n)=4
+    j=i
+    IF c$='"' OR c$="'" THEN
+      rk_kind(rk_n)=3: q$=c$: j=i+1
+      REPeat rec_quote
+        IF j>LEN(text$) THEN rec_fail "Unterminated quoted string"
+        IF text$(j)=q$ THEN EXIT rec_quote
+        j=j+1
+      END REPeat rec_quote
+    ELSE
+      IF rec_letter(c$) THEN
+        rk_kind(rk_n)=1
+        REPeat rec_ident
+          IF j=LEN(text$) THEN EXIT rec_ident
+          IF NOT rec_namechar(text$(j+1)) THEN EXIT rec_ident
+          j=j+1
+        END REPeat rec_ident
+        IF j<LEN(text$) THEN
+          IF text$(j+1)="$" OR text$(j+1)="%" THEN j=j+1
+        END IF
+      ELSE
+        IF rec_digit(c$) OR c$="$" OR c$="%" THEN
+          rk_kind(rk_n)=2
+          REPeat rec_number
+            IF j=LEN(text$) THEN EXIT rec_number
+            c$=rec_upper$(text$(j+1))
+            IF NOT rec_namechar(c$) AND c$<>"." THEN EXIT rec_number
+            j=j+1
+            IF c$="E" AND j<LEN(text$) THEN
+              IF text$(j+1)="+" OR text$(j+1)="-" THEN j=j+1
+            END IF
+          END REPeat rec_number
+        END IF
+      END IF
+    END IF
+    rk_e(rk_n)=j
+    IF rk_kind(rk_n)=3 THEN
+      rk_len%(rk_n)=1
+    ELSE
+      IF j-i>159 THEN rec_fail "Identifier/number token exceeds 160 bytes"
+      rk_len%(rk_n)=j-i+1
+    END IF
+    c$=rec_upper$(rec_token$(rk_n))
+    IF c$="REMARK" OR c$="REM" OR c$="DATA" THEN
+      rk_e(rk_n)=LEN(text$): rk_len%(rk_n)=LEN(c$): rk_kind(rk_n)=5
+      EXIT rec_scan
+    END IF
+    IF j<LEN(text$) THEN
+      c$=text$(j TO j+1)
+      IF c$="##" OR c$="**" THEN
+        rk_e(rk_n)=LEN(text$): rk_len%(rk_n)=LEN(c$): rk_kind(rk_n)=5
+        EXIT rec_scan
+      END IF
+    END IF
+    i=j+1
+  END REPeat rec_scan
+END DEFine rec_lex
+
+
+## Match the old token representation: strings expose their opening quote;
+## REMark/DATA/comment tokens expose only their marker, in upper case.
+DEFine FuNction rec_token$(tokenIndex)
+  LOCal first,last
+  IF tokenIndex<1 OR tokenIndex>rk_n THEN RETurn ""
+  first=rk_s(tokenIndex): last=first+rk_len%(tokenIndex)-1
+  IF rk_kind(tokenIndex)=5 THEN RETurn rec_upper$(rk_line$(first TO last))
+  RETurn rk_line$(first TO last)
+END DEFine rec_token$
+
+DEFine FuNction rec_letter(c$)
+  LOCal k
+  IF c$="" THEN RETurn 0
+  k=CODE(rec_upper$(c$))
+  RETurn k>=65 AND k<=90
+END DEFine rec_letter
+
+DEFine FuNction rec_digit(c$)
+  IF c$="" THEN RETurn 0
+  RETurn CODE(c$)>=48 AND CODE(c$)<=57
+END DEFine rec_digit
+
+DEFine FuNction rec_namechar(c$)
+  RETurn rec_letter(c$) OR rec_digit(c$) OR c$="_"
+END DEFine rec_namechar
+
+DEFine FuNction rec_part$(a,b)
+  IF b<a THEN RETurn ""
+  RETurn rk_line$(rk_s(a) TO rk_e(b))
+END DEFine rec_part$
+
+DEFine FuNction rec_match(a,last)
+  LOCal i,depth
+  depth=0
+  FOR i=a TO last
+    IF rec_token$(i)="(" THEN depth=depth+1
+    IF rec_token$(i)=")" THEN
+      depth=depth-1
+      IF depth=0 THEN RETurn i
+    END IF
+  END FOR i
+  rec_fail "Unbalanced parentheses"
+END DEFine rec_match
+
+## Split a token interval at top-level commas. Empty interval = zero parts.
+DEFine PROCedure rec_split(a,b)
+  LOCal i,depth,start
+  rs_n=0: start=a: depth=0
+  IF b<a THEN RETurn
+  FOR i=a TO b
+    IF rec_token$(i)="(" THEN depth=depth+1
+    IF rec_token$(i)=")" THEN depth=depth-1
+    IF depth<0 THEN rec_fail "Unbalanced parentheses"
+    IF rec_token$(i)="," AND depth=0 THEN
+      IF rs_n=64 THEN rec_fail "Too many list items"
+      rs_n=rs_n+1: rs_b(rs_n)=start: rs_e(rs_n)=i-1: start=i+1
+    END IF
+  END FOR i
+  IF depth<>0 THEN rec_fail "Unbalanced parentheses"
+  IF rs_n=64 THEN rec_fail "Too many list items"
+  rs_n=rs_n+1: rs_b(rs_n)=start: rs_e(rs_n)=b
+END DEFine rec_split
+
+REFERENCE names$(0,0)
+DEFine FuNction rec_find(name$,names$,count)
+  LOCal i,key$(160)
+  key$=rec_upper$(name$)
+  FOR i=1 TO count
+    IF key$=names$(i) THEN RETurn i
+  END FOR i
+  RETurn 0
+END DEFine rec_find
+
+DEFine FuNction rec_num$(value)
+  RETurn rec_trim$(value & "")
+END DEFine rec_num$
+
+DEFine FuNction rec_join$(a$,b$)
+  IF a$="" THEN RETurn b$
+  IF b$="" THEN RETurn a$
+  RETurn a$ & "," & b$
+END DEFine rec_join$
+
+DEFine FuNction rec_dims$(rank)
+  LOCal i,s$(1024)
+  s$=""
+  FOR i=1 TO rank
+    s$=rec_join$(s$,"0")
+  END FOR i
+  IF rank=0 THEN RETurn ""
+  RETurn "(" & s$ & ")"
+END DEFine rec_dims$
+
+DEFine FuNction rec_name$(variable,leaf)
+  RETurn rv_name$(variable) & "_" & rl_path$(leaf)
+END DEFine rec_name$
+
+DEFine FuNction rec_access$(variable,leaf,indices$)
+  LOCal s$(1024)
+  s$=rec_name$(variable,leaf)
+  IF indices$<>"" THEN s$=s$ & "(" & indices$ & ")"
+  RETurn s$
+END DEFine rec_access$
+
+## Never mutate string parameters: interpreted calls can alias source slices.
+DEFine FuNction rec_upper$(source$)
+  LOCal result$(1024),offset,codevalue
+  result$=""
+  FOR offset=1 TO LEN(source$)
+    codevalue=CODE(source$(offset))
+    IF codevalue>=97 AND codevalue<=122 THEN codevalue=codevalue-32
+    result$=result$ & CHR$(codevalue)
+  END FOR offset
+  RETurn result$
+END DEFine rec_upper$
+
+DEFine FuNction rec_trim$(source$)
+  LOCal first,last,i,result$(1024)
+  first=1: last=LEN(source$): result$=""
+  REPeat rec_trim_left
+    IF first>last THEN RETurn ""
+    IF source$(first)<>" " AND source$(first)<>CHR$(9) THEN EXIT rec_trim_left
+    first=first+1
+  END REPeat rec_trim_left
+  REPeat rec_trim_right
+    IF source$(last)<>" " AND source$(last)<>CHR$(9) THEN EXIT rec_trim_right
+    last=last-1
+  END REPeat rec_trim_right
+  FOR i=first TO last
+    result$=result$ & source$(i)
+  END FOR i
+  RETurn result$
+END DEFine rec_trim$
+
+DEFine FuNction rec_ltrim$(source$)
+  LOCal first,i,result$(1024)
+  first=1: result$=""
+  REPeat rec_trim_leading
+    IF first>LEN(source$) THEN RETurn ""
+    IF source$(first)<>" " AND source$(first)<>CHR$(9) THEN EXIT rec_trim_leading
+    first=first+1
+  END REPeat rec_trim_leading
+  FOR i=first TO LEN(source$)
+    result$=result$ & source$(i)
+  END FOR i
+  RETurn result$
+END DEFine rec_ltrim$

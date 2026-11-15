@@ -1,0 +1,127 @@
+[
+  {
+    "name": "cycle",
+    "source": "TYPE a\n b AS b\nEND TYPE\nTYPE b\n a AS a\nEND TYPE\nDIM p AS a\n",
+    "error": "Recursive embedded TYPE"
+  },
+  {
+    "name": "unknown_type",
+    "source": "DIM p AS missing\n",
+    "error": "Unknown TYPE"
+  },
+  {
+    "name": "record_return",
+    "source": "TYPE p\n x\nEND TYPE\nDEFine FuNction make AS p\nEND DEFine\n",
+    "error": "result annotations"
+  },
+  {
+    "name": "value_record",
+    "source": "TYPE p\n x\nEND TYPE\nDEFine PROCedure edit(VAL dest AS p)\nEND DEFine\n",
+    "error": "VAL supports scalar"
+  },
+  {
+    "name": "field_collision",
+    "source": "TYPE a\n x_y\n x AS b\nEND TYPE\nTYPE b\n y\nEND TYPE\nDIM p AS a\n",
+    "error": "Generated paths collide"
+  },
+  {
+    "name": "storage_collision",
+    "source": "TYPE a\n x\nEND TYPE\nDIM p AS a\nDIM p_x\n",
+    "error": "Generated name collides"
+  },
+  {
+    "name": "scope_rank",
+    "source": "TYPE a\n x\nEND TYPE\nDIM p AS a\nDIM p(3) AS a\n",
+    "error": "Conflicting record type/rank"
+  },
+  {
+    "name": "subarray_argument",
+    "source": "TYPE a\n values(2)\nEND TYPE\nDIM items(2) AS a\nedit items(1)\nDEFine PROCedure edit(dest AS a)\nEND DEFine\n",
+    "error": "Cannot pass a record array element"
+  },
+  {
+    "name": "record_array_copy",
+    "source": "TYPE a\n x\nEND TYPE\nDIM p(2) AS a, q(2) AS a\np = q\n",
+    "error": "Copy destination must be one record"
+  },
+  {
+    "name": "unknown_field",
+    "source": "TYPE a\n x\nEND TYPE\nDIM p AS a\np.typo = 1\n",
+    "error": "Unknown field"
+  },
+  {
+    "name": "unsafe_arguments",
+    "source": "TYPE p\n x\n y\nEND TYPE\nDIM values(2) AS p\nconsume advance%(), values(i%)\nDEFine PROCedure consume(n%,dest AS p)\nEND DEFine\nDEFine FuNction advance%\n RETurn 1\nEND DEFine\n",
+    "error": "Split effectful"
+  },
+  {
+    "name": "unsafe_expression_selector",
+    "source": "TYPE p\n x\n y\nEND TYPE\nDIM values(2) AS p\nPRINT magnitude(values(next%()))\nDEFine FuNction magnitude(v AS p)\n RETurn v.x\nEND DEFine\nDEFine FuNction next%\n RETurn 1\nEND DEFine\n",
+    "error": "Split effectful"
+  },
+  {
+    "name": "value_reference_conflict",
+    "source": "TYPE p\n x\nEND TYPE\nREFERENCE x%\nDEFine PROCedure edit(VAL x%)\nEND DEFine\n",
+    "error": "REFERENCE conflicts with VAL"
+  },
+  {
+    "name": "scalar_record_conflict",
+    "source": "TYPE p\n x\nEND TYPE\nDIM v AS p\nDEFine PROCedure edit(v)\nEND DEFine\n",
+    "error": "Record name also used for ordinary storage"
+  },
+  {
+    "name": "float_implicit",
+    "source": "TYPE p\n x\nEND TYPE\nIMPLICIT% pos_x\nDIM pos AS p\n",
+    "error": "Generated name collides"
+  },
+  {
+    "name": "reserved_name",
+    "source": "TYPE p\n x\nEND TYPE\nDIM v AS p\nrec_private=1\n",
+    "error": "Reserved name"
+  },
+  {
+    "name": "rank_limit",
+    "source": "TYPE p\n x(0,0,0,0,0,0,0,0,0)\nEND TYPE\nDIM v AS p\n",
+    "error": "array rank exceeds profile"
+  },
+  {
+    "name": "pool_helper_collision",
+    "source": "TYPE p\n x\nEND TYPE\nDIM nodes(2) AS p POOL\nnodes_new% = 3\n",
+    "error": "Pool helper collides"
+  },
+  {
+    "name": "parameter_limit",
+    "source": "TYPE wide\n f1\n f2\n f3\n f4\n f5\n f6\n f7\n f8\n f9\n f10\n f11\n f12\n f13\n f14\n f15\n f16\n f17\n f18\n f19\n f20\n f21\n f22\n f23\n f24\n f25\n f26\n f27\n f28\n f29\n f30\n f31\n f32\n f33\n f34\n f35\n f36\n f37\n f38\n f39\n f40\n f41\n f42\n f43\n f44\n f45\n f46\n f47\n f48\n f49\n f50\n f51\n f52\n f53\n f54\n f55\n f56\n f57\n f58\n f59\n f60\n f61\n f62\n f63\n f64\n f65\nEND TYPE\nDEFine PROCedure edit(dest AS wide)\nEND DEFine\n",
+    "error": "Expanded parameter count"
+  },
+  {
+    "name": "local_limit",
+    "source": "TYPE wide\n f1\n f2\n f3\n f4\n f5\n f6\n f7\n f8\n f9\n f10\n f11\n f12\n f13\n f14\n f15\n f16\n f17\n f18\n f19\n f20\n f21\n f22\n f23\n f24\n f25\n f26\n f27\n f28\n f29\n f30\n f31\n f32\n f33\n f34\n f35\n f36\n f37\n f38\n f39\n f40\n f41\n f42\n f43\n f44\n f45\n f46\n f47\n f48\n f49\n f50\n f51\n f52\n f53\n f54\n f55\n f56\n f57\n f58\n f59\n f60\n f61\n f62\n f63\n f64\n f65\nEND TYPE\nDEFine PROCedure edit\n LOCal work AS wide\nEND DEFine\n",
+    "error": "Expanded local count"
+  },
+  {
+    "name": "combined_local_limit",
+    "source": "TYPE p\n f1\n f2\n f3\n f4\n f5\n f6\n f7\n f8\n f9\n f10\n f11\n f12\n f13\n f14\n f15\n f16\n f17\n f18\n f19\n f20\n f21\n f22\n f23\n f24\n f25\n f26\n f27\n f28\n f29\n f30\n f31\n f32\n f33\n f34\n f35\n f36\n f37\n f38\n f39\n f40\n f41\n f42\n f43\n f44\n f45\n f46\n f47\n f48\n f49\n f50\n f51\n f52\n f53\n f54\n f55\n f56\n f57\n f58\n f59\n f60\nEND TYPE\nDEFine PROCedure edit\n LOCal a,b,c,d,e,work AS p\nEND DEFine\n",
+    "error": "Expanded local count"
+  },
+  {
+    "name": "unsafe_nested_builtin_argument",
+    "source": "TYPE p\n x\n y\nEND TYPE\nDIM values(2) AS p\nPRINT magnitude(values(INT(SIN(advance%()))+1))\nDEFine FuNction magnitude(v AS p)\n RETurn v.x\nEND DEFine\nDEFine FuNction advance%\n RETurn 1\nEND DEFine\n",
+    "error": "Split effectful"
+  },
+  {
+    "name": "unsafe_shadowed_builtin",
+    "source": "TYPE p\n x\n y\nEND TYPE\nDIM values(2) AS p\nPRINT magnitude(values(INT(SIN(0))+1))\nDEFine FuNction magnitude(v AS p)\n RETurn v.x\nEND DEFine\nDEFine FuNction SIN(n)\n RETurn n\nEND DEFine\n",
+    "error": "Split effectful"
+  },
+  {
+    "name": "unsafe_nested_rnd",
+    "source": "TYPE p\n x\n y\nEND TYPE\nDIM values(2) AS p\nPRINT magnitude(values(INT(SIN(RND))+1))\nDEFine FuNction magnitude(v AS p)\n RETurn v.x\nEND DEFine\n",
+    "error": "Split effectful"
+  },
+  {
+    "name": "unsafe_builtin_prefix",
+    "source": "TYPE p\n x\n y\nEND TYPE\nDIM values(2) AS p\nPRINT magnitude(values(CODE(FILLMORE$(\"x\",1))))\nDEFine FuNction magnitude(v AS p)\n RETurn v.x\nEND DEFine\n",
+    "error": "Split effectful"
+  }
+]

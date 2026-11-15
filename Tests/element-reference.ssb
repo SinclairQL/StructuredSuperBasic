@@ -1,0 +1,17 @@
+TYPE indexed
+  index%
+  x
+  y
+END TYPE
+DIM rows(2) AS indexed
+rows(1).index% = 1
+changeElement rows(rows(1).index%)
+OPEN_NEW #9,"win1_result"
+PRINT #9,rows(1).index%;",";rows(1).x;",";rows(2).x
+CLOSE #9
+OPEN_NEW #9,"win1_done":PRINT #9,"OK":CLOSE #9
+STOP
+DEFine PROCedure changeElement(elementOut AS indexed)
+  elementOut.index% = 2
+  elementOut.x = 11
+END DEFine

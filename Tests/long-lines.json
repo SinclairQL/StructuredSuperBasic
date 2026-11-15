@@ -1,0 +1,270 @@
+[
+  {
+    "name": "long-lines-legacy",
+    "expected": "plain-100:86,1\nplain-101:87,1\nplain-255:241,1\nplain-999:985,1\nplain-1000:986,1\nhidden-1000:964,1\nquoted-markers-1000:986,1\nmixed-double-1000:973,1\nmixed-single-1000:973,1\nvisible-996:960,1\nindented-1000:853,1\ncontinuation-1000:986,1",
+    "cases": [
+      {
+        "label": "plain-100",
+        "source_line": 12,
+        "logical_bytes": 100,
+        "physical_bytes": [
+          100
+        ],
+        "string_bytes": 86,
+        "full_string_equality": true
+      },
+      {
+        "label": "plain-101",
+        "source_line": 15,
+        "logical_bytes": 101,
+        "physical_bytes": [
+          101
+        ],
+        "string_bytes": 87,
+        "full_string_equality": true
+      },
+      {
+        "label": "plain-255",
+        "source_line": 18,
+        "logical_bytes": 255,
+        "physical_bytes": [
+          255
+        ],
+        "string_bytes": 241,
+        "full_string_equality": true
+      },
+      {
+        "label": "plain-999",
+        "source_line": 21,
+        "logical_bytes": 999,
+        "physical_bytes": [
+          999
+        ],
+        "string_bytes": 985,
+        "full_string_equality": true
+      },
+      {
+        "label": "plain-1000",
+        "source_line": 24,
+        "logical_bytes": 1000,
+        "physical_bytes": [
+          1000
+        ],
+        "string_bytes": 986,
+        "full_string_equality": true
+      },
+      {
+        "label": "hidden-1000",
+        "source_line": 27,
+        "logical_bytes": 1000,
+        "physical_bytes": [
+          1000
+        ],
+        "string_bytes": 964,
+        "full_string_equality": true
+      },
+      {
+        "label": "quoted-markers-1000",
+        "source_line": 30,
+        "logical_bytes": 1000,
+        "physical_bytes": [
+          1000
+        ],
+        "string_bytes": 986,
+        "full_string_equality": true
+      },
+      {
+        "label": "mixed-double-1000",
+        "source_line": 33,
+        "logical_bytes": 1000,
+        "physical_bytes": [
+          1000
+        ],
+        "string_bytes": 973,
+        "full_string_equality": true
+      },
+      {
+        "label": "mixed-single-1000",
+        "source_line": 36,
+        "logical_bytes": 1000,
+        "physical_bytes": [
+          1000
+        ],
+        "string_bytes": 973,
+        "full_string_equality": true
+      },
+      {
+        "label": "visible-996",
+        "source_line": 39,
+        "logical_bytes": 996,
+        "physical_bytes": [
+          996
+        ],
+        "string_bytes": 960,
+        "full_string_equality": true
+      },
+      {
+        "label": "indented-1000",
+        "source_line": 42,
+        "logical_bytes": 1000,
+        "physical_bytes": [
+          1000
+        ],
+        "string_bytes": 853,
+        "full_string_equality": true
+      },
+      {
+        "label": "continuation-1000",
+        "source_line": 45,
+        "logical_bytes": 1000,
+        "physical_bytes": [
+          602,
+          399
+        ],
+        "string_bytes": 986,
+        "full_string_equality": true
+      }
+    ]
+  },
+  {
+    "name": "long-lines-records",
+    "expected": "plain-100:79,1\nplain-101:80,1\nplain-255:234,1\nplain-999:978,1\nplain-1000:979,1\nhidden-1000:957,1\nquoted-markers-1000:979,1\nmixed-double-1000:966,1\nmixed-single-1000:966,1\nvisible-996:953,1\nindented-1000:846,1\ncontinuation-1000:979,1",
+    "cases": [
+      {
+        "label": "plain-100",
+        "source_line": 16,
+        "logical_bytes": 100,
+        "physical_bytes": [
+          100
+        ],
+        "string_bytes": 79,
+        "full_string_equality": true
+      },
+      {
+        "label": "plain-101",
+        "source_line": 19,
+        "logical_bytes": 101,
+        "physical_bytes": [
+          101
+        ],
+        "string_bytes": 80,
+        "full_string_equality": true
+      },
+      {
+        "label": "plain-255",
+        "source_line": 22,
+        "logical_bytes": 255,
+        "physical_bytes": [
+          255
+        ],
+        "string_bytes": 234,
+        "full_string_equality": true
+      },
+      {
+        "label": "plain-999",
+        "source_line": 25,
+        "logical_bytes": 999,
+        "physical_bytes": [
+          999
+        ],
+        "string_bytes": 978,
+        "full_string_equality": true
+      },
+      {
+        "label": "plain-1000",
+        "source_line": 28,
+        "logical_bytes": 1000,
+        "physical_bytes": [
+          1000
+        ],
+        "string_bytes": 979,
+        "full_string_equality": true
+      },
+      {
+        "label": "hidden-1000",
+        "source_line": 31,
+        "logical_bytes": 1000,
+        "physical_bytes": [
+          1000
+        ],
+        "string_bytes": 957,
+        "full_string_equality": true
+      },
+      {
+        "label": "quoted-markers-1000",
+        "source_line": 34,
+        "logical_bytes": 1000,
+        "physical_bytes": [
+          1000
+        ],
+        "string_bytes": 979,
+        "full_string_equality": true
+      },
+      {
+        "label": "mixed-double-1000",
+        "source_line": 37,
+        "logical_bytes": 1000,
+        "physical_bytes": [
+          1000
+        ],
+        "string_bytes": 966,
+        "full_string_equality": true
+      },
+      {
+        "label": "mixed-single-1000",
+        "source_line": 40,
+        "logical_bytes": 1000,
+        "physical_bytes": [
+          1000
+        ],
+        "string_bytes": 966,
+        "full_string_equality": true
+      },
+      {
+        "label": "visible-996",
+        "source_line": 43,
+        "logical_bytes": 996,
+        "physical_bytes": [
+          996
+        ],
+        "string_bytes": 953,
+        "full_string_equality": true
+      },
+      {
+        "label": "indented-1000",
+        "source_line": 46,
+        "logical_bytes": 1000,
+        "physical_bytes": [
+          1000
+        ],
+        "string_bytes": 846,
+        "full_string_equality": true
+      },
+      {
+        "label": "continuation-1000",
+        "source_line": 49,
+        "logical_bytes": 1000,
+        "physical_bytes": [
+          602,
+          399
+        ],
+        "string_bytes": 979,
+        "full_string_equality": true
+      }
+    ]
+  },
+  {
+    "name": "long-lines-trim",
+    "expected": "0:0,0,0,1\n1:1,1,1,1\n99:99,99,99,1\n100:100,100,100,1\n101:101,101,101,1\n255:255,255,255,1\n999:999,999,999,1\n1000:1000,1000,1000,1\npadding:998,1\nspaces:0,0,0",
+    "helper_input_lengths": [
+      0,
+      1,
+      99,
+      100,
+      101,
+      255,
+      999,
+      1000
+    ]
+  }
+]

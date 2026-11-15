@@ -1,0 +1,86 @@
+TYPE person
+  name$(24)
+  age%
+  home AS point
+  scores(MaxScores)
+  lines$(1,20)
+END TYPE
+TYPE point
+  x
+  y
+END TYPE
+TYPE indexed
+  index%
+  x
+  y
+END TYPE
+TYPE node
+  value
+  next%
+END TYPE
+MANIFEST : MaxScores = 2
+DIM firstPerson AS person, secondPerson AS person
+setName firstPerson,"Laura"
+firstPerson.age% = 21
+firstPerson.home.x = 3 : firstPerson.home.y = 4
+firstPerson.scores(2) = 91
+firstPerson.lines$(1) = "clinical"
+secondPerson = firstPerson
+DIM people(2) AS person
+people(1) = secondPerson
+people(2) = people(1)
+updatePeople people
+DIM positions(2) AS point
+i% = 1
+DIM selectedPoint AS point
+selectedPoint = positions(i%)
+editPoint selectedPoint
+positions(i%) = selectedPoint
+editedX = positions(i%).x : editedY = positions(i%).y
+FOR j%=1 TO 2 : positions(j%) = firstPerson.home
+DIM sourceRows(2) AS indexed
+DIM destination AS indexed
+destination.index% = 1
+sourceRows(1).index% = 2 : sourceRows(1).x = 11 : sourceRows(1).y = 12
+sourceRows(2).x = 99 : sourceRows(2).y = 99
+copyIndexed destination,sourceRows,destination.index%
+DIM nodes(3) AS node POOL
+a% = nodes_new% : b% = nodes_new%
+nodes(a%).value = 88
+nodes_free 0
+nodes_free a%
+c% = nodes_new%
+DIM answer AS point
+recursive answer,3
+OPEN_NEW #9,"win1_result"
+PRINT #9,people(2).name$(1 TO 3);",";people(2).age%
+PRINT #9,people(2).scores(2);",";people(2).lines$(1)
+PRINT #9,positions(2).x;",";positions(2).y
+PRINT #9,destination.index%;",";destination.x;",";destination.y
+PRINT #9,a%;",";b%;",";c%;",";nodes(c%).value
+PRINT #9,answer.x
+PRINT #9,editedX;",";editedY
+CLOSE #9
+OPEN_NEW #9,"win1_done":PRINT #9,"OK":CLOSE #9
+STOP
+DEFine PROCedure setName(nameOut AS person, VAL newName$)
+  nameOut.name$ = newName$
+END DEFine
+DEFine PROCedure updatePeople(allPeople() AS person)
+  allPeople(2).age% = 22
+END DEFine
+DEFine PROCedure editPoint(pointOut AS point)
+  pointOut.x = 5 : pointOut.y = 6
+END DEFine
+REFERENCE movingIndex%
+DEFine PROCedure copyIndexed(copyDest AS indexed, copySource() AS indexed, movingIndex%)
+  copyDest = copySource(movingIndex%)
+END DEFine
+DEFine PROCedure recursive(sumOut AS point, VAL depth%)
+  LOCal sumWork AS point
+  LOCal savedDepth(0) AS point
+  savedDepth(0).x = depth%
+  sumWork.x = 0
+  IF depth% > 0 THEN recursive sumWork,depth%-1
+  sumOut.x = sumWork.x + savedDepth(0).x
+END DEFine

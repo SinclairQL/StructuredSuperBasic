@@ -1,0 +1,28 @@
+:
+## Inherited from 2.7.2g: standalone colons must survive both numbering passes.
+## Uppercase source isolates this case from the separate upper$ alias fix.
+VALUE%=0
+:
+GO TO @AFTER
+:
+VALUE%=99
+@AFTER
+:
+VALUE%=VALUE%+1
+ADVANCE
+:
+OPEN_NEW #9,"win1_result"
+:
+PRINT #9,VALUE%
+:
+CLOSE #9
+:
+OPEN_NEW #9,"win1_done":PRINT #9,"OK":CLOSE #9
+:
+STOP
+DEFINE PROCEDURE ADVANCE
+:
+ VALUE%=VALUE%+1
+:
+END DEFINE
+:
