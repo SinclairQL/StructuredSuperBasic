@@ -6,15 +6,20 @@ Tim's involvement effectively stopped at version 2.7.2 as the program had "every
 Tim has given his blessing for future development to take place via GitHub, so here we are!
 
 
-## Records development extension
+## Version 2.8.0: records
 
-This working tree includes a Turbo-built records extension with explicit output
-record parameters, scalar VAL parameters, record copies, arrays and optional pools.
-The [Quill manual](Docs/ssb280.doc) includes records syntax, examples and limitations in section 8. Copy it to a QL filename ending `_doc` and open it in Quill.
-See [the development guide](Docs/Records-Development.md),
+SSB 2.8.0 adds record types to the programs SSB translates: `TYPE` declarations,
+field access, whole-record copies, explicit output record parameters, scalar `VAL`
+parameters, record arrays and optional pools. It also fixes several bugs inherited
+from 2.7.2g, and accepts source lines of up to 1,000 bytes.
+
+The [Quill manual](Docs/ssb280.doc) covers records in section 8 and lists the 2.8.0
+changes in Appendix A. Copy it to a QL filename ending `_doc` and open it in Quill.
+See also [the records guide](Docs/Records-Development.md),
 [the design reference](Docs/Records-Plan.md), and [the example](Examples/records.ssb).
-The development build is distributed separately as `ssb280_exe`; the supplied
-original BASIC and executable artifacts remain release baselines.
+The release package `Distribution/ssb280.zip` contains `ssb280_exe`, `ssb280go_exe`
+(SSBGO 1.3), the numbered `ssb280_bas`, `ssb280_doc` and `records_txt`, with QDOS
+file headers. `Distribution/Source.zip` holds the sources.
 
 The default Turbo 5.09 profile requires a standalone work record when passing one
 record-array element to a procedure. Whole record arrays remain supported.
@@ -36,9 +41,9 @@ Records are available to translated user programs, but are not used inside
 the translator itself. Build it with the existing 2.7.2g; no separate
 record-capable bootstrap compiler is required.
 
-The development executable reserves 1 MiB of data space. Its compiled regression
-checks pass with 4 MiB total emulated RAM; the 8 MiB bootstrap test machine is not
-the program's own memory reservation. See the development guide for limits.
+SSB 2.8.0 reserves 1 MiB of data space. Its compiled regression checks pass with
+4 MiB total emulated RAM; the 8 MiB bootstrap test machine is not the program's own
+memory reservation. See the records guide for limits.
 
 **WARNING** The source files are using the QL's character set. **DO NOT** edit these files on a PC or laptop, in Windows of Linux! You will corrupt things. All development should be done on a QL system. Normally, the process will be:
 

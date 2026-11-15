@@ -19,7 +19,7 @@ cases = [
 def run(case):
     folder = ROOT/'build'/'line-ranges'/case['name']/str(time.time_ns())
     folder.mkdir(parents=True)
-    for name in ['env_bin', 'ttk', 'ssbrecdev_exe']:
+    for name in ['env_bin', 'ttk', 'ssb280_exe']:
         shutil.copy2(ROOT/'build'/'compiled-app'/name, folder/name)
     (folder/'input_ssb').write_bytes(case['source'].encode('ascii'))
     lines = [
@@ -27,7 +27,7 @@ def run(case):
         'SETENV "SSBWORK=nfa1_"', 'SETENV "SSBWORK2=ram1_"',
         f'SETENV "SSBSTART={case["start"]}"', f'SETENV "SSBINC={case["step"]}"',
         'SETENV "SSBRECWORK=ram1_"', 'SETENV "SSBRECLOG=nfa1_errorlog"',
-        'DEFAULT_DEVICE "sfa1_"', 'EXECUTE_W "sfa1_ssbrecdev_exe";"input"',
+        'DEFAULT_DEVICE "sfa1_"', 'EXECUTE_W "sfa1_ssb280_exe";"input"',
         'IF FTEST("ram1_input_bas")=0 THEN COPY "ram1_input_bas" TO "nfa1_output_bas"',
         'OPEN_NEW #9,"nfa1_done":PRINT #9,"OK":CLOSE #9',
     ]

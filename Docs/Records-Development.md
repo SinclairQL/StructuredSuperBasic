@@ -1,9 +1,9 @@
-# Records development version of SSB
+# Records in SSB 2.8.0
 
 This implements the procedure-based records plan in the existing QL SSB filter.
 The implementation is S*BASIC, built with Turbo. It is independent of the F# SB
-project. The development executable is `ssb280_exe`; keep the released SSB
-executable until this version has been tested with your own programs.
+project. The executable is `ssb280_exe`; its banner reads "Version 2.8.0" and
+its Turbo task name is `ssb 2.8.0`.
 
 The translator's own implementation uses ordinary SSB 2.7.2g syntax and parallel
 tables. Its record facility is for translated user programs. The existing
@@ -149,8 +149,8 @@ The extension is not a replacement parser for every historical S*BASIC dialect.
 
 Existing SSB settings retain their meanings: `SSBINPUT`, `SSBOUTPUT`, `SSBSTART`,
 `SSBINC`, `SSBWORK`, `SSBWORK2`, `SSBOVER`, `SSBLANG`, `SSBIGNORE_BLANKS`.
-The development banner is separate from the original release version; existing
-translations remain, and the new record diagnostics are English.
+All seven language banners show version 2.8.0; existing translations remain,
+and the new record diagnostics are English.
 
 | Setting or limit | Default / supported range |
 |---|---|
@@ -172,12 +172,12 @@ translations remain, and the new record diagnostics are English.
 The tables have independent counts; flattened leaves are counted across type
 layouts. Name and generated-name tables each have four times `SSBRECITEMS`
 entries. Capacity checks fail before writes. Raising table sizes consumes QL
-memory. The development executable reserves 1 MiB data, reduced from 2 MiB,
+memory. SSB 2.8.0 reserves 1 MiB data, reduced from 2 MiB in development,
 and uses Turbo's large code model. This reservation is separate from the
 emulator's total RAM: compiled regression checks run in 4 MiB SMSQ/E, while
 bootstrap and interpreter checks use 8 MiB. A 2 MiB SMSQ/E test environment
 reported insufficient memory when launching the filter. Original 128 KiB QLs
-are not a supported configuration for this development build. Upper configuration
+are not a supported configuration for SSB 2.8.0. Upper configuration
 limits are guardrails, not a claim that every maximum-sized program fits memory.
 
 The default `SSBRECITEMS=256` and syntax limits are unchanged. Tokens retain only
@@ -253,7 +253,7 @@ are UTF-8 and the test runner explicitly converts their literals to QL bytes.
 For a QL build, copy the sources to RAM1, set `SSBWORK` and `SSBWORK2` to empty
 (the includes already specify `ram1_`), set `SSBSTART=100`, `SSBINC=1`, and run
 the existing SSB against `ram1_ssb280`. Load `ram1_ssb280_bas` into S*BASIC and
-compile with Turbo. Turbo writes `ram1_ssbrecdev_exe` and `ram1_ssbrecdev_err`;
+compile with Turbo. Turbo writes `ram1_ssb280_exe` and `ram1_ssb280_err`;
 the package publishes the executable as `ssb280_exe`. Reprocess the same source with the new executable and
 compare the two numbered files byte-for-byte, then compile that second output.
 The supplied original `Source/ssb272.bas` remains the baseline, not an updated
@@ -294,7 +294,7 @@ rename test. Output publication tests therefore use the actual QL RAM filesystem
 and copy inspection snapshots to the host afterwards. This does not replace
 the production rename with a non-atomic host copy.
 
-See `Validation.json` for the exact checks completed with this development build.
+See `Validation.json` for the exact checks completed with this build.
 Classic QL ROMs, QLiberator and the existing SSBGO editor/grep handoff have not
 been certified. The Quill manual, `Docs/ssb280.doc`, now includes records syntax, examples and
 limitations in section 8; earlier chapters retain the legacy guide with corrected filenames and configuration names. A QL-readable text supplement is provided
@@ -339,8 +339,9 @@ The Quill manual now lists SSBINPUT, SSBOUTPUT, SSBSTART, SSBWORK and SSBWORK2 a
 supported settings. The underscored variants in older prose are explicitly
 identified as unsupported. Current command examples use ssb280_exe. The README,
 original-proposal link and validation generator use the current names and manual
-status. Internal Turbo object names remain ssbrecdev_exe and ssbgorecdev_exe;
-packaging maps them to ssb280_exe and ssb280go_exe.
+status. At that stage the Turbo object names were still ssbrecdev_exe and
+ssbgorecdev_exe; release 2.8.0 builds ram1_ssb280_exe and ram1_ssbgo_exe, and
+packaging publishes them as ssb280_exe and ssb280go_exe.
 
 ## Explicit string capacities and long-line checks
 
@@ -377,4 +378,14 @@ Tests/standalone-colon.ssb starts and ends with a colon line and includes colons
 between statements and inside a procedure. Its label skips an assignment and
 the program produces 2 in both interpreted and Turbo-compiled tests. This
 exercises both numbering passes without enabling records. The complete suite
-now has 44 interpreter checks and 16 compiled-filter/compiled-target cases.
+then had 44 interpreter checks and 16 compiled-filter/compiled-target cases.
+
+## Release 2.8.0 on 15 November 2026
+
+The executable now identifies itself as a release. All seven language banners
+read "Version 2.8.0" (restoring the 2.7.2g wording with the new number), the
+Turbo task name is `ssb 2.8.0`, and Turbo writes `ram1_ssb280_exe` and
+`ram1_ssb280_err`. SSBGO 1.3 is task `ssbgo 1.3` and builds `ram1_ssbgo_exe`;
+the package still publishes it as `ssb280go_exe`. The translation itself is
+unchanged from the previous build: the generated BASIC for every compiled test
+program is byte-identical.

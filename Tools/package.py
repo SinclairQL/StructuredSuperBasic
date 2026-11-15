@@ -1,4 +1,4 @@
-"""Package the development binaries with QDOS metadata and a readable supplement."""
+"""Package the release binaries with QDOS metadata and a readable supplement."""
 from pathlib import Path
 import json
 import shutil
@@ -10,16 +10,16 @@ from bootstrap import ROOT
 
 out = ROOT / 'Distribution'
 out.mkdir(exist_ok=True)
-guide = '''SSB RECORDS DEVELOPMENT
-Based on Structured SuperBASIC 2.7.2g. Development build, not a release.
+guide = '''STRUCTURED SUPERBASIC 2.8.0: RECORDS
+Release 2.8.0 adds records to Structured SuperBASIC 2.7.2g.
 
 Copy the included executable to ram1_ssb280_exe with a QDOS-aware unzip.
-Keep your released SSB. This build reserves 1 MiB data, reduced from 2 MiB.
+SSB 2.8.0 reserves 1 MiB data, reduced from 2 MiB during development.
 Compiled regression checks pass with 4 MiB total SMSQ/E 3.43 RAM, using
 Turbo 5.09 / F5.37 and the SMS Turbo toolkit. Bootstrap/interpreter tests
 use 8 MiB; that is machine RAM, not a per-program reservation. A 2 MiB
 SMSQ/E setup could not launch this filter; original 128 KiB QLs are not
-supported by this development build.
+supported.
 The Windows files alongside this ZIP use Qemu file headers. The ZIP uses
 raw executable data with QDOS file-type and dataspace metadata.
 
@@ -27,7 +27,7 @@ raw executable data with QDOS file-type and dataspace metadata.
   SETENV "SSBWORK2=ram1_"
   SETENV "SSBSTART=100"
   SETENV "SSBINC=1"
-  EXECUTE_W "ram1_ssb280_exe";"example"
+  EXEC_W "ram1_ssb280_exe";"example"
 
 Input example_ssb produces numbered example_bas. Existing SSB settings
 and label syntax still apply. Use a positive increment and line numbers
@@ -96,9 +96,9 @@ requires the original SSBGO tools; its full UI workflow is not certified.
 To rebuild, copy all Source modules as ram1_name_ssb. Set SSBWORK and
 SSBWORK2 empty because includes already name ram1_. Use existing SSB to
 preprocess ram1_ssb280, load the output and CHARGE it with Turbo. Compare
-output against preprocessing with the new executable. The development
-object name is ram1_ssbrecdev_exe; packaging publishes it as
-ssb280_exe.
+output against preprocessing with the new executable. Turbo writes
+ram1_ssb280_exe; packaging publishes it as ssb280_exe. SSBGO 1.3 builds
+ram1_ssbgo_exe, published as ssb280go_exe.
 
 Implementation follows the existing SSB modules: ssb280 coordinates both
 passes and owns file cleanup/publication; ssbpass1 prepares record layouts
@@ -134,7 +134,7 @@ Copy it to a filename ending _doc and open it in Quill, not Microsoft Word.
 proof = json.loads((ROOT / 'build' / 'self-host-result.json').read_text(encoding='utf-8'))
 assert proof['passed'], 'A successful self-bootstrap is required'
 shutil.copy2(Path(proof['folder']) / 'new_output_bas', out / 'ssb280_bas')
-for name, published, directory in [('ssbrecdev_exe', 'ssb280_exe', 'compiled-app'), ('ssbgorecdev_exe', 'ssb280go_exe', 'compiled-wrapper')]:
+for name, published, directory in [('ssb280_exe', 'ssb280_exe', 'compiled-app'), ('ssbgo_exe', 'ssb280go_exe', 'compiled-wrapper')]:
     shutil.copy2(ROOT / 'build' / directory / name, out / published)
 
 def qdos_extra(name, data, attributes=b'\0' * 10):

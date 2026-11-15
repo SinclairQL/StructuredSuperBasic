@@ -2,7 +2,8 @@
 
 # Records in SSB: procedures with output record parameters
 
-Status: alternative design proposal, not implemented. This document extends the existing QL
+Status: design reference written before implementation. SSB 2.8.0 implements it, with the
+differences recorded in Records-Development.md. This document extends the existing QL
 Structured SuperBASIC filter, SSB 2.7. It replaces the separate `ssbrec` program and record-returning
 functions proposed in [the original records proposal](../Source/records%20proposal.md). The earlier document is retained for comparison.
 

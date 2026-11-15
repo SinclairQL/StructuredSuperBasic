@@ -8,7 +8,7 @@ from bootstrap import ROOT
 
 folder = ROOT / 'build' / 'output-safety' / str(time.time_ns())
 folder.mkdir(parents=True)
-for name in ['env_bin', 'ttk', 'ssbrecdev_exe']:
+for name in ['env_bin', 'ttk', 'ssb280_exe']:
     shutil.copy2(ROOT / 'build' / 'compiled-app' / name, folder / name)
 (folder / 'bad_ssb').write_bytes(b'DIM item AS absentType\n')
 (folder / 'good_ssb').write_bytes(b'TYPE point\n x\nEND TYPE\nDIM p AS point\np.x=42\n')
@@ -20,15 +20,15 @@ lines = [
     'SETENV "SSBRECWORK=ram1_"', 'SETENV "SSBOVER=N"',
     'COPY "nfa1_bad_ssb" TO "ram1_input_ssb"',
     'COPY "nfa1_old_bas" TO "ram1_input_bas"',
-    'EXECUTE_W "sfa1_ssbrecdev_exe";"input"',
+    'EXECUTE_W "sfa1_ssb280_exe";"input"',
     'COPY "ram1_input_bas" TO "nfa1_refused_bas"',
     'SETENV "SSBOVER=Y"', 'SETENV "SSBRECLOG=nfa1_errorlog"',
-    'EXECUTE_W "sfa1_ssbrecdev_exe";"input"',
+    'EXECUTE_W "sfa1_ssb280_exe";"input"',
     'OPEN_NEW #9,"nfa1_failed_status":PRINT #9,FTEST("ram1_input_bas"):CLOSE #9',
     'COPY "ram1_input_bas_bak1" TO "nfa1_backup_bas"',
     'DELETE "ram1_input_ssb"', 'COPY "nfa1_good_ssb" TO "ram1_input_ssb"',
     'SETENV "SSBRECLOG=nfa1_recovery_error"',
-    'EXECUTE_W "sfa1_ssbrecdev_exe";"input"',
+    'EXECUTE_W "sfa1_ssb280_exe";"input"',
     'COPY "ram1_input_bas" TO "nfa1_recovered_bas"',
     'OPEN_NEW #9,"nfa1_ram_listing":DIR #9,"ram1_":CLOSE #9',
     'OPEN_NEW #9,"nfa1_done":PRINT #9,"OK":CLOSE #9'

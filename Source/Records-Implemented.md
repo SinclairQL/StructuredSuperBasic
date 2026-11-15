@@ -1,10 +1,10 @@
 # Records for Structured SuperBASIC
 
-Status: implemented development version, documented 15 November 2026. This describes the local build validated on 15 November 2026, including the correctness fixes and naming corrections recorded below.
+Status: implemented in release 2.8.0, documented 15 November 2026. This describes the build validated on 15 November 2026, including the correctness fixes and naming corrections recorded below.
 
 Structured SuperBASIC (SSB) now accepts record declarations, dotted field access, whole-record copying, record parameters and optional record pools. It translates them into ordinary S*BASIC variables, arrays and routines before assigning BASIC line numbers. The generated program can be interpreted or compiled with Turbo within the restrictions below.
 
-The implementation is part of the existing SSB filter. The development executable is `ssb280_exe`; its banner is `SSB records development`. It has not been assigned a new numbered release but 2.8.0 is anticipated.
+The implementation is part of the existing SSB filter, released as version 2.8.0. The executable is `ssb280_exe`; its banner reads `Version 2.8.0` and its Turbo task name is `ssb 2.8.0`.
 
 Part 1 describes the implemented language. Part 2 explains how it is translated. Part 3 records the build, validation and remaining limits.
 
@@ -225,7 +225,7 @@ The original source structure is retained:
 | `Source/ssbpass2.ssb` | Record expansion, selector checks and numbered output |
 | `Source/functions.ssb` | Shared lexical and text helpers |
 | `Source/commands.ssb` | Existing command processing |
-| `Source/ssblang.ssb` | Existing language strings and development banners |
+| `Source/ssblang.ssb` | Existing language strings and 2.8.0 banners |
 
 The translator is written in ordinary SSB 2.7.2g syntax. It uses parallel tables internally, not its own records extension. Unmodified SSB 2.7.2g can therefore preprocess the current sources.
 
@@ -293,11 +293,11 @@ Pools add a free-list array and generated allocation/free routines. Each occupie
 
 Table counts are independent; flattened leaves count across layouts. Name and generated-name tables each have four times the configured table capacity. Capacity checks precede writes. These are implementation guardrails, not promises that maximum-size workloads fit every machine.
 
-The development executable requests 1,048,576 bytes of task dataspace through `TURBO_objdat 1024`, reduced from 2 MiB. `TURBO_buffersz 400` controls Turbo's compilation buffer; it is not an additional runtime I/O allocation by SSB.
+The executable requests 1,048,576 bytes of task dataspace through `TURBO_objdat 1024`, reduced from 2 MiB during development. `TURBO_buffersz 400` controls Turbo's compilation buffer; it is not an additional runtime I/O allocation by SSB.
 
 Memory reductions include storing token spans rather than a duplicated token-text matrix at each parser level, streaming `REFERENCE` text to the next header, and iterating over colon-separated statement tails rather than retaining recursive frames for each tail.
 
-Task dataspace and total machine RAM are different quantities. The latest compiled regression suite ran with 4 MiB total SMSQ/E RAM; bootstrap and interpreter checks used 8 MiB. A 2 MiB SMSQ/E environment lacked sufficient free memory to launch this filter. The development build is not intended for an original 128 KiB QL.
+Task dataspace and total machine RAM are different quantities. The latest compiled regression suite ran with 4 MiB total SMSQ/E RAM; bootstrap and interpreter checks used 8 MiB. A 2 MiB SMSQ/E environment lacked sufficient free memory to launch this filter. SSB 2.8.0 is not intended for an original 128 KiB QL.
 
 ### 15. Configuration and output safety
 
@@ -312,34 +312,35 @@ Existing SSB input/output, numbering, work-file, overwrite and language settings
 
 For an authorized replacement, SSB preserves the previous output under an unused `_bakN` name. It writes staged output beside the final destination and publishes it only after successful expansion, validation and numbering. A failed translation leaves the old backup available and no misleading final output. A refused replacement preserves the existing output. Existing diagnostic logs are not overwritten.
 
-The updated SSBGO wrapper likewise preserves authorized old output under `_goN` before invoking the filter, so stale BASIC cannot be mistaken for a successful new translation. Its `SSBFILTER` setting selects the development filter when required.
+The updated SSBGO wrapper likewise preserves authorized old output under `_goN` before invoking the filter, so stale BASIC cannot be mistaken for a successful new translation. Its `SSBFILTER` setting selects the filter executable, for example `ssb280_exe`.
 
 QL source files retain their single-byte character encoding. Repository attributes enforce LF for `.ssb`, `.bas` and `*_bas`, and mark `*_exe` as binary. LF normalization does not authorize conversion of QL character bytes to UTF-8.
 
 ## Part 3: What has been built and validated
 
-### 16. Development artifacts
+### 16. Release artifacts
 
-The local distribution contains:
+The distribution contains:
 
 | Artifact | Description |
 |---|---|
-| `Distribution/ssb280_bas` | Numbered translator source, 93,970 bytes |
-| `Distribution/ssb280_exe` | Turbo-built translator, 81,874 bytes including its Qemu header |
-| `Distribution/ssb280.zip` | Development package with QDOS executable metadata |
-| `Docs/Records-Development.md` | Operational development documentation |
+| `Distribution/ssb280_bas` | Numbered translator source, 93,889 bytes |
+| `Distribution/ssb280_exe` | Turbo-built translator, 81,804 bytes including its Qemu header |
+| `Distribution/ssb280go_exe` | SSBGO 1.3, built from `Utilities/ssbgo.bas`; also `Utilities/ssbgo` |
+| `Distribution/ssb280.zip` | Release package with QDOS executable metadata |
+| `Docs/Records-Development.md` | Records guide: syntax, limits, build and tests |
 | `Docs/records.txt` | QL-readable supplement |
 | `Docs/Validation.json` | Machine-readable validation evidence |
 
-The original `Source/ssb272.bas` remains the 2.7.2g bootstrap baseline. Original release artifacts were retained. The Quill manual includes the records chapter and the updated 2.8.0 edition information; the original manual remains available in Git history. All seven language blocks use the development banner; new record diagnostics are English.
+The original `Source/ssb272.bas` remains the 2.7.2g bootstrap baseline. Original release artifacts were retained. The Quill manual includes the records chapter and the updated 2.8.0 edition information; the original manual remains available in Git history. All seven language blocks show version 2.8.0; new record diagnostics are English.
 
 The executable checked when writing this document matches the validation manifest:
 
 ```text
-SHA256 b71a764549b8e7ce932fa42109fbe5bbe83894943edd5121f330e51a4d0af059
+SHA256 10c68f321938c368052dbeba1e0367cd0c898cc20cc0e2300fc33aba75714cbb
 ```
 
-The records implementation was committed locally as 475ecb8, including the driver rename to ssb280.ssb. The correctness fixes were committed as 10664f8. The linked fork also includes the updated Quill manual and versioned distribution filenames.
+The records implementation was committed locally as 475ecb8, including the driver rename to ssb280.ssb. The correctness fixes were committed as 10664f8. The linked fork also includes the updated Quill manual and versioned distribution filenames. Release 2.8.0 renames the banners, Turbo task names and object files and rebuilds SSBGO 1.3; it does not change translation.
 
 ### 17. Latest SMSQ/E validation
 
@@ -405,8 +406,9 @@ The Quill manual now lists SSBINPUT, SSBOUTPUT, SSBSTART, SSBWORK and SSBWORK2 a
 supported settings. The underscored variants in older prose are explicitly
 identified as unsupported. Current command examples use ssb280_exe. The README,
 original-proposal link and validation generator use the current names and manual
-status. Internal Turbo object names remain ssbrecdev_exe and ssbgorecdev_exe;
-packaging maps them to ssb280_exe and ssb280go_exe.
+status. At that stage the Turbo object names were still ssbrecdev_exe and
+ssbgorecdev_exe; release 2.8.0 builds ram1_ssb280_exe and ram1_ssbgo_exe, and
+packaging publishes them as ssb280_exe and ssb280go_exe.
 
 ### Explicit string capacities and long-line checks
 
@@ -443,4 +445,14 @@ Tests/standalone-colon.ssb starts and ends with a colon line and includes colons
 between statements and inside a procedure. Its label skips an assignment and
 the program produces 2 in both interpreted and Turbo-compiled tests. This
 exercises both numbering passes without enabling records. The complete suite
-now has 44 interpreter checks and 16 compiled-filter/compiled-target cases.
+has 44 interpreter checks and 16 compiled-filter/compiled-target cases.
+
+### Release 2.8.0 on 15 November 2026
+
+The executable now identifies itself as a release. All seven language banners
+read "Version 2.8.0", restoring the 2.7.2g wording with the new number. The
+Turbo task name is `ssb 2.8.0`, and Turbo writes `ram1_ssb280_exe` and
+`ram1_ssb280_err`. SSBGO 1.3 is task `ssbgo 1.3` and builds `ram1_ssbgo_exe`;
+the package publishes it as `ssb280go_exe`. Translation is unchanged from the
+previous build: the generated BASIC for every compiled test program is
+byte-identical.

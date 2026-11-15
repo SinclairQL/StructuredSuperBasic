@@ -15,11 +15,11 @@ if '--self-host' in sys.argv:
     source=(Path(proof['folder'])/'old_output_bas').read_bytes()
 else:
     source=number(expand(ROOT/'Source'/'ssb280.ssb'),start=100)
-source=source.replace(b'ram1_ssbrecdev_err',b'nfa1_report')
+source=source.replace(b'ram1_ssb280_err',b'nfa1_report')
 (folder/'compile_bas').write_bytes(source)
 (folder/'build.json').write_text(json.dumps(dict(self_host='--self-host' in sys.argv, numbered_sha256=hashlib.sha256(source).hexdigest(), sources={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in (ROOT/'Source').glob('*.ssb')}),indent=2),encoding='utf-8')
 (folder/'input_ssb').write_bytes((ROOT/'Tests'/'core.ssb').read_bytes().replace(b'win1_',b'nfa1_'))
-for n in ['report','done','output_bas','ssbrecdev_exe','result','errorlog','listing']:
+for n in ['report','done','output_bas','ssb280_exe','result','errorlog','listing']:
     if (folder/n).exists():(folder/n).unlink()
 (folder/'boot').write_text('''100 LRESPR "nfa1_env_bin"
 110 LRESPR "nfa1_ttk"
@@ -34,8 +34,8 @@ for n in ['report','done','output_bas','ssbrecdev_exe','result','errorlog','list
 190 LOAD "nfa1_compile_bas"
 ''',encoding='ascii')
 finish=[
- 'COPY "ram1_ssbrecdev_exe" TO "sfa1_ssbrecdev_exe"',
- 'EXECUTE_W "ram1_ssbrecdev_exe";"input"',
+ 'COPY "ram1_ssb280_exe" TO "sfa1_ssb280_exe"',
+ 'EXECUTE_W "ram1_ssb280_exe";"input"',
  'COPY "ram1_input_bas" TO "nfa1_output_bas"','LRUN "ram1_input_bas"']
 (folder/'finish').write_text(''.join(f'{100+i*10} {s}\n' for i,s in enumerate(finish)),encoding='ascii')
 commands=['','','LRUN nfa1_boot','CHARGE '+chr(92),chr(2),'LRUN nfa1_finish']

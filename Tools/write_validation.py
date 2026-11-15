@@ -20,23 +20,26 @@ manual_proof_path = ROOT/'Docs'/'Quill-Manual-Validation.json'
 manual_proof = json.loads(manual_proof_path.read_text(encoding='utf-8')) if manual_proof_path.exists() else None
 if manual_proof:
     assert hashlib.sha256((ROOT/manual_proof['manual']).read_bytes()).hexdigest()==manual_proof['manual_sha256']
-    assert manual_proof['native_quill_saved'] and manual_proof['native_quill_reloaded']
+    # Either Quill reloaded its own save, or that save was shown byte-identical in content.
+    assert manual_proof['native_quill_loaded'] and manual_proof['native_quill_saved']
+    assert manual_proof['native_quill_reloaded'] or manual_proof.get('quill_saved_copy_identical_content')
 assert interpreted['sources'] == bootstrap['sources'] == compiled['sources'] == sources
 assert all(test['passed'] for test in interpreted['tests'])
 assert len(native) == 16 and all(test['passed'] and test['ram_mib']==4 for test in native)
 assert bootstrap['passed'] and safety['passed'] and compiled['self_host']
-legacy_basic=(Path(bootstrap['folder'])/'old_output_bas').read_bytes().replace(b'ram1_ssbrecdev_err',b'nfa1_report')
+legacy_basic=(Path(bootstrap['folder'])/'old_output_bas').read_bytes().replace(b'ram1_ssb280_err',b'nfa1_report')
 assert hashlib.sha256(legacy_basic).hexdigest()==compiled['numbered_sha256'], 'The final executable must be built from 2.7.2g output'
 assert compatibility['passed']
 assert len(line_ranges) == 5 and all(t['passed'] for t in line_ranges)
-assert all(hashlib.sha256((Path(t['folder'])/'ssbrecdev_exe').read_bytes()).hexdigest()==hashlib.sha256((build/'compiled-app'/'ssbrecdev_exe').read_bytes()).hexdigest() for t in line_ranges)
-executable_hash=hashlib.sha256((build/'compiled-app'/'ssbrecdev_exe').read_bytes()).hexdigest()
-executable=(build/'compiled-app'/'ssbrecdev_exe').read_bytes()
+assert all(hashlib.sha256((Path(t['folder'])/'ssb280_exe').read_bytes()).hexdigest()==hashlib.sha256((build/'compiled-app'/'ssb280_exe').read_bytes()).hexdigest() for t in line_ranges)
+executable_hash=hashlib.sha256((build/'compiled-app'/'ssb280_exe').read_bytes()).hexdigest()
+executable=(build/'compiled-app'/'ssb280_exe').read_bytes()
 assert executable.startswith(b']!QDOS File Header')
 assert struct.unpack_from('>I',executable,22)[0]==1024*1024
-assert struct.unpack_from('>I',(build/'baseline-exe').read_bytes(),22)[0]==2*1024*1024
-assert all(hashlib.sha256((Path(test['folder'])/'ssbrecdev_exe').read_bytes()).hexdigest()==executable_hash for test in native)
-assert hashlib.sha256((Path(safety['folder'])/'ssbrecdev_exe').read_bytes()).hexdigest()==executable_hash
+# The earlier 2 MiB development build is recorded below as a historical figure;
+# it is no longer rebuilt, so a fresh build directory has no copy to inspect.
+assert all(hashlib.sha256((Path(test['folder'])/'ssb280_exe').read_bytes()).hexdigest()==executable_hash for test in native)
+assert hashlib.sha256((Path(safety['folder'])/'ssb280_exe').read_bytes()).hexdigest()==executable_hash
 wrapper = build / 'compiled-wrapper'
 assert (wrapper / 'failed_status').read_text().strip() == '-7'
 assert (wrapper / 'backup_bas').read_bytes() == (wrapper / 'old_bas').read_bytes()

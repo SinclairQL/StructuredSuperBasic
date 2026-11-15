@@ -37,12 +37,11 @@
 
 ## ONLY CHANGE THIS LINE WHEN AMENDING THE SOURCE 
 ## FOR A NEW VERSION. 
-TURBO_taskn "ssb records dev"
+TURBO_taskn "ssb 2.8.0"
 
-## Isolated development name; do not overwrite a released SSB executable.
-TURBO_objfil "ram1_ssbrecdev_exe"
+TURBO_objfil "ram1_ssb280_exe"
 TURBO_windo 0
-TURBO_repfil "ram1_ssbrecdev_err"
+TURBO_repfil "ram1_ssb280_err"
 TURBO_objdat 1024
 TURBO_model ">"
 TURBO_buffersz 400

@@ -6,11 +6,11 @@ import shutil,sys,subprocess,time,json
 name=sys.argv[1] if len(sys.argv)>1 else 'core'
 compile_target='--compile-target' in sys.argv
 ram_mib=int(sys.argv[sys.argv.index('--ram-mib')+1]) if '--ram-mib' in sys.argv else 8
-filter_path=Path(sys.argv[sys.argv.index('--filter')+1]) if '--filter' in sys.argv else ROOT/'build'/'compiled-app'/'ssbrecdev_exe'
+filter_path=Path(sys.argv[sys.argv.index('--filter')+1]) if '--filter' in sys.argv else ROOT/'build'/'compiled-app'/'ssb280_exe'
 folder=ROOT/'build'/'native-tests'/name/str(time.time_ns());folder.mkdir(parents=True)
-for n in ['parser_task','codegen_task','ttk','env_bin','ssbrecdev_exe']:
+for n in ['parser_task','codegen_task','ttk','env_bin','ssb280_exe']:
     shutil.copy2(ROOT/'build'/'compiled-app'/n,folder/n)
-shutil.copy2(filter_path,folder/'ssbrecdev_exe')
+shutil.copy2(filter_path,folder/'ssb280_exe')
 source=(ROOT/'Tests'/(name+'.ssb')).read_text(encoding='utf-8').replace('win1_','nfa1_')
 if compile_target:
     source='''TURBO_objfil "ram1_target_exe"
@@ -34,7 +34,7 @@ boot='''100 LRESPR "nfa1_env_bin"
 170 SETENV "SSBOVER=Y"
 175 SETENV "SSBRECLOG=nfa1_errorlog"
 180 DEFAULT_DEVICE "sfa1_"
-190 EXECUTE_W "sfa1_ssbrecdev_exe";"input"
+190 EXECUTE_W "sfa1_ssb280_exe";"input"
 200 IF FTEST("ram1_input_bas")<>0 THEN OPEN_NEW #9,"nfa1_done":PRINT #9,"ERROR":CLOSE #9:STOP
 210 COPY "ram1_input_bas" TO "nfa1_output_bas"
 '''

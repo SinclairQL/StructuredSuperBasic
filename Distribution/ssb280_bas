@@ -1,7 +1,7 @@
-100 TURBO_taskn "ssb records dev"
-101 TURBO_objfil "ram1_ssbrecdev_exe"
+100 TURBO_taskn "ssb 2.8.0"
+101 TURBO_objfil "ram1_ssb280_exe"
 102 TURBO_windo 0
-103 TURBO_repfil "ram1_ssbrecdev_err"
+103 TURBO_repfil "ram1_ssb280_err"
 104 TURBO_objdat 1024
 105 TURBO_model ">"
 106 TURBO_buffersz 400
@@ -65,7 +65,7 @@
 164 DIM lngarray$(36,42)
 165 IF d_lang$ = "E"
 166    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-167    lngarray$(2) = "SSB records development"
+167    lngarray$(2) = "Version 2.8.0"
 168    lngarray$(3) = "By Timothy Swenson"
 169    lngarray$(4) = "Enter Input File: ("
 170    lngarray$(5) = "ERROR - File In Use"
@@ -103,7 +103,7 @@
 202 END IF
 203 IF d_lang$ = "S"
 204    lngarray$(1) = "FILTRO SUPERBASIC ESTRUCTURADO"
-205    lngarray$(2) = "SSB records development"
+205    lngarray$(2) = "Versiñn 2.8.0"
 206    lngarray$(3) = "Por: Timothy Swenson"
 207    lngarray$(4) = "Introduzca el archivo de entrada: ("
 208    lngarray$(5) = "ERROR - Archivo en uso"
@@ -141,7 +141,7 @@
 240 END IF
 241 IF d_lang$="I"
 242    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-243    lngarray$(2) = "SSB records development"
+243    lngarray$(2) = "Versione 2.8.0"
 244    lngarray$(3) = "di Timothy Swenson"
 245    lngarray$(4) = "File di input: ("
 246    lngarray$(5) = "ERRORE - Il file ê in uso"
@@ -179,7 +179,7 @@
 278 END IF
 279 IF d_lang$="F"
 280    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-281    lngarray$(2) = "SSB records development"
+281    lngarray$(2) = "Version 2.8.0"
 282    lngarray$(3) = "par Timothy Swenson"
 283    lngarray$(4) = "Fichied d'entrÉe: ("
 284    lngarray$(5) = "ERREUR - Le fichier est en cours d'utilisation"
@@ -217,7 +217,7 @@
 316 END IF
 317 IF d_lang$ = "D"
 318    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-319    lngarray$(2) = "SSB records development"
+319    lngarray$(2) = "Version 2.8.0"
 320    lngarray$(3) = "By Timothy Swenson"
 321    lngarray$(4) = "Eingansdatei Angeben: ("
 322    lngarray$(5) = "Fehler - Datei ist Offen"
@@ -255,7 +255,7 @@
 354 END IF
 355 IF d_lang$ = "K"
 356    lngarray$ (1) = "tlham SUPERBASIC FILTER"
-357    lngarray$ (2) = "SSB records development"
+357    lngarray$ (2) = "2.8.0 Version"
 358    lngarray$ (3) = "pong Timothy Swenson"
 359    lngarray$ (4) = "teywI' input:"
 360    lngarray$ (5) = "Qagh-teywI' neH lo'" 
@@ -293,7 +293,7 @@
 392 END IF
 393 IF d_lang$ = "W"
 394    lngarray$(1) = "STRUCTURED SUPERBASIC FILTER"
-395    lngarray$(2) = "SSB records development"
+395    lngarray$(2) = "Fersiwn 2.8.0"
 396    lngarray$(3) = "Gan Timothy Swenson"
 397    lngarray$(4) = "Ffeil fewnbwn: ("
 398    lngarray$(5) = "GWALL - Ffeil Mewn Defnydd"

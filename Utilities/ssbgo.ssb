@@ -2,7 +2,7 @@
 ## Author:   Timothy Swenson
 ## Date Created: 20 Aug 1998
 ## Date Revised: 20 Mar 2016
-## Version 1.3 records development; separate executable
+## Version 1.3 for SSB 2.8.0
 ##
 ## This program will take an arguement of a SSB program
 ## run it through SSB, load it in to SuperBasic,
@@ -33,8 +33,8 @@
 ##   ssb exec directory 20 char
 
 ## TURBO Defines
-TURBO_taskn "ssbgo records dev"
-TURBO_objfil "ram1_ssbgorecdev_exe"
+TURBO_taskn "ssbgo 1.3"
+TURBO_objfil "ram1_ssbgo_exe"
 TURBO_windo 1
 TURBO_repfil "ram1_err"
 TURBO_objdat 400

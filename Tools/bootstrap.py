@@ -102,4 +102,4 @@ if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--test-driver',action='store_true');a=p.parse_args()
     folder=ROOT/'build'/'ql';folder.mkdir(parents=True,exist_ok=True)
     if a.test_driver: (folder/'driver_bas').write_bytes(test_driver())
-    else: (ROOT/'build'/'ssbrecdev_bas').write_bytes(number(expand(ROOT/'Source'/'ssb280.ssb')))
+    else: (ROOT/'build'/'ssb280_bas').write_bytes(number(expand(ROOT/'Source'/'ssb280.ssb')))
