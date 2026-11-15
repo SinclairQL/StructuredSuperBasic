@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-14",
+  "date": "2026-11-15",
   "target": "SMSQ/E 3.43, SMSQmulator 3.03 68000 CPU; native checks 4 MiB RAM, bootstrap/interpreter checks 8 MiB RAM",
   "compiler": "Turbo parser 5.09, code generator F5.37, SMS Turbo toolkit",
   "interpreter_tests": [
@@ -48,11 +48,31 @@
       "passed": true
     },
     {
+      "name": "long-lines-legacy",
+      "passed": true
+    },
+    {
+      "name": "long-lines-records",
+      "passed": true
+    },
+    {
+      "name": "long-lines-trim",
+      "passed": true
+    },
+    {
       "name": "parameter_limit",
       "passed": true
     },
     {
+      "name": "parenthesized-value",
+      "passed": true
+    },
+    {
       "name": "pool_helper_collision",
+      "passed": true
+    },
+    {
+      "name": "preserved-blank-labels",
       "passed": true
     },
     {
@@ -93,6 +113,10 @@
     },
     {
       "name": "scope_rank",
+      "passed": true
+    },
+    {
+      "name": "standalone-colon",
       "passed": true
     },
     {
@@ -216,6 +240,42 @@
       "passed": true,
       "ram_mib": 4,
       "actual": "## one|## two|## three\nHe said \" ## here\nIt's ## here\nHe said \" ** here\nIt's ** here\n3,9"
+    },
+    {
+      "name": "parenthesized-value",
+      "passed": true,
+      "ram_mib": 4,
+      "actual": "3,3,9,5,keep,3"
+    },
+    {
+      "name": "preserved-blank-labels",
+      "passed": true,
+      "ram_mib": 4,
+      "actual": "0,7"
+    },
+    {
+      "name": "long-lines-legacy",
+      "passed": true,
+      "ram_mib": 4,
+      "actual": "plain-100:86,1\nplain-101:87,1\nplain-255:241,1\nplain-999:985,1\nplain-1000:986,1\nhidden-1000:964,1\nquoted-markers-1000:986,1\nmixed-double-1000:973,1\nmixed-single-1000:973,1\nvisible-996:960,1\nindented-1000:853,1\ncontinuation-1000:986,1"
+    },
+    {
+      "name": "long-lines-records",
+      "passed": true,
+      "ram_mib": 4,
+      "actual": "plain-100:79,1\nplain-101:80,1\nplain-255:234,1\nplain-999:978,1\nplain-1000:979,1\nhidden-1000:957,1\nquoted-markers-1000:979,1\nmixed-double-1000:966,1\nmixed-single-1000:966,1\nvisible-996:953,1\nindented-1000:846,1\ncontinuation-1000:979,1"
+    },
+    {
+      "name": "long-lines-trim",
+      "passed": true,
+      "ram_mib": 4,
+      "actual": "0:0,0,0,1\n1:1,1,1,1\n99:99,99,99,1\n100:100,100,100,1\n101:101,101,101,1\n255:255,255,255,1\n999:999,999,999,1\n1000:1000,1000,1000,1\npadding:998,1\nspaces:0,0,0"
+    },
+    {
+      "name": "standalone-colon",
+      "passed": true,
+      "ram_mib": 4,
+      "actual": "2"
     }
   ],
   "line_number_boundary_tests": [
@@ -253,9 +313,9 @@
   },
   "bootstrap": {
     "passed": true,
-    "old_output_bytes": 93599,
-    "new_output_bytes": 93599,
-    "numbered_sha256": "67bf8811d8e6875c50a6c539ad18cb98c423da93f217f83d598e46314a49914e",
+    "old_output_bytes": 93970,
+    "new_output_bytes": 93970,
+    "numbered_sha256": "86d6e44bf200b3b0c1321df13022158dbe52eab9245a672664760d14b72e96ea",
     "built_from_ssb_output": true,
     "preprocessor": "SSB 2.7.2g"
   },
@@ -287,11 +347,53 @@
         "sha256": "ffd043ee65db5efba4276a9286adcbcd91905d0bb129a138551a705df6404f9c"
       },
       {
+        "name": "legacy-comments",
+        "passed": true,
+        "before_bytes": 414,
+        "after_bytes": 414,
+        "sha256": "564bba5b59121105aa79654a5e9fbb93c9f6ae9d027a3fe09b9ef6958fe7848c"
+      },
+      {
         "name": "limits",
         "passed": true,
         "before_bytes": 7155,
         "after_bytes": 7155,
         "sha256": "6e5d2a400842b88fef9efca20ef6fad69106b757b4a5978fc951ac4e0ec9163c"
+      },
+      {
+        "name": "long-lines-legacy",
+        "passed": true,
+        "before_bytes": 11267,
+        "after_bytes": 11267,
+        "sha256": "409d7d0ec3fe09a81ff60a9049cc9f471b64b086b613b8d69545c466dee9c09b"
+      },
+      {
+        "name": "long-lines-records",
+        "passed": true,
+        "before_bytes": 11485,
+        "after_bytes": 11485,
+        "sha256": "740e4dbe9caf20bc87e636f14b243bdb71f608e51d8019d465816ec0f30d6722"
+      },
+      {
+        "name": "long-lines-trim",
+        "passed": true,
+        "before_bytes": 1792,
+        "after_bytes": 1792,
+        "sha256": "db7005394f581cc1b1be201cc23cf713fa351f99c3365666a0ba6536de8d813f"
+      },
+      {
+        "name": "parenthesized-value",
+        "passed": true,
+        "before_bytes": 1078,
+        "after_bytes": 1078,
+        "sha256": "8b38e4fb185119977509fd694fc762e49697aaf927097f8c74608b189a76b724"
+      },
+      {
+        "name": "preserved-blank-labels",
+        "passed": true,
+        "before_bytes": 376,
+        "after_bytes": 376,
+        "sha256": "b121be9e9731ee8acc871445765d44436975fa2c8d20f79ac0de20c4266cb8c5"
       },
       {
         "name": "pure-builtins",
@@ -306,6 +408,13 @@
         "before_bytes": 905,
         "after_bytes": 905,
         "sha256": "c6b5152b9b6ecc472fe72a204db8c6aee91f27c15e659a4ec933d0c73d5a6866"
+      },
+      {
+        "name": "review-regressions",
+        "passed": true,
+        "before_bytes": 780,
+        "after_bytes": 780,
+        "sha256": "a45d4c71069526ce870bd8c7cceebd8f23ddba6ddbf7976bcf8fe54e00e91fd0"
       },
       {
         "name": "strings",
@@ -325,8 +434,284 @@
   },
   "compiler_result": {
     "errors": 0,
-    "warnings": 83,
-    "note": "Legacy assumed string dimensions and dynamic LOCAL declarations; this is not a warning-free build."
+    "warnings": 62,
+    "string_capacity_warnings": 0,
+    "local_only_notices": 62,
+    "note": "String capacities are explicit. Remaining notices identify strings used only as locals or parameters."
+  },
+  "long_source_lines": {
+    "maximum_bytes": 1000,
+    "cases": [
+      {
+        "name": "long-lines-legacy",
+        "expected": "plain-100:86,1\nplain-101:87,1\nplain-255:241,1\nplain-999:985,1\nplain-1000:986,1\nhidden-1000:964,1\nquoted-markers-1000:986,1\nmixed-double-1000:973,1\nmixed-single-1000:973,1\nvisible-996:960,1\nindented-1000:853,1\ncontinuation-1000:986,1",
+        "cases": [
+          {
+            "label": "plain-100",
+            "source_line": 12,
+            "logical_bytes": 100,
+            "physical_bytes": [
+              100
+            ],
+            "string_bytes": 86,
+            "full_string_equality": true
+          },
+          {
+            "label": "plain-101",
+            "source_line": 15,
+            "logical_bytes": 101,
+            "physical_bytes": [
+              101
+            ],
+            "string_bytes": 87,
+            "full_string_equality": true
+          },
+          {
+            "label": "plain-255",
+            "source_line": 18,
+            "logical_bytes": 255,
+            "physical_bytes": [
+              255
+            ],
+            "string_bytes": 241,
+            "full_string_equality": true
+          },
+          {
+            "label": "plain-999",
+            "source_line": 21,
+            "logical_bytes": 999,
+            "physical_bytes": [
+              999
+            ],
+            "string_bytes": 985,
+            "full_string_equality": true
+          },
+          {
+            "label": "plain-1000",
+            "source_line": 24,
+            "logical_bytes": 1000,
+            "physical_bytes": [
+              1000
+            ],
+            "string_bytes": 986,
+            "full_string_equality": true
+          },
+          {
+            "label": "hidden-1000",
+            "source_line": 27,
+            "logical_bytes": 1000,
+            "physical_bytes": [
+              1000
+            ],
+            "string_bytes": 964,
+            "full_string_equality": true
+          },
+          {
+            "label": "quoted-markers-1000",
+            "source_line": 30,
+            "logical_bytes": 1000,
+            "physical_bytes": [
+              1000
+            ],
+            "string_bytes": 986,
+            "full_string_equality": true
+          },
+          {
+            "label": "mixed-double-1000",
+            "source_line": 33,
+            "logical_bytes": 1000,
+            "physical_bytes": [
+              1000
+            ],
+            "string_bytes": 973,
+            "full_string_equality": true
+          },
+          {
+            "label": "mixed-single-1000",
+            "source_line": 36,
+            "logical_bytes": 1000,
+            "physical_bytes": [
+              1000
+            ],
+            "string_bytes": 973,
+            "full_string_equality": true
+          },
+          {
+            "label": "visible-996",
+            "source_line": 39,
+            "logical_bytes": 996,
+            "physical_bytes": [
+              996
+            ],
+            "string_bytes": 960,
+            "full_string_equality": true
+          },
+          {
+            "label": "indented-1000",
+            "source_line": 42,
+            "logical_bytes": 1000,
+            "physical_bytes": [
+              1000
+            ],
+            "string_bytes": 853,
+            "full_string_equality": true
+          },
+          {
+            "label": "continuation-1000",
+            "source_line": 45,
+            "logical_bytes": 1000,
+            "physical_bytes": [
+              602,
+              399
+            ],
+            "string_bytes": 986,
+            "full_string_equality": true
+          }
+        ]
+      },
+      {
+        "name": "long-lines-records",
+        "expected": "plain-100:79,1\nplain-101:80,1\nplain-255:234,1\nplain-999:978,1\nplain-1000:979,1\nhidden-1000:957,1\nquoted-markers-1000:979,1\nmixed-double-1000:966,1\nmixed-single-1000:966,1\nvisible-996:953,1\nindented-1000:846,1\ncontinuation-1000:979,1",
+        "cases": [
+          {
+            "label": "plain-100",
+            "source_line": 16,
+            "logical_bytes": 100,
+            "physical_bytes": [
+              100
+            ],
+            "string_bytes": 79,
+            "full_string_equality": true
+          },
+          {
+            "label": "plain-101",
+            "source_line": 19,
+            "logical_bytes": 101,
+            "physical_bytes": [
+              101
+            ],
+            "string_bytes": 80,
+            "full_string_equality": true
+          },
+          {
+            "label": "plain-255",
+            "source_line": 22,
+            "logical_bytes": 255,
+            "physical_bytes": [
+              255
+            ],
+            "string_bytes": 234,
+            "full_string_equality": true
+          },
+          {
+            "label": "plain-999",
+            "source_line": 25,
+            "logical_bytes": 999,
+            "physical_bytes": [
+              999
+            ],
+            "string_bytes": 978,
+            "full_string_equality": true
+          },
+          {
+            "label": "plain-1000",
+            "source_line": 28,
+            "logical_bytes": 1000,
+            "physical_bytes": [
+              1000
+            ],
+            "string_bytes": 979,
+            "full_string_equality": true
+          },
+          {
+            "label": "hidden-1000",
+            "source_line": 31,
+            "logical_bytes": 1000,
+            "physical_bytes": [
+              1000
+            ],
+            "string_bytes": 957,
+            "full_string_equality": true
+          },
+          {
+            "label": "quoted-markers-1000",
+            "source_line": 34,
+            "logical_bytes": 1000,
+            "physical_bytes": [
+              1000
+            ],
+            "string_bytes": 979,
+            "full_string_equality": true
+          },
+          {
+            "label": "mixed-double-1000",
+            "source_line": 37,
+            "logical_bytes": 1000,
+            "physical_bytes": [
+              1000
+            ],
+            "string_bytes": 966,
+            "full_string_equality": true
+          },
+          {
+            "label": "mixed-single-1000",
+            "source_line": 40,
+            "logical_bytes": 1000,
+            "physical_bytes": [
+              1000
+            ],
+            "string_bytes": 966,
+            "full_string_equality": true
+          },
+          {
+            "label": "visible-996",
+            "source_line": 43,
+            "logical_bytes": 996,
+            "physical_bytes": [
+              996
+            ],
+            "string_bytes": 953,
+            "full_string_equality": true
+          },
+          {
+            "label": "indented-1000",
+            "source_line": 46,
+            "logical_bytes": 1000,
+            "physical_bytes": [
+              1000
+            ],
+            "string_bytes": 846,
+            "full_string_equality": true
+          },
+          {
+            "label": "continuation-1000",
+            "source_line": 49,
+            "logical_bytes": 1000,
+            "physical_bytes": [
+              602,
+              399
+            ],
+            "string_bytes": 979,
+            "full_string_equality": true
+          }
+        ]
+      },
+      {
+        "name": "long-lines-trim",
+        "expected": "0:0,0,0,1\n1:1,1,1,1\n99:99,99,99,1\n100:100,100,100,1\n101:101,101,101,1\n255:255,255,255,1\n999:999,999,999,1\n1000:1000,1000,1000,1\npadding:998,1\nspaces:0,0,0",
+        "helper_input_lengths": [
+          0,
+          1,
+          99,
+          100,
+          101,
+          255,
+          999,
+          1000
+        ]
+      }
+    ],
+    "interpreter_and_compiled_checks_passed": true
   },
   "output_safety": {
     "refused_preserved": true,
@@ -344,39 +729,24 @@
   },
   "source_sha256": {
     "commands.ssb": "447d1acf1e34bfc3da21b13795bd31c7ce8b5e083a478fd12bdd70fa34f09918",
-    "functions.ssb": "b949b17f17d8b5f58a28f17a29a55c8dd6b245a2786e122576f138492757a16a",
-    "ssb280.ssb": "86baf5ba177896d2085081308788e7f6e68b1699520e79e75e9c9e3d95ab0077",
+    "functions.ssb": "c5ad52aea0a98f03eed094baefc0794965f207e45e3ad42ec548b2af3af44e9a",
+    "ssb280.ssb": "f5fc9146f5f092feca5c35409babd3b69423439caf49f7e5d4636e47964f2d85",
     "ssblang.ssb": "1e526384e57068228009b29638ca453bff835dc0ab163279b6d5bf04133ad2a4",
-    "ssbpass1.ssb": "643fc6d3cfbe9eedfd724bfc64265029c23c1769f5cf91a96772bae652a40a23",
-    "ssbpass2.ssb": "56744292cd5039ad890e1ee347caf3db698b12e813b8ffcf91016d2099e10b1c"
+    "ssbpass1.ssb": "2720eb657b2859a58610649dff89b09956e076b479518580b934baab39ce6a50",
+    "ssbpass2.ssb": "8a2058fd71241267140153b8c72f49865d24ac31266ec303c6011a7635fe360e"
   },
-  "validated_executable_sha256": "df80aad995c83f766ba1b3cd19c7f78758c7c7ecfab5beb3f9fa75a116d38f22",
-  "distribution_sha256": {
-    "Source.zip": "daca436530fcd235e8b68332c0628e804a79eeee794e411d75dfd7c460e3d2f3",
-    "ssb280.zip": "2ffe5a6e46ffea2ab431e03a56ded761b5d6e5ab49a2e8e20651333e439c64d9",
-    "ssb280go_exe": "8fd0f4505a6e9a59893d3ac79c3d0ed6249dc970953965be7be92d76bbd12d4c",
-    "ssb280_bas": "67bf8811d8e6875c50a6c539ad18cb98c423da93f217f83d598e46314a49914e",
-    "ssb280_exe": "df80aad995c83f766ba1b3cd19c7f78758c7c7ecfab5beb3f9fa75a116d38f22"
-  },
-  "limitations": [
-    "Turbo rejects individual record-array-element reference arguments; standalone work records and whole-array references are supported.",
-    "SBASIC-only reference forms were tested in the interpreter, not compiled.",
-    "Classic QL ROMs, a 128 KiB machine, QLiberator and the full editor/grep SSBGO workflow were not certified.",
-    "New record diagnostics use English. The updated Quill manual documents the records extension.",
-    "Publication/backup tests ran on the QL RAM filesystem because Windows NFA rename in this emulator reports files in use."
-  ],
   "quill_manual": {
     "date": "2026-11-15",
     "manual": "Docs/ssb280.doc",
     "ql_filename": "ssb280_doc",
     "format": "Psion Quill vrm1qdf0",
-    "manual_sha256": "869404f2a0efa04986f49c9dbf3c7806a3f923a2d49d3692db3bd4e6518b2032",
-    "manual_bytes": 73768,
+    "manual_sha256": "99b25ce0255ff871a1ba8362a2f74d5419c0b9c848a2d815ee4a3b93b129cbb0",
+    "manual_bytes": 74746,
     "paragraphs": 918,
     "original_manual_sha256": "3b33012331955d9814f33ba42631c9bc6499a8da211d158b392935902befb540",
     "original_paragraphs": 646,
     "records_chapter": "8.0 through 8.14",
-    "records_chapter_words": 2477,
+    "records_chapter_words": 2580,
     "native_quill_loaded": true,
     "native_quill_saved": true,
     "native_quill_reloaded": true,
@@ -394,16 +764,38 @@
         "output": "42,7\n0"
       }
     },
-    "verification_method": "Load, save and reload with native Quill; compare all paragraph text and formatting; inspect syntax/example pages.",
+    "verification_method": "Native Quill load, save and reload; compare all paragraph text and formatting, inspect the final document and word count, and verify unchanged complete examples.",
     "edition": "2.8.0",
     "examples_unchanged_from_tested_manual": true,
-    "previous_native_manual_sha256": "33f5286cd264333bc80e7cb9b02dbc1c0a01111b41acfced23e38f289d4086b8",
+    "previous_native_manual_sha256": "f0e14d41ed87f10f095acc2ef287e056d8c08140a5a42de12b0e0f4f8f16891a",
     "legacy_manual_retained_in_git": true,
-    "last_update_paragraphs": 1,
-    "word_count": 9646,
+    "configuration_names_checked_against": "Source/ssb280.ssb",
+    "last_update_paragraphs": 2,
+    "word_count": 9778,
+    "string_capacity_update": {
+      "assumptions_removed": 21,
+      "global_capacities": 17,
+      "local_capacities": 4,
+      "source_line_bytes": 1000
+    },
     "standalone_colon_fix": {
       "inherited_from": "2.7.2g",
       "interpreter_and_compiled_regression": true
     }
-  }
+  },
+  "validated_executable_sha256": "b71a764549b8e7ce932fa42109fbe5bbe83894943edd5121f330e51a4d0af059",
+  "distribution_sha256": {
+    "Source.zip": "147bc448af2e249f84854cf464c76c716b092e13dd36de3d9af0e88e259c8159",
+    "ssb280.zip": "4ae78fe8d3f09feba1d871c853e17e0ed7a01f51fd62be5bc1d6a2554e21eba0",
+    "ssb280go_exe": "8fd0f4505a6e9a59893d3ac79c3d0ed6249dc970953965be7be92d76bbd12d4c",
+    "ssb280_bas": "86d6e44bf200b3b0c1321df13022158dbe52eab9245a672664760d14b72e96ea",
+    "ssb280_exe": "b71a764549b8e7ce932fa42109fbe5bbe83894943edd5121f330e51a4d0af059"
+  },
+  "limitations": [
+    "Turbo rejects individual record-array-element reference arguments; standalone work records and whole-array references are supported.",
+    "SBASIC-only reference forms were tested in the interpreter, not compiled.",
+    "Classic QL ROMs, a 128 KiB machine, QLiberator and the full editor/grep SSBGO workflow were not certified.",
+    "New record diagnostics use English. The updated Quill manual documents records and current configuration names.",
+    "Publication/backup tests ran on the QL RAM filesystem because Windows NFA rename in this emulator reports files in use."
+  ]
 }

@@ -57,6 +57,12 @@ def number(lines,start=1,step=1):
     if n>32767: raise ValueError('Bootstrap exceeds BASIC line range')
     return ''.join(out).encode('latin1')
 
+def trim_test_helpers():
+    """Use the actual trim routines, without duplicating their implementation."""
+    source=(ROOT/'Source'/'functions.ssb').read_bytes().split(b'## ND-272e',1)[0]
+    # Standalone colons are cosmetic padding in the original module.
+    return b'\n'.join(line for line in source.splitlines() if line.strip()!=b':')+b'\n'
+
 def test_driver():
     body='''OPEN_NEW #3,"win1_log"
 WHEN ERRor

@@ -23,7 +23,7 @@ if manual_proof:
     assert manual_proof['native_quill_saved'] and manual_proof['native_quill_reloaded']
 assert interpreted['sources'] == bootstrap['sources'] == compiled['sources'] == sources
 assert all(test['passed'] for test in interpreted['tests'])
-assert len(native) == 11 and all(test['passed'] and test['ram_mib']==4 for test in native)
+assert len(native) == 16 and all(test['passed'] and test['ram_mib']==4 for test in native)
 assert bootstrap['passed'] and safety['passed'] and compiled['self_host']
 legacy_basic=(Path(bootstrap['folder'])/'old_output_bas').read_bytes().replace(b'ram1_ssbrecdev_err',b'nfa1_report')
 assert hashlib.sha256(legacy_basic).hexdigest()==compiled['numbered_sha256'], 'The final executable must be built from 2.7.2g output'
@@ -43,6 +43,24 @@ assert (wrapper / 'backup_bas').read_bytes() == (wrapper / 'old_bas').read_bytes
 report = (build / 'compiled-app' / 'report').read_text(encoding='latin1')
 summary = re.search(r'(\d+) errors and (\d+) warnings', report)
 assert summary and summary[1] == '0'
+warnings = re.findall(r'^\+\+\+\+ Warning at \d+: (.*)$', report, re.M)
+capacity_warnings = [w for w in warnings if w.startswith(('DIM ', 'LOCal ')) and 'assumed' in w]
+local_notices = [w for w in warnings if 'only exists as a LOCAL' in w]
+assert not capacity_warnings, 'String-capacity assumptions must not return'
+assert len(local_notices) == len(warnings) == int(summary[2])
+long_lines = json.loads((ROOT/'Tests'/'long-lines.json').read_text(encoding='utf-8'))
+interpreted_by_name = {t['name']: t for t in interpreted['tests']}
+native_by_name = {t['name']: t for t in native}
+for fixture in long_lines:
+    assert interpreted_by_name[fixture['name']]['result'].strip() == fixture['expected']
+    assert native_by_name[fixture['name']]['result'].strip() == fixture['expected']
+    physical = (ROOT/'Tests'/(fixture['name']+'.ssb')).read_bytes().splitlines()
+    assert max(map(len, physical)) <= 1000
+    for case in fixture.get('cases', []):
+        first = case['source_line']-1
+        assert [len(line) for line in physical[first:first+len(case['physical_bytes'])]] == case['physical_bytes']
+        assert case['logical_bytes'] <= 1000
+
 result = dict(
     date='2026-11-15',
     target='SMSQ/E 3.43, SMSQmulator 3.03 68000 CPU; native checks 4 MiB RAM, bootstrap/interpreter checks 8 MiB RAM',
@@ -56,7 +74,8 @@ result = dict(
         limitation='The 2 MiB SMSQ/E test environment reported insufficient memory while launching the filter; 2 MiB runtime support is not claimed.'),
     bootstrap=dict(passed=True, old_output_bytes=bootstrap['old_bytes'], new_output_bytes=bootstrap['new_bytes'], numbered_sha256=bootstrap['sha256'], built_from_ssb_output=True, preprocessor='SSB 2.7.2g'),
     legacy_bootstrap_compatibility=dict(version='2.7.2g', compiler_source_uses_records=False, old_and_new_output_identical=True, user_program_output_identical=True, fixtures=compatibility['checks']),
-    compiler_result=dict(errors=int(summary[1]), warnings=int(summary[2]), note='Legacy assumed string dimensions and dynamic LOCAL declarations; this is not a warning-free build.'),
+    compiler_result=dict(errors=int(summary[1]), warnings=int(summary[2]), string_capacity_warnings=len(capacity_warnings), local_only_notices=len(local_notices), note='String capacities are explicit. Remaining notices identify strings used only as locals or parameters.'),
+    long_source_lines=dict(maximum_bytes=1000, cases=long_lines, interpreter_and_compiled_checks_passed=True),
     output_safety=safety['checks'],
     ssbgo_failure_test=dict(compiled=True, failed_final_absent=True, previous_output_preserved=True),
     source_sha256=sources,
@@ -67,7 +86,7 @@ result = dict(
         'Turbo rejects individual record-array-element reference arguments; standalone work records and whole-array references are supported.',
         'SBASIC-only reference forms were tested in the interpreter, not compiled.',
         'Classic QL ROMs, a 128 KiB machine, QLiberator and the full editor/grep SSBGO workflow were not certified.',
-        'New record diagnostics use English. The existing Quill release manual was preserved.',
+        'New record diagnostics use English. The updated Quill manual documents records and current configuration names.',
         'Publication/backup tests ran on the QL RAM filesystem because Windows NFA rename in this emulator reports files in use.'
     ])
 (ROOT / 'Docs' / 'Validation.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')

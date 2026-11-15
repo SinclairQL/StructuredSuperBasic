@@ -2,6 +2,8 @@
 
 Date: 14 November 2026
 
+This is a historical report for commit 475ecb8. Its five defects were fixed in 10664f8. The executable name ssbrecdev_exe below identifies that earlier development build; the current package publishes ssb280_exe. The examples describe the original failures, not the behaviour of the fixed build.
+
 Five correctness issues were reproduced during review of the `.ssb` files in `C:\Source\Structured Super Basic\Source`. All are priority P2: normal-priority defects that should be corrected. This report records the existing behaviour; it does not apply fixes.
 
 The reviewed implementation is now included in local commit `475ecb80a3e3e879c7987c7634946a69fddf56b0`, **Add records support to SSB and rename driver to ssb280**. The main source was subsequently renamed from `ssb272.ssb` to `ssb280.ssb`; the affected functions below remain in `functions.ssb`, `ssbpass1.ssb` and `ssbpass2.ssb`.

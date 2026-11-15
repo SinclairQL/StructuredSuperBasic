@@ -1,0 +1,15 @@
+## Run with SSBIGNORE_BLANKS=N: blank lines must occupy numbered lines.
+value%=0
+GO TO @first
+
+value%=9
+@first
+saved%=value%
+GO TO @second
+ 
+value%=8
+@second
+value%=value%+7
+OPEN_NEW #9,"win1_result":PRINT #9,saved%;",";value%:CLOSE #9
+OPEN_NEW #9,"win1_done":PRINT #9,"OK":CLOSE #9
+STOP

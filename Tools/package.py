@@ -109,6 +109,14 @@ Preparation uses internal analysis/planning walks, not just two file reads.
 The comment scanner retains repeated quoted markers and respects mixed quotes.
 Parenthesized first arguments, inline field loop counters and final line 32767
 are covered by the 14 November 2026 correctness fixes.
+Sole parenthesized procedure arguments retain value semantics. Preserved
+blank lines count consistently for labels in ordinary programs. The legacy
+uppercase helper preserves aliased source text; Trim$ closes with its own name.
+String capacities are explicit: configuration strings retain 100-byte
+limits; trim results and invisible-comment working strings allow 1000 bytes.
+Regression fixtures compare complete values from ordinary and records source
+lines up to 1000 bytes, including comments, quotes and continuations. The
+Turbo build has no assumed-capacity warnings; 62 local-only notices remain.
 Standalone colon lines now pass both numbering readers. Length guards fix
 an index-zero continuation slice inherited from 2.7.2g; regression tests cover
 colons at file boundaries, labels and routine bodies.
@@ -148,7 +156,7 @@ with zipfile.ZipFile(out / 'ssb280.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
             offset = struct.unpack_from('>H', data, 18)[0] * 2
             attributes = data[20:30]
             data = data[offset:]
-        info = zipfile.ZipInfo(name, (2026, 11, 14, 0, 0, 0))
+        info = zipfile.ZipInfo(name, (2026, 11, 15, 0, 0, 0))
         info.compress_type = zipfile.ZIP_DEFLATED
         info.extra = qdos_extra(name, data, attributes)
         archive.writestr(info, data)
@@ -164,7 +172,7 @@ with zipfile.ZipFile(out / 'Source.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
     for source in sorted((ROOT/'Source').iterdir()):
         if source.is_file() and source.suffix.lower() in {'.ssb', '.bas', '.md'}:
             data = source.read_bytes()
-            info = zipfile.ZipInfo(source.name, (2026, 11, 14, 0, 0, 0))
+            info = zipfile.ZipInfo(source.name, (2026, 11, 15, 0, 0, 0))
             info.compress_type = zipfile.ZIP_DEFLATED
             info.extra = qdos_extra(source.name, data)
             archive.writestr(info, data)

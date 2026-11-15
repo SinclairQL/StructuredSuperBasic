@@ -1,6 +1,6 @@
 """Test the actual Turbo-built SSB executable, optionally compiling its output."""
 from pathlib import Path
-from bootstrap import ROOT
+from bootstrap import ROOT,trim_test_helpers
 import shutil,sys,subprocess,time,json
 
 name=sys.argv[1] if len(sys.argv)>1 else 'core'
@@ -23,6 +23,7 @@ TURBO_model ">"
 '''+source
 (folder/'input_ssb').write_bytes(source.encode('latin1'))
 (folder/'types_ssb').write_bytes((ROOT/'Tests'/'types.ssb').read_bytes())
+(folder/'trim_helpers_ssb').write_bytes(trim_test_helpers())
 boot='''100 LRESPR "nfa1_env_bin"
 110 LRESPR "nfa1_ttk"
 120 SETENV "SSBWORK=nfa1_"
@@ -37,6 +38,8 @@ boot='''100 LRESPR "nfa1_env_bin"
 200 IF FTEST("ram1_input_bas")<>0 THEN OPEN_NEW #9,"nfa1_done":PRINT #9,"ERROR":CLOSE #9:STOP
 210 COPY "ram1_input_bas" TO "nfa1_output_bas"
 '''
+if name=='preserved-blank-labels':
+    boot=boot.replace('180 DEFAULT_DEVICE','176 SETENV "SSBIGNORE_BLANKS=N"\n180 DEFAULT_DEVICE')
 boot+='220 LOAD "ram1_input_bas"\n' if compile_target else '220 LRUN "ram1_input_bas"\n'
 (folder/'boot').write_text(boot,encoding='ascii')
 commands=['','','LRUN nfa1_boot']
@@ -53,5 +56,8 @@ expected['reference-stream']='9,hello,16,18'
 expected['pure-builtins']='506'
 expected['legacy-comments']='## one|## two|## three\nHe said " ## here\nIt\'s ## here\nHe said " ** here\nIt\'s ** here'
 expected['review-regressions']='## one|## two|## three\nHe said " ## here\nIt\'s ## here\nHe said " ** here\nIt\'s ** here\n3,9'
+expected['parenthesized-value']='3,3,9,5,keep,3'
+expected['preserved-blank-labels']='0,7'
+expected.update({case['name']:case['expected'] for case in json.loads((ROOT/'Tests'/'long-lines.json').read_text(encoding='utf-8'))})
 expected['standalone-colon']='2'
 sys.exit(0 if p.returncode==0 and r['done']=='OK' and not r['error'] and r['result'].strip()==expected[name] else 1)

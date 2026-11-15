@@ -1,0 +1,26 @@
+## Exercise the actual compiler trim helpers at and across the old 100-byte limit.
+DIM sample$(1000),expected$(1000)
+OPEN_NEW #9,"win1_result"
+WHEN ERRor
+ REPORT #9
+ PRINT #9,"TARGET RUNTIME ERROR"
+ CLOSE #9
+ OPEN_NEW #8,"win1_done":PRINT #8,"ERROR":CLOSE #8
+ STOP
+END WHEN
+DATA 0,1,99,100,101,255,999,1000
+FOR caseIndex=1 TO 8
+ READ sampleLength
+ sample$=""
+ IF sampleLength THEN sample$=FILL$("x",sampleLength)
+ PRINT #9,sampleLength;":";LEN(LTrim$(sample$));",";LEN(RTrim$(sample$));",";LEN(Trim$(sample$));",";(Trim$(sample$)=sample$)
+END FOR caseIndex
+sample$=" "&FILL$("x",998)&" "
+expected$=FILL$("x",998)
+PRINT #9,"padding:";LEN(Trim$(sample$));",";(Trim$(sample$)=expected$)
+sample$=FILL$(" ",1000)
+PRINT #9,"spaces:";LEN(LTrim$(sample$));",";LEN(RTrim$(sample$));",";LEN(Trim$(sample$))
+CLOSE #9
+OPEN_NEW #9,"win1_done":PRINT #9,"OK":CLOSE #9
+STOP
+#INCLUDE trim_helpers_ssb

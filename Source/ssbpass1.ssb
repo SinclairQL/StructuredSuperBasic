@@ -59,12 +59,20 @@ DEFine PROCedure pass_one_file (in_file$, file_num)
     IF EOF(#file_num) THEN EXIT pass_1
     INPUT #file_num,in$
     rec_origin
+    ## Fix inherited from 2.7.2g: classify tabs exactly as pass two does.
+    in$=stripTab$(in$)
 
     ## Get first non-space character
     temp=first_char(in$)
 
-    ## Check for Blank Lines
-    IF temp=0 THEN NEXT pass_1
+    ## Fix inherited from 2.7.2g: preserved blanks also occupy line numbers.
+    ## Count them here exactly as pass two emits them, keeping labels aligned.
+    IF temp=0 THEN
+      IF d_ignore$ == "Y" THEN NEXT pass_1
+      rec_range
+      line_num=line_num+line_delta
+      NEXT pass_1
+    END IF
 
     ## If the ## comment line then don't count as a line
     IF in$(temp TO temp+1)=CHR$(35)&CHR$(35) THEN NEXT pass_1

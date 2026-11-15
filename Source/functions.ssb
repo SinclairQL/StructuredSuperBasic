@@ -5,12 +5,14 @@ DEFine FuNction Trim$(text$)
     ELSE
         RETurn ""
     END IF
-END DEFine LTrim$
+## Fix inherited from 2.7.2g: close Trim$ with its own name.
+END DEFine Trim$
 :
 :
 ## A function to trim leading spaces from a string.
 DEFine FuNction LTrim$(text$)
-    LOCal x, ret$
+    ## Fix inherited from 2.7.2g: retain up to a complete 1000-byte source line.
+    LOCal x, ret$(1000)
     :
     ## Empty strings are easy!
     IF text$ = "" THEN RETurn "": END IF
@@ -29,7 +31,8 @@ END DEFine LTrim$
 :
 ## A function to trim trailing spaces from a string.
 DEFine FuNction RTrim$(text$)
-    LOCal x, ret$
+    ## Fix inherited from 2.7.2g: retain up to a complete 1000-byte source line.
+    LOCal x, ret$(1000)
     :
     ## Empty strings are easy!
     IF text$ = "" THEN RETurn "": END IF
@@ -145,7 +148,8 @@ END DEFine joinLine$
 ##   the first ## is stripped off.
 ##   ND-272F.
 DEFine FuNction stripComment$(a$)
-  LOCal in$, out$, stripLoop, temp, whereQuote
+  ## Fix inherited from 2.7.2g: Turbo's default 100-byte locals lose long lines.
+  LOCal in$(1000), out$(1000), stripLoop, temp, whereQuote
   :
   in$ = a$
   out$ = ""  

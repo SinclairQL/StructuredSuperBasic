@@ -25,7 +25,7 @@ The guide explains this measured target restriction and the interpreter profile.
 SSB is written in S*BASIC and has been used to compile itself. This *must* continue to be the case. It is compiled with the Turbo compiler.
 
 The records implementation uses the established source layout:
-`Source/ssb272.ssb` coordinates the build, `Source/ssbpass1.ssb` prepares and
+`Source/ssb280.ssb` coordinates the build, `Source/ssbpass1.ssb` prepares and
 checks the source and records labels, and `Source/ssbpass2.ssb` contains expansion
 and output routines. Shared text and lexical helpers are in `Source/functions.ssb`.
 The Windows tools provide optional test/build automation; the QL translator

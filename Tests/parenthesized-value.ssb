@@ -1,0 +1,39 @@
+## A sole parenthesized argument is a value, including string arguments.
+TYPE marker
+ x
+END TYPE
+DIM active AS marker
+number%=3
+mutate (number%)
+oneParen%=number%
+mutate ((number%))
+twoParens%=number%
+mutateReference number%
+byReference%=number%
+scalarValue%=5
+mutateValue scalarValue%
+word$="keep"
+mutateText (word$)
+addNumbers (1,2)
+OPEN_NEW #9,"win1_result"
+PRINT #9,oneParen%;",";twoParens%;",";byReference%;",";scalarValue%;",";word$;",";sum%
+CLOSE #9
+OPEN_NEW #9,"win1_done":PRINT #9,"OK":CLOSE #9
+STOP
+DEFine PROCedure mutate(argument%)
+ argument%=9
+END DEFine
+## Explicit REFERENCE makes this control writable in Turbo as well as SBASIC.
+REFERENCE referenceNumber%
+DEFine PROCedure mutateReference(referenceNumber%)
+ referenceNumber%=9
+END DEFine
+DEFine PROCedure mutateValue(VAL argumentValue%)
+ argumentValue%=22
+END DEFine
+DEFine PROCedure mutateText(argumentText$)
+ argumentText$="changed"
+END DEFine
+DEFine PROCedure addNumbers(VAL first%,VAL second%)
+ sum%=first%+second%
+END DEFine

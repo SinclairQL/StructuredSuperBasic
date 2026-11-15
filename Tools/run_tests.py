@@ -5,7 +5,7 @@ External prerequisites are deliberately not redistributed. See development docs.
 from pathlib import Path
 import concurrent.futures as cf
 import json, subprocess, shutil, sys, time, hashlib
-from bootstrap import ROOT,test_driver
+from bootstrap import ROOT,test_driver,trim_test_helpers
 
 BUILD=ROOT/'build'
 CP=str(BUILD/'newclasses')+';'+str(BUILD/'emulator-lib'/'*')
@@ -15,6 +15,7 @@ def run_case(case):
     folder=folder/str(time.time_ns());folder.mkdir()
     for name in ['env_bin','ttk']:shutil.copy2(BUILD/'ql'/name,folder/name)
     (folder/'types_ssb').write_bytes((ROOT/'Tests'/'types.ssb').read_bytes())
+    (folder/'trim_helpers_ssb').write_bytes(trim_test_helpers())
     (folder/'input_ssb').write_bytes(case['source'].replace('win1_','nfa1_').encode('latin1'))
     driver=test_driver().replace(b'win1_',b'nfa1_')
     (folder/'driver_bas').write_bytes(b'1 SAVE_O "nfa1_loaded"\n'+driver)
@@ -22,6 +23,11 @@ def run_case(case):
     if case.get('profile'):
         boot=(folder/'boot').read_bytes().replace(b'130 LRUN',('125 SETENV "SSBRECPROFILE='+case['profile']+'"\n130 LRUN').encode('ascii'))
         (folder/'boot').write_bytes(boot)
+    if case.get('preserve_blanks'):
+        boot=(folder/'boot').read_bytes().replace(b'130 LRUN',b'126 SETENV "SSBIGNORE_BLANKS=N"\n130 LRUN')
+        (folder/'boot').write_bytes(boot)
+        driver=(folder/'driver_bas').read_bytes().replace(b'd_ignore$="Y"',b'd_ignore$="N"')
+        (folder/'driver_bas').write_bytes(driver)
     started=time.monotonic()
     p=subprocess.run(['java','-cp',CP,'QlRun',str(BUILD/'SMSQE'),str(folder),'110'],capture_output=True,timeout=120)
     (folder/'emulator.log').write_bytes(p.stdout+p.stderr)
@@ -46,6 +52,10 @@ cases.append(dict(name='review-regressions',source=(ROOT/'Tests'/'review-regress
 cases.append(dict(name='reference-stream',source=(ROOT/'Tests'/'reference-stream.ssb').read_text(encoding='utf-8'),expected='9,hello,16,18'))
 cases.append(dict(name='element-reference',source=element,expected='2,11,0',profile='SBASIC'))
 cases.append(dict(name='turbo-element-rejected',source=element,error='Turbo cannot pass record array elements'))
+cases.append(dict(name='parenthesized-value',source=(ROOT/'Tests'/'parenthesized-value.ssb').read_text(encoding='ascii'),expected='3,3,9,5,keep,3'))
+cases.append(dict(name='preserved-blank-labels',source=(ROOT/'Tests'/'preserved-blank-labels.ssb').read_text(encoding='ascii'),expected='0,7',preserve_blanks=True))
+for case in json.loads((ROOT/'Tests'/'long-lines.json').read_text(encoding='utf-8')):
+    cases.append(dict(name=case['name'],source=(ROOT/'Tests'/(case['name']+'.ssb')).read_text(encoding='ascii'),expected=case['expected']))
 cases.append(dict(name='standalone-colon',source=(ROOT/'Tests'/'standalone-colon.ssb').read_text(encoding='ascii'),expected='2'))
 if len(sys.argv)>1:cases=[c for c in cases if c['name'] in sys.argv[1:]]
 results=[]

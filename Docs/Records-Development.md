@@ -274,6 +274,7 @@ python Tools/compile_test.py --self-host
 # Run the java build command above again, then verify the rebuilt executable:
 python Tools/self_host.py
 python Tools/test_output_safety.py
+python Tools/test_line_ranges.py
 python Tools/validate_native.py
 python Tools/execute_compiled.py core --compile-target
 python Tools/execute_compiled.py arrays-pools --compile-target
@@ -296,7 +297,7 @@ the production rename with a non-atomic host copy.
 See `Validation.json` for the exact checks completed with this development build.
 Classic QL ROMs, QLiberator and the existing SSBGO editor/grep handoff have not
 been certified. The Quill manual, `Docs/ssb280.doc`, now includes records syntax, examples and
-limitations in section 8; its earlier chapters retain the original manual. A QL-readable text supplement is provided
+limitations in section 8; earlier chapters retain the legacy guide with corrected filenames and configuration names. A QL-readable text supplement is provided
 as `records.txt`.
 
 ## Correctness fixes on 14 November 2026
@@ -321,6 +322,50 @@ an unused overflowing next number, trailing non-statements, actual overflow and
 a zero increment against the compiled filter. Build helpers now use the renamed
 ssb280.ssb driver while retaining the original ssb272.bas bootstrap.
 
+The local fork review also fixed sole parenthesized procedure arguments: passing
+(number%) retains value semantics; an explicit REFERENCE formal is used for
+the writable scalar-reference control in both SBASIC and Turbo. Tests/parenthesized-value.ssb checks numeric and string values, nested
+parentheses, explicit VAL and multiple-argument list wrappers.
+
+Ordinary input with SSBIGNORE_BLANKS=N now counts preserved blanks in both passes,
+keeping labels aligned. Pass one normalizes tabs as pass two does. The legacy
+uppercase helper now returns a copy instead of altering an aliased source slice;
+this also fixes interpreted translation of lower-case ordinary statements.
+Tests/preserved-blank-labels.ssb exercises labels across preserved blanks using
+lower-case source. Inherited changes are explained in source comments, including
+the corrected END DEFine Trim$ name.
+
+The Quill manual now lists SSBINPUT, SSBOUTPUT, SSBSTART, SSBWORK and SSBWORK2 as the
+supported settings. The underscored variants in older prose are explicitly
+identified as unsupported. Current command examples use ssb280_exe. The README,
+original-proposal link and validation generator use the current names and manual
+status. Internal Turbo object names remain ssbrecdev_exe and ssbgorecdev_exe;
+packaging maps them to ssb280_exe and ssb280go_exe.
+
+## Explicit string capacities and long-line checks
+
+All 21 assumed-capacity warnings have been removed from the active translator.
+The 16 inherited configuration strings and the records profile string now have
+explicit 100-byte global capacities, preserving their previous limits.
+LTrim$ and RTrim$ use 1000-byte result locals; stripComment$ uses 1000-byte input
+and output locals. Source comments identify the inherited capacity fixes.
+The original Source/ssb272.bas remains the historical bootstrap.
+
+Tests/long-lines-legacy.ssb and Tests/long-lines-records.ssb contain 24
+full-string checks across 100-, 101-, 255-, 999- and 1000-byte source lines.
+They cover invisible and visible comments, repeated quoted markers, mixed
+quotes, indentation and continuations forming a 1000-byte logical line.
+Tests/long-lines-trim.ssb exercises the actual compiler trim routines at
+0, 1, 99, 100, 101, 255, 999 and 1000 characters, including padded and all-space
+strings. The helper source is extracted from Source/functions.ssb at test time.
+
+Tools/generate_long_line_tests.py regenerates the fixtures and their expected
+results in Tests/long-lines.json. Both interpreter and Turbo-compiled target
+runs check the complete resulting strings. The previous development executable
+was confirmed to corrupt a 1000-byte line containing a quoted invisible-comment
+marker; the revised executable passes that case. The remaining 62 Turbo
+notices concern local-only string names, not assumed capacities.
+
 ## Standalone colon fix on 15 November 2026
 
 The interpreted legacy reader inherited an unsafe continuation test from SSB
@@ -331,5 +376,5 @@ comments explain the inheritance. The original Source/ssb272.bas is preserved.
 Tests/standalone-colon.ssb starts and ends with a colon line and includes colons
 between statements and inside a procedure. Its label skips an assignment and
 the program produces 2 in both interpreted and Turbo-compiled tests. This
-exercises both numbering passes without enabling records. The regression is registered in both the interpreter and compiled test suites.
-Rebuild the executable from the updated source to use this fix.
+exercises both numbering passes without enabling records. The complete suite
+now has 44 interpreter checks and 16 compiled-filter/compiled-target cases.

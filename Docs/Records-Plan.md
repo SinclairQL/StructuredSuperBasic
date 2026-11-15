@@ -4,7 +4,7 @@
 
 Status: alternative design proposal, not implemented. This document extends the existing QL
 Structured SuperBASIC filter, SSB 2.7. It replaces the separate `ssbrec` program and record-returning
-functions proposed in [records.md](records.md). The earlier document is retained for comparison.
+functions proposed in [the original records proposal](../Source/records%20proposal.md). The earlier document is retained for comparison.
 
 The implementation is a modification of the QL SSB sources, written in SSB and compiled with
 Turbo. Its input remains `_ssb` and its output remains numbered `_bas`. There is one user command

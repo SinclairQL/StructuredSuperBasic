@@ -16,7 +16,7 @@ def run(name):
     return result
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
-    results = list(pool.map(run, ['core', 'arrays-pools', 'bounds-labels', 'value-only', 'limits', 'strings', 'reference-stream', 'pure-builtins', 'legacy-comments', 'review-regressions', 'standalone-colon']))
+    results = list(pool.map(run, ['core', 'arrays-pools', 'bounds-labels', 'value-only', 'limits', 'strings', 'reference-stream', 'pure-builtins', 'legacy-comments', 'review-regressions', 'parenthesized-value', 'preserved-blank-labels', 'long-lines-legacy', 'long-lines-records', 'long-lines-trim', 'standalone-colon']))
 (ROOT / 'build' / 'native-validation.json').write_text(json.dumps(results, indent=2), encoding='utf-8')
 for result in results:
     print('PASS' if result['passed'] else 'FAIL', result['name'])

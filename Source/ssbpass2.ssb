@@ -735,8 +735,9 @@ DEFine PROCedure rec_statement(text$)
     i=2: j=b
     IF i<=b AND rec_token$(i)="(" THEN
       k=rec_match(i,b)
-      ## Parentheses around the first argument do not enclose later arguments.
-      IF k=b THEN j=k-1: i=i+1
+      ## A single scalar argument keeps its value-passing parentheses.
+      ## Only a zero/multiple-argument list can have an outer list wrapper.
+      IF k=b AND rr_count(v)<>1 THEN j=k-1: i=i+1
     END IF
     s$=rec_arguments$(v,rec_part$(i,j),0)
     IF s$<>"" THEN s$=" " & s$

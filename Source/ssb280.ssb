@@ -56,6 +56,13 @@ IMPLICIT% num_count, file_num, x, y, temp, line_num_d, line_delta
 ## Wide line counter: validate extended output before a 16-bit wrap.
 
 
+## Fix inherited from 2.7.2g: declare the existing 100-byte configuration limits.
+## These strings are settings and paths, not source-line buffers.
+DIM d_in$(100),d_out$(100),d_working$(100),d_work2$(100)
+DIM d_over$(100),d_lang$(100),d_ignore$(100)
+DIM t_in$(100),t_out$(100),t_start$(100),t_delta$(100)
+DIM t_working$(100),t_work2$(100),t_over$(100),t_lang$(100),t_ignore$(100)
+
 ## Default Values
 d_labels = 30
 d_length = 16
@@ -222,14 +229,9 @@ END DEFine first_char
 ##   Takes in input string and returns the
 ##   same string in all upper case letters.
 DEF FuNction upper$(up$)
-    LOCal x, temp
-    IF rc_enabled THEN RETurn rec_upper$(up$)
-
-    FOR x = 1 TO LEN(up$)
-       temp = CODE(up$(x))
-       IF temp > 96 AND temp < 123 THEN up$(x)=CHR$(temp-32)
-    END FOR x
-    RETURN up$
+    ## Fix inherited from 2.7.2g: never mutate an aliased input slice.
+    ## The interpreted legacy path must preserve source text as well.
+    RETurn rec_upper$(up$)
 END DEFine
 
 ## Function isnum
@@ -294,6 +296,8 @@ END DEFine abort_out
 ## Driver-owned work files, diagnostics, origin mapping and publication.
 ## The two passes share these helpers; neither publishes partial output.
 DEFine PROCedure rec_setup
+  ## Explicit profile capacity replaces Turbo's assumed DIM rc_profile$(100).
+  DIM rc_profile$(100)
   DIM rc_work$(5,100),rc_backup$(100),rc_final$(100),rc_file$(100),rec_source$(100)
   rc_enabled=0: rc_owned=0: rc_files=0: rc_open40=0: rc_open41=0: rc_open42=0
   rc_mapopen=0: rc_line=0: rc_backup$="": rc_file$="": rc_final$=""
